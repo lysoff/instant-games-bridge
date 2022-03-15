@@ -64,7 +64,7 @@ class MockPlatform {
             }
             catch (e) { }
 
-            if (typeof this.#gameData[key] === 'undefined')
+            if (!this.#gameData || typeof this.#gameData[key] === 'undefined')
                 resolve(null)
             else
                 resolve(this.#gameData[key])
