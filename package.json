@@ -1,7 +1,7 @@
 {
   "name": "instant-games-bridge",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "One SDK for cross platform publishing HTML5 games",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/mewtongames/instant-games-bridge.git"
   },
-  "author": "",
+  "author": "Mewton Games",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/mewtongames/instant-games-bridge/issues"
