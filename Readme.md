@@ -22,5 +22,25 @@ Join community: https://t.me/instant_games_bridge.
             // Initialized. You can use other methods.
             console.log('Platform ID:', instantGamesBridge.platform.id)
         })
+    
+    instantGamesBridge.advertisement.on('interstitial_state_changed', state => console.log('Interstitial state:', state))
+    instantGamesBridge.advertisement.on('rewarded_state_changed', state => console.log('Rewarded state:', state))
+
+    instantGamesBridge.advertisement.showInterstitial()
+    instantGamesBridge.advertisement.showRewarded()
+
+    instantGamesBridge
+        .game
+        .getData(key)
+        .then(data => {
+            console.log('Data:', data)
+        })
+
+    instantGamesBridge
+        .game
+        .setData(key, value)
+        .then(() => {
+            console.log('SetData success')
+        })
 </script>
 ```
