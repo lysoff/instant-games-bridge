@@ -1,3 +1,4 @@
+### Instant Games Bridge
 One SDK for cross-platform publishing HTML5 games.
 
 Supported platforms:
