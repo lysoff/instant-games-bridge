@@ -13,11 +13,13 @@ Plugins for game engines:
 Join community: https://t.me/instant_games_bridge.
 
 ## Usage
-+ [Initialize](#initialize)
++ [Setup](#setup)
++ [Platform](#platform)
 + [Advertisement](#advertisement)
-+ [Data](#data)
++ [Game Data](#game-data)
 
-### Initialize
+### Setup
+First you need to initialize the SDK:
 ```html
 <script src="https://cdn.jsdelivr.net/gh/mewtongames/instant-games-bridge@1.0.2/dist/instant-games-bridge.js"></script>
 <script>
@@ -25,42 +27,77 @@ Join community: https://t.me/instant_games_bridge.
         .initialize()
         .then(() => {
             // Initialized. You can use other methods.
-            // For example 
-            console.log('Platform ID:', instantGamesBridge.platform.id)
+        })
+        .catch(error => {
+            // Error
         })
 </script>
 ```
+
+### Platform
+```js
+// Get ID of current platform ('vk', 'yandex', 'mock')
+instantGamesBridge.platform.id
+```
+
 ### Advertisement
 #### Methods
 ```js
-// Request to show interstitial ads
-instantGamesBridge.advertisement.showInterstitial()
+let seconds = 30 // Default = 60
+instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(seconds)
 
-// Request to show reward video ads
-instantGamesBridge.advertisement.showRewarded()
+// Optional parameter
+let interstitialOptions = {
+    ignoreDelay: true // Default = false
+}
+
+// Request to show interstitial ads
+instantGamesBridge
+    .advertisement
+    .showInterstitial(interstitialOptions)
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+
+// Request to show rewarded video ads
+instantGamesBridge
+    .advertisement
+    .showRewarded()
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
 ```
 #### Events
 ```js
 instantGamesBridge.advertisement.on('interstitial_state_changed', state => console.log('Interstitial state:', state))
 instantGamesBridge.advertisement.on('rewarded_state_changed', state => console.log('Rewarded state:', state))
 ```
-### Data
+### Game Data
 ```js
-// Get data from storage
+// Get game data from storage
 instantGamesBridge
     .game
     .getData(key)
     .then(data => {
-        // Data has been received and you can work with them.
+        // Data has been received and you can work with them
+        // data = null if there is no data for this key
         console.log('Data:', data)
     })
+    .catch(error => {
+        // Error
+    })
 
-// Set data in storage
+// Set game data in storage
 instantGamesBridge
     .game
     .setData(key, value)
     .then(() => {
         // Success
-        console.log('SetData success')
     })
 ```
