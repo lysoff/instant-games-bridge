@@ -1,4 +1,4 @@
-### Instant Games Bridge
+# Instant Games Bridge
 One SDK for cross-platform publishing HTML5 games.
 
 Supported platforms:
@@ -12,35 +12,55 @@ Plugins for game engines:
 
 Join community: https://t.me/instant_games_bridge.
 
-### Usage
-```
+## Usage
++ [Initialize](#initialize)
++ [Advertisement](#advertisement)
++ [Data](#data)
+
+### Initialize
+```html
 <script src="https://cdn.jsdelivr.net/gh/mewtongames/instant-games-bridge@1.0.2/dist/instant-games-bridge.js"></script>
 <script>
     instantGamesBridge
         .initialize()
         .then(() => {
             // Initialized. You can use other methods.
+            // For example 
             console.log('Platform ID:', instantGamesBridge.platform.id)
         })
-    
-    instantGamesBridge.advertisement.on('interstitial_state_changed', state => console.log('Interstitial state:', state))
-    instantGamesBridge.advertisement.on('rewarded_state_changed', state => console.log('Rewarded state:', state))
-
-    instantGamesBridge.advertisement.showInterstitial()
-    instantGamesBridge.advertisement.showRewarded()
-
-    instantGamesBridge
-        .game
-        .getData(key)
-        .then(data => {
-            console.log('Data:', data)
-        })
-
-    instantGamesBridge
-        .game
-        .setData(key, value)
-        .then(() => {
-            console.log('SetData success')
-        })
 </script>
+```
+### Advertisement
+#### Methods
+```js
+// Request to show interstitial ads
+instantGamesBridge.advertisement.showInterstitial()
+
+// Request to show reward video ads
+instantGamesBridge.advertisement.showRewarded()
+```
+#### Events
+```js
+instantGamesBridge.advertisement.on('interstitial_state_changed', state => console.log('Interstitial state:', state))
+instantGamesBridge.advertisement.on('rewarded_state_changed', state => console.log('Rewarded state:', state))
+```
+### Data
+```js
+// Get data from storage
+instantGamesBridge
+    .game
+    .getData(key)
+    .then(data => {
+        // Data has been received and you can work with them.
+        console.log('Data:', data)
+    })
+
+// Set data in storage
+instantGamesBridge
+    .game
+    .setData(key, value)
+    .then(() => {
+        // Success
+        console.log('SetData success')
+    })
 ```
