@@ -30,8 +30,12 @@ Join community: https://t.me/instant_games_bridge.
     let seconds = 30
     instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(seconds)
     
-    let ignoreDelay = true // default = false
-    instantGamesBridge.advertisement.showInterstitial(ignoreDelay)
+    // optional
+    let interstitialOptions = {
+        ignoreDelay: true // default = false
+    }
+    instantGamesBridge.advertisement.showInterstitial(interstitialOptions)
+    
     instantGamesBridge.advertisement.showRewarded()
 
     instantGamesBridge
