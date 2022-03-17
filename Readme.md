@@ -26,7 +26,12 @@ Join community: https://t.me/instant_games_bridge.
     instantGamesBridge.advertisement.on('interstitial_state_changed', state => console.log('Interstitial state:', state))
     instantGamesBridge.advertisement.on('rewarded_state_changed', state => console.log('Rewarded state:', state))
 
-    instantGamesBridge.advertisement.showInterstitial()
+    // default = 60 seconds
+    let seconds = 30
+    instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(seconds)
+    
+    let ignoreDelay = true // default = false
+    instantGamesBridge.advertisement.showInterstitial(ignoreDelay)
     instantGamesBridge.advertisement.showRewarded()
 
     instantGamesBridge
