@@ -100,4 +100,7 @@ instantGamesBridge
     .then(() => {
         // Success
     })
+    .catch(error => {
+        // Error
+    })
 ```
