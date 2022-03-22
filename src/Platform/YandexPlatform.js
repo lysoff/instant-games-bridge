@@ -1,4 +1,5 @@
 import EventLite from 'event-lite'
+import PlatformBase from './PlatformBase'
 import PromiseDecorator from '../Common/PromiseDecorator'
 import { addJavaScript } from '../Common/utils'
 import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
@@ -6,7 +7,7 @@ import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_ST
 const YANDEX_SDK_URL = 'https://yandex.ru/games/sdk/v2'
 const LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
 
-class YandexPlatform {
+class YandexPlatform extends PlatformBase {
 
     get id() {
         return 'yandex'
@@ -14,6 +15,13 @@ class YandexPlatform {
 
     get sdk() {
         return this.#sdk
+    }
+
+    get language() {
+        if (this.#sdk)
+            return this.#sdk.environment.i18n.lang
+
+        return super.language
     }
 
     get interstitialState() {

@@ -7,7 +7,7 @@ import Game from './Game'
 class InstantGamesBridge {
 
     static get version() {
-        return '1.0.2'
+        return '1.1.0'
     }
 
     get isInitialized() {

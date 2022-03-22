@@ -1,9 +1,10 @@
 import EventLite from 'event-lite'
+import PlatformBase from './PlatformBase'
 import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
 
 const LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
 
-class MockPlatform {
+class MockPlatform extends PlatformBase {
 
     get id() {
         return 'mock'

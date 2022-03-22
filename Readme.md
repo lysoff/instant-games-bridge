@@ -21,7 +21,7 @@ Join community: https://t.me/instant_games_bridge.
 ### Setup
 First you need to initialize the SDK:
 ```html
-<script src="https://cdn.jsdelivr.net/gh/mewtongames/instant-games-bridge@1.0.2/dist/instant-games-bridge.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/mewtongames/instant-games-bridge@1.1.0/dist/instant-games-bridge.js"></script>
 <script>
     instantGamesBridge
         .initialize()
@@ -36,11 +36,21 @@ First you need to initialize the SDK:
 
 ### Platform
 ```js
-// Get ID of current platform ('vk', 'yandex', 'mock')
+// ID of current platform ('vk', 'yandex', 'mock')
 instantGamesBridge.platform.id
 
-// Get platform native SDK
+// Platform native SDK
 instantGamesBridge.platform.sdk
+
+// If platform provides information - this is the user language on platform. 
+// If not - this is the language of the user's browser.
+instantGamesBridge.platform.language
+
+// The value of the payload parameter from the url. Examples:
+// VK: vk.com/app8056947#your-info
+// Yandex: yandex.com/games/play/183100?payload=your-info
+// Mock: site.com/game?payload=your-info
+instantGamesBridge.platform.payload
 ```
 
 ### Advertisement

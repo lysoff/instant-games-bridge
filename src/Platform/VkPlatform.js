@@ -1,11 +1,12 @@
 import EventLite from 'event-lite'
+import PlatformBase from './PlatformBase'
 import PromiseDecorator from '../Common/PromiseDecorator'
 import { addJavaScript } from '../Common/utils'
 import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
 
 const VK_BRIDGE_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
 
-class VkPlatform {
+class VkPlatform extends PlatformBase {
 
     get id() {
         return 'vk'
@@ -13,6 +14,32 @@ class VkPlatform {
 
     get sdk() {
         return this.#sdk
+    }
+
+    get language() {
+        let url = new URL(window.location.href)
+        if (url.searchParams.has('language')) {
+            switch (url.searchParams.get('language')) {
+                case 0:
+                    return 'ru'
+                case 1:
+                    return 'uk'
+                case 2:
+                    return 'be'
+                case 3:
+                    return 'en'
+            }
+        }
+
+        return super.language
+    }
+
+    get payload() {
+        let url = new URL(window.location.href)
+        if (url.searchParams.has('hash'))
+            return url.searchParams.get('hash')
+
+        return super.payload
     }
 
     get interstitialState() {
