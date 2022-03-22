@@ -38,6 +38,9 @@ First you need to initialize the SDK:
 ```js
 // Get ID of current platform ('vk', 'yandex', 'mock')
 instantGamesBridge.platform.id
+
+// Get platform native SDK
+instantGamesBridge.platform.sdk
 ```
 
 ### Advertisement
