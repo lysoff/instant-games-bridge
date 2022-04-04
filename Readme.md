@@ -9,6 +9,7 @@ Plugins for game engines:
 + [Construct 3](https://github.com/mewtongames/instant-games-bridge-construct)
 + [Unity](https://github.com/mewtongames/instant-games-bridge-unity)
 + [Defold](https://github.com/mewtongames/instant-games-bridge-defold)
++ [Godot](https://github.com/mewtongames/instant-games-bridge-godot)
 
 Join community: https://t.me/instant_games_bridge.
 
