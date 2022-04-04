@@ -12,6 +12,7 @@ Plugins for game engines:
 + [Godot](https://github.com/mewtongames/instant-games-bridge-godot)
 
 Roadmap: https://trello.com/b/NjF29vTW.
+
 Join community: https://t.me/instant_games_bridge.
 
 ## Usage
@@ -19,14 +20,23 @@ Join community: https://t.me/instant_games_bridge.
 + [Platform](#platform)
 + [Advertisement](#advertisement)
 + [Game Data](#game-data)
++ [Social](#social)
 
 ### Setup
 First you need to initialize the SDK:
 ```html
 <script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.1.0/dist/instant-games-bridge.js"></script>
 <script>
-    instantGamesBridge
-        .initialize()
+    // Optional parameter
+    let bridgeOptions = {
+        platforms: {
+            vk: {
+                groupId: 199747461 // If you want to use instantGamesBridge.social.joinCommunity() method
+            }
+        }
+    }
+    
+    instantGamesBridge.initialize(bridgeOptions)
         .then(() => {
             // Initialized. You can use other methods.
         })
@@ -67,9 +77,7 @@ let interstitialOptions = {
 }
 
 // Request to show interstitial ads
-instantGamesBridge
-    .advertisement
-    .showInterstitial(interstitialOptions)
+instantGamesBridge.advertisement.showInterstitial(interstitialOptions)
     .then(() => {
         // Success
     })
@@ -78,9 +86,7 @@ instantGamesBridge
     })
 
 // Request to show rewarded video ads
-instantGamesBridge
-    .advertisement
-    .showRewarded()
+instantGamesBridge.advertisement.showRewarded()
     .then(() => {
         // Success
     })
@@ -96,9 +102,7 @@ instantGamesBridge.advertisement.on('rewarded_state_changed', state => console.l
 ### Game Data
 ```js
 // Get game data from storage
-instantGamesBridge
-    .game
-    .getData(key)
+instantGamesBridge.game.getData(key)
     .then(data => {
         // Data has been received and you can work with them
         // data = null if there is no data for this key
@@ -109,9 +113,40 @@ instantGamesBridge
     })
 
 // Set game data in storage
-instantGamesBridge
-    .game
-    .setData(key, value)
+instantGamesBridge.game.setData(key, value)
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+```
+### Social
+```js
+// VK: true
+// Yandex, Mock: false
+instantGamesBridge.social.isShareSupported
+instantGamesBridge.social.isCommunitySupported
+instantGamesBridge.social.isInviteFriendsSupported
+
+instantGamesBridge.social.share()
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+
+// For VK - you need to pass the group id when you call the instantGamesBridge.initialize() method
+instantGamesBridge.social.joinCommunity()
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+
+instantGamesBridge.social.inviteFriends()
     .then(() => {
         // Success
     })

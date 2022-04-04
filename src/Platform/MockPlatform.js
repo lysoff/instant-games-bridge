@@ -10,10 +10,6 @@ class MockPlatform extends PlatformBase {
         return 'mock'
     }
 
-    get sdk() {
-        return { }
-    }
-
     get interstitialState() {
         return this.#interstitialState
     }

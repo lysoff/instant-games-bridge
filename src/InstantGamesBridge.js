@@ -3,11 +3,12 @@ import VkPlatform from './Platform/VkPlatform'
 import YandexPlatform from './Platform/YandexPlatform'
 import Advertisement from './Advertisement'
 import Game from './Game'
+import Social from './Social'
 
 class InstantGamesBridge {
 
     get version() {
-        return '1.1.1'
+        return '1.2.0'
     }
 
     get isInitialized() {
@@ -26,14 +27,21 @@ class InstantGamesBridge {
         return this.#game
     }
 
+    get social() {
+        return this.#social
+    }
+
     #isInitialized = false
     #platform
     #advertisement
     #game
+    #social
 
-    initialize() {
+    initialize(options) {
         if (this.#isInitialized)
             return Promise.resolve()
+
+        this.options = { ...options }
 
         return new Promise(resolve => {
             this.#createPlatform()
@@ -42,6 +50,7 @@ class InstantGamesBridge {
                 .then(() => {
                     this.#advertisement = new Advertisement(this.#platform)
                     this.#game = new Game(this.#platform)
+                    this.#social = new Social(this.#platform)
                     this.#isInitialized = true
                     console.log('%c InstantGamesBridge v.' + this.version + ' initialized. ', 'background: #01A5DA; color: white')
                     resolve()
@@ -55,7 +64,7 @@ class InstantGamesBridge {
         if (url.hostname.includes(yandexUrl))
             this.#platform = new YandexPlatform()
         else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key'))
-            this.#platform = new VkPlatform()
+            this.#platform = new VkPlatform(this.options && this.options.platforms && this.options.platforms.vk)
         else
             this.#platform = new MockPlatform()
     }

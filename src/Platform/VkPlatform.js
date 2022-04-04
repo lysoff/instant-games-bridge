@@ -50,6 +50,18 @@ class VkPlatform extends PlatformBase {
         return this.#rewardedState
     }
 
+    get isInviteFriendsSupported() {
+        return true
+    }
+
+    get isCommunitySupported() {
+        return true
+    }
+
+    get isShareSupported() {
+        return true
+    }
+
     #sdk
     #isInitialized
     #initializationPromiseDecorator
@@ -58,6 +70,7 @@ class VkPlatform extends PlatformBase {
     #rewardedState
     #showInterstitialPromiseDecorator
     #showRewardedPromiseDecorator
+
 
     initialize() {
         if (this.#isInitialized)
@@ -193,6 +206,74 @@ class VkPlatform extends PlatformBase {
                 .send('VKWebAppStorageSet', data)
                 .then(() => {
                     resolve()
+                })
+        })
+    }
+
+    inviteFriends() {
+        return new Promise((resolve, reject) => {
+            this.#sdk
+                .send('VKWebAppShowInviteBox')
+                .then(data => {
+
+                    if (data.success) {
+                        resolve()
+                        return
+                    }
+
+                    reject()
+                })
+                .catch(error => {
+                    if (error && error.error_data && error.error_data.error_reason)
+                        reject(error.error_data.error_reason)
+                    else
+                        reject()
+                })
+        })
+    }
+
+    joinCommunity() {
+        if (!this.options || !this.options.groupId)
+            return Promise.reject()
+
+        return new Promise((resolve, reject) => {
+            this.#sdk
+                .send('VKWebAppJoinGroup', { 'group_id': this.options.groupId })
+                .then(data => {
+                    if (data && data.result) {
+                        resolve()
+                        window.open('https://vk.com/public' + this.options.groupId)
+                        return
+                    }
+
+                    reject()
+                })
+                .catch(error => {
+                    if (error && error.error_data && error.error_data.error_reason)
+                        reject(error.error_data.error_reason)
+                    else
+                        reject()
+                })
+        })
+    }
+
+    share() {
+        return new Promise((resolve, reject) => {
+            this.#sdk
+                .send('VKWebAppShare')
+                .then(data => {
+                    if (data && data.type) {
+                        resolve()
+                        return
+                    }
+
+                    reject()
+                })
+                .catch(error => {
+                    if (error && error.error_data && error.error_data.error_reason)
+                        reject(error.error_data.error_reason)
+                    else
+                        reject()
                 })
         })
     }

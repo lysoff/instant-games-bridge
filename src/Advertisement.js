@@ -55,10 +55,7 @@ class Advertisement {
     }
 
     showInterstitial(options) {
-        let ignoreDelay = false
-
-        if (options)
-            ignoreDelay = options.ignoreDelay
+        let ignoreDelay = options && options.ignoreDelay
 
         if (this.#interstitialTimer && this.#interstitialTimer.state !== TIMER_STATE.COMPLETED && !ignoreDelay)
             return Promise.reject('The minimum delay between interstitials has not passed')
