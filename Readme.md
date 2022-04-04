@@ -11,6 +11,7 @@ Plugins for game engines:
 + [Defold](https://github.com/mewtongames/instant-games-bridge-defold)
 + [Godot](https://github.com/mewtongames/instant-games-bridge-godot)
 
+Roadmap: https://trello.com/b/NjF29vTW.
 Join community: https://t.me/instant_games_bridge.
 
 ## Usage
