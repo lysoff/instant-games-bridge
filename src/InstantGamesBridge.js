@@ -6,8 +6,8 @@ import Game from './Game'
 
 class InstantGamesBridge {
 
-    static get version() {
-        return '1.1.0'
+    get version() {
+        return '1.1.1'
     }
 
     get isInitialized() {
@@ -43,7 +43,7 @@ class InstantGamesBridge {
                     this.#advertisement = new Advertisement(this.#platform)
                     this.#game = new Game(this.#platform)
                     this.#isInitialized = true
-                    console.log('%c InstantGamesBridge v.' + InstantGamesBridge.version + ' initialized. ', 'background: #01A5DA; color: white')
+                    console.log('%c InstantGamesBridge v.' + this.version + ' initialized. ', 'background: #01A5DA; color: white')
                     resolve()
                 })
         })
