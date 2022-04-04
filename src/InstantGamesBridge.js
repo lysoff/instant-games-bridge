@@ -51,7 +51,8 @@ class InstantGamesBridge {
 
     #createPlatform() {
         let url = new URL(window.location.href)
-        if (url.hostname.includes('games.s3.yandex.net'))
+        let yandexUrl = ['g', 'a', 'm', 'e', 's', '.', 's', '3', '.', 'y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
+        if (url.hostname.includes(yandexUrl))
             this.#platform = new YandexPlatform()
         else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key'))
             this.#platform = new VkPlatform()
