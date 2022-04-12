@@ -66,7 +66,7 @@ class InstantGamesBridge {
         else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key'))
             this.#platform = new VkPlatform(this.options && this.options.platforms && this.options.platforms.vk)
         else
-            this.#platform = new MockPlatform()
+            this.#platform = new MockPlatform(this.options && this.options.platforms && this.options.platforms.mock)
     }
 
 }

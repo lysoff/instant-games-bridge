@@ -10,6 +10,27 @@ class MockPlatform extends PlatformBase {
         return 'mock'
     }
 
+    get isInviteFriendsSupported() {
+        if (this.options && this.options.social && this.options.social.simulateInviteFriends)
+            return this.options.social.simulateInviteFriends
+
+        return false
+    }
+
+    get isCommunitySupported() {
+        if (this.options && this.options.social && this.options.social.simulateJoinCommunity)
+            return this.options.social.simulateJoinCommunity
+
+        return false
+    }
+
+    get isShareSupported() {
+        if (this.options && this.options.social && this.options.social.simulateShare)
+            return this.options.social.simulateShare
+
+        return false
+    }
+
     get interstitialState() {
         return this.#interstitialState
     }
@@ -27,20 +48,26 @@ class MockPlatform extends PlatformBase {
     }
 
     showInterstitial() {
-        return new Promise(resolve => {
-            resolve()
-            this.#setInterstitialState(INTERSTITIAL_STATE.OPENED)
-            this.#setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-        })
+        if (this.options && this.options.advertisement && this.options.advertisement.simulateInterstitial) {
+            return new Promise(resolve => {
+                resolve()
+                this.#setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                this.#setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+            })
+        } else
+            return Promise.reject()
     }
 
     showRewarded() {
-        return new Promise(resolve => {
-            resolve()
-            this.#setRewardedState(REWARDED_STATE.OPENED)
-            this.#setRewardedState(REWARDED_STATE.REWARDED)
-            this.#setRewardedState(REWARDED_STATE.CLOSED)
-        })
+        if (this.options && this.options.advertisement && this.options.advertisement.simulateRewarded) {
+            return new Promise(resolve => {
+                resolve()
+                this.#setRewardedState(REWARDED_STATE.OPENED)
+                this.#setRewardedState(REWARDED_STATE.REWARDED)
+                this.#setRewardedState(REWARDED_STATE.CLOSED)
+            })
+        } else
+            return Promise.reject()
     }
 
     getGameData(key) {
@@ -81,6 +108,27 @@ class MockPlatform extends PlatformBase {
             catch (e) { }
             resolve()
         })
+    }
+
+    inviteFriends() {
+        if (this.isInviteFriendsSupported)
+            return Promise.resolve()
+        else
+            return Promise.reject()
+    }
+
+    joinCommunity() {
+        if (this.isCommunitySupported)
+            return Promise.resolve()
+        else
+            return Promise.reject()
+    }
+
+    share() {
+        if (this.isShareSupported)
+            return Promise.resolve()
+        else
+            return Promise.reject()
     }
 
     #setInterstitialState(state) {
