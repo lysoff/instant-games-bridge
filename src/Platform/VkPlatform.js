@@ -236,6 +236,12 @@ class VkPlatform extends PlatformBase {
         if (!this.options || !this.options.groupId)
             return Promise.reject()
 
+        if (typeof this.options.groupId === 'string') {
+            let groupId = parseInt(this.options.groupId)
+            if (!isNaN(groupId))
+                this.options.groupId = groupId
+        }
+
         return new Promise((resolve, reject) => {
             this.#sdk
                 .send('VKWebAppJoinGroup', { 'group_id': this.options.groupId })
