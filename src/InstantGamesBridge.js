@@ -4,6 +4,7 @@ import YandexPlatform from './Platform/YandexPlatform'
 import Advertisement from './Advertisement'
 import Game from './Game'
 import Social from './Social'
+import PromiseDecorator from './Common/PromiseDecorator'
 
 class InstantGamesBridge {
 
@@ -32,6 +33,8 @@ class InstantGamesBridge {
     }
 
     #isInitialized = false
+    #initializationPromiseDecorator
+
     #platform
     #advertisement
     #game
@@ -41,9 +44,9 @@ class InstantGamesBridge {
         if (this.#isInitialized)
             return Promise.resolve()
 
-        this.options = { ...options }
-
-        return new Promise(resolve => {
+        if (!this.#initializationPromiseDecorator) {
+            this.#initializationPromiseDecorator = new PromiseDecorator()
+            this.options = { ...options }
             this.#createPlatform()
             this.#platform
                 .initialize()
@@ -53,9 +56,15 @@ class InstantGamesBridge {
                     this.#social = new Social(this.#platform)
                     this.#isInitialized = true
                     console.log('%c InstantGamesBridge v.' + this.version + ' initialized. ', 'background: #01A5DA; color: white')
-                    resolve()
+
+                    if (this.#initializationPromiseDecorator) {
+                        this.#initializationPromiseDecorator.resolve()
+                        this.#initializationPromiseDecorator = null
+                    }
                 })
-        })
+        }
+
+        return this.#initializationPromiseDecorator.promise
     }
 
     #createPlatform() {
