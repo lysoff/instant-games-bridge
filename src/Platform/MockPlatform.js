@@ -100,14 +100,14 @@ class MockPlatform extends PlatformBase {
             this.#gameData = { }
 
         this.#gameData[key] = value
+        return this.#saveGameData()
+    }
 
-        return new Promise(resolve => {
-            try {
-                localStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
-            }
-            catch (e) { }
-            resolve()
-        })
+    deleteGameData(key) {
+        if (this.#gameData)
+            delete this.#gameData[key]
+
+        return this.#saveGameData()
     }
 
     inviteFriends() {
@@ -141,6 +141,15 @@ class MockPlatform extends PlatformBase {
         this.emit(ADVERTISEMENT_EVENT_NAME.REWARDED_STATE_CHANGED, this.#rewardedState)
     }
 
+    #saveGameData() {
+        return new Promise(resolve => {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
+            }
+            catch (e) { }
+            resolve()
+        })
+    }
 }
 
 EventLite.mixin(MockPlatform.prototype)

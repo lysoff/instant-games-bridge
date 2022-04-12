@@ -196,7 +196,7 @@ class VkPlatform extends PlatformBase {
     }
 
     setGameData(key, value) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             let data = { key, value }
 
             if (typeof value !== 'string')
@@ -207,7 +207,17 @@ class VkPlatform extends PlatformBase {
                 .then(() => {
                     resolve()
                 })
+                .catch(error => {
+                    if (error && error.error_data && error.error_data.error_reason)
+                        reject(error.error_data.error_reason)
+                    else
+                        reject()
+                })
         })
+    }
+
+    deleteGameData(key) {
+        return this.setGameData(key, '')
     }
 
     inviteFriends() {

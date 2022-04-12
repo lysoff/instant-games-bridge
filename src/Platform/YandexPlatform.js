@@ -215,24 +215,14 @@ class YandexPlatform extends PlatformBase {
             this.#gameData = { }
 
         this.#gameData[key] = value
+        return this.#saveGameData()
+    }
 
-        return new Promise(resolve => {
-            if (this.#player) {
-                this.#player.setData(this.#gameData)
-                    .then(() => {
-                        resolve()
-                    })
-            } else if (this.#safeStorage) {
-                this.#safeStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
-                resolve()
-            } else {
-                try {
-                    localStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
-                }
-                catch (e) { }
-                resolve()
-            }
-        })
+    deleteGameData(key) {
+        if (this.#gameData)
+            delete this.#gameData[key]
+
+        return this.#saveGameData()
     }
 
 
@@ -250,6 +240,29 @@ class YandexPlatform extends PlatformBase {
 
         this.#rewardedState = state
         this.emit(ADVERTISEMENT_EVENT_NAME.REWARDED_STATE_CHANGED, this.#rewardedState)
+    }
+
+    #saveGameData() {
+        return new Promise((resolve, reject) => {
+            if (this.#player) {
+                this.#player.setData(this.#gameData)
+                    .then(() => {
+                        resolve()
+                    })
+                    .catch(error => {
+                        reject(error)
+                    })
+            } else if (this.#safeStorage) {
+                this.#safeStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
+                resolve()
+            } else {
+                try {
+                    localStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
+                }
+                catch (e) { }
+                resolve()
+            }
+        })
     }
 }
 
