@@ -66,6 +66,15 @@ class VkPlatform extends PlatformBase {
         return true
     }
 
+    get isAddToHomeScreenSupported() {
+        return this.#isAddToHomeScreenSupported
+    }
+
+    get isAddToFavoritesSupported() {
+        return true
+    }
+
+    #isAddToHomeScreenSupported = false
 
     initialize() {
         if (this._isInitialized)
@@ -79,6 +88,12 @@ class VkPlatform extends PlatformBase {
                 this._sdk
                     .send('VKWebAppInit')
                     .then(() => {
+
+                        let url = new URL(window.location.href)
+                        if (url.searchParams.has('platform')){
+                            let vkPlatform = url.searchParams.get('platform')
+                            this.#isAddToHomeScreenSupported = vkPlatform === 'html5_android'
+                        }
 
                         this._sdk.send('VKWebAppGetUserInfo')
                             .then(data => {
@@ -405,6 +420,81 @@ class VkPlatform extends PlatformBase {
         }
 
         return this._createPostPromiseDecorator.promise
+    }
+
+    addToHomeScreen() {
+        if (!this.isAddToHomeScreenSupported)
+            return Promise.reject()
+
+        if (!this._addToHomeScreenPromiseDecorator) {
+            this._addToHomeScreenPromiseDecorator = new PromiseDecorator()
+
+            this._sdk
+                .send('VKWebAppAddToHomeScreen')
+                .then(data => {
+                    if (data && data.result) {
+                        if (this._addToHomeScreenPromiseDecorator) {
+                            this._addToHomeScreenPromiseDecorator.resolve()
+                            this._addToHomeScreenPromiseDecorator = null
+                        }
+
+                        return
+                    }
+
+                    if (this._addToHomeScreenPromiseDecorator) {
+                        this._addToHomeScreenPromiseDecorator.reject()
+                        this._addToHomeScreenPromiseDecorator = null
+                    }
+                })
+                .catch(error => {
+                    if (this._addToHomeScreenPromiseDecorator) {
+                        if (error && error.error_data && error.error_data.error_reason)
+                            this._addToHomeScreenPromiseDecorator.reject(error.error_data.error_reason)
+                        else
+                            this._addToHomeScreenPromiseDecorator.reject()
+
+                        this._addToHomeScreenPromiseDecorator = null
+                    }
+                })
+        }
+
+        return this._addToHomeScreenPromiseDecorator.promise
+    }
+
+    addToFavorites() {
+        if (!this._addToFavoritesPromiseDecorator) {
+            this._addToFavoritesPromiseDecorator = new PromiseDecorator()
+
+            this._sdk
+                .send('VKWebAppAddToFavorites')
+                .then(data => {
+                    if (data && data.result) {
+                        if (this._addToFavoritesPromiseDecorator) {
+                            this._addToFavoritesPromiseDecorator.resolve()
+                            this._addToFavoritesPromiseDecorator = null
+                        }
+
+                        return
+                    }
+
+                    if (this._addToFavoritesPromiseDecorator) {
+                        this._addToFavoritesPromiseDecorator.reject()
+                        this._addToFavoritesPromiseDecorator = null
+                    }
+                })
+                .catch(error => {
+                    if (this._addToFavoritesPromiseDecorator) {
+                        if (error && error.error_data && error.error_data.error_reason)
+                            this._addToFavoritesPromiseDecorator.reject(error.error_data.error_reason)
+                        else
+                            this._addToFavoritesPromiseDecorator.reject()
+
+                        this._addToFavoritesPromiseDecorator = null
+                    }
+                })
+        }
+
+        return this._addToFavoritesPromiseDecorator.promise
     }
 
 }

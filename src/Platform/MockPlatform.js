@@ -38,6 +38,20 @@ class MockPlatform extends PlatformBase {
         return false
     }
 
+    get isAddToHomeScreenSupported() {
+        if (this._options && this._options.social && this._options.social.simulateAddToHomeScreen)
+            return this._options.social.simulateAddToHomeScreen
+
+        return false
+    }
+
+    get isAddToFavoritesSupported() {
+        if (this._options && this._options.social && this._options.social.simulateAddToFavorites)
+            return this._options.social.simulateAddToFavorites
+
+        return false
+    }
+
 
     // advertisement
     showInterstitial() {
@@ -88,6 +102,20 @@ class MockPlatform extends PlatformBase {
 
     createPost(message) {
         if (this.isCreatePostSupported)
+            return Promise.resolve()
+        else
+            return Promise.reject()
+    }
+
+    addToHomeScreen() {
+        if (this.isAddToHomeScreenSupported)
+            return Promise.resolve()
+        else
+            return Promise.reject()
+    }
+
+    addToFavorites() {
+        if (this.isAddToFavoritesSupported)
             return Promise.resolve()
         else
             return Promise.reject()

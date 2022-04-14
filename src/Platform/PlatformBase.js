@@ -75,6 +75,14 @@ class PlatformBase {
         return false
     }
 
+    get isAddToHomeScreenSupported() {
+        return false
+    }
+
+    get isAddToFavoritesSupported() {
+        return false
+    }
+
 
     LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
 
@@ -100,6 +108,8 @@ class PlatformBase {
     _inviteFriendsPromiseDecorator = null
     _joinCommunityPromiseDecorator = null
     _createPostPromiseDecorator = null
+    _addToHomeScreenPromiseDecorator = null
+    _addToFavoritesPromiseDecorator = null
 
 
     constructor(options) {
@@ -184,6 +194,14 @@ class PlatformBase {
     }
 
     createPost(message) {
+        return Promise.reject()
+    }
+
+    addToHomeScreen() {
+        return Promise.reject()
+    }
+
+    addToFavorites() {
         return Promise.reject()
     }
 

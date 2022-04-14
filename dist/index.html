@@ -41,6 +41,10 @@
             <label for="options-mock-simulate-join-community-input">Simulate Join Community</label>
             <input type="checkbox" id="options-mock-simulate-create-post-input" />
             <label for="options-mock-simulate-create-post-input">Simulate Create Post</label>
+            <input type="checkbox" id="options-mock-simulate-add-to-home-screen-input" />
+            <label for="options-mock-simulate-add-to-home-screen-input">Simulate Add To Home Screen</label>
+            <input type="checkbox" id="options-mock-simulate-add-to-favorites-input" />
+            <label for="options-mock-simulate-add-to-favorites-input">Simulate Add To Favorites</label>
             <br>
             <br>
             <input type="checkbox" id="options-mock-simulate-interstitial-input" />
@@ -94,11 +98,15 @@
             <h2>Social</h2>
             <p>Is Share Supported: <span id="social-is-share-supported-text"></span></p>
             <p>Is Invite Friends Supported: <span id="social-is-invite-friends-supported-text"></span></p>
-            <p>Is Join Community: <span id="social-is-join-community-supported-text"></span></p>
-            <p>Is Create Post: <span id="social-is-create-post-supported-text"></span></p>
+            <p>Is Join Community Supported: <span id="social-is-join-community-supported-text"></span></p>
+            <p>Is Create Post Supported: <span id="social-is-create-post-supported-text"></span></p>
+            <p>Is Add To Home Screen Supported: <span id="social-is-add-to-home-screen-supported-text"></span></p>
+            <p>Is Add To Favorites Supported: <span id="social-is-add-to-favorites-supported-text"></span></p>
             <button id="social-share-button">Share</button>
             <button id="social-invite-friends-button">Invite Friends</button>
             <button id="social-join-community-button">Join Community</button>
+            <button id="social-add-to-home-screen-button">Add To Home Screen</button>
+            <button id="social-add-to-favorites-button">Add To Favorites</button>
             <br>
             <br>
             <input type="text" id="social-create-post-input" placeholder="Message" />
@@ -118,6 +126,8 @@
         const optionsMockSimulateInviteFriendsInput = document.getElementById('options-mock-simulate-invite-friends-input')
         const optionsMockSimulateJoinCommunityInput = document.getElementById('options-mock-simulate-join-community-input')
         const optionsMockSimulateCreatePostInput = document.getElementById('options-mock-simulate-create-post-input')
+        const optionsMockSimulateAddToHomeScreenInput = document.getElementById('options-mock-simulate-add-to-home-screen-input')
+        const optionsMockSimulateAddToFavoritesInput = document.getElementById('options-mock-simulate-add-to-favorites-input')
         const optionsMockSimulateInterstitialInput = document.getElementById('options-mock-simulate-interstitial-input')
         const optionsMockSimulateRewardedInput = document.getElementById('options-mock-simulate-rewarded-input')
         const optionsYandexAuthorizationScopesInput = document.getElementById('options-yandex-authorization-scopes-input')
@@ -158,11 +168,15 @@
         const socialIsInviteFriendsSupportedText = document.getElementById('social-is-invite-friends-supported-text')
         const socialIsJoinCommunitySupportedText = document.getElementById('social-is-join-community-supported-text')
         const socialIsCreatePostSupportedText = document.getElementById('social-is-create-post-supported-text')
-        const socialCreatePostInput = document.getElementById('social-create-post-input')
+        const socialIsAddToHomeScreenSupportedText = document.getElementById('social-is-add-to-home-screen-supported-text')
+        const socialIsAddToFavoritesSupportedText = document.getElementById('social-is-add-to-favorites-supported-text')
         const socialShareButton = document.getElementById('social-share-button')
         const socialInviteFriendsButton = document.getElementById('social-invite-friends-button')
         const socialJoinCommunityButton = document.getElementById('social-join-community-button')
+        const socialCreatePostInput = document.getElementById('social-create-post-input')
         const socialCreatePostButton = document.getElementById('social-create-post-button')
+        const socialAddToHomeScreenButton = document.getElementById('social-add-to-home-screen-button')
+        const socialAddToFavoritesButton = document.getElementById('social-add-to-favorites-button')
 
         initializeButton.addEventListener('click', () => {
             if (instantGamesBridge.isInitialized)
@@ -184,6 +198,8 @@
                             simulateInviteFriends: optionsMockSimulateInviteFriendsInput.checked,
                             simulateJoinCommunity: optionsMockSimulateJoinCommunityInput.checked,
                             simulateCreatePost: optionsMockSimulateCreatePostInput.checked,
+                            simulateAddToHomeScreen: optionsMockSimulateAddToHomeScreenInput.checked,
+                            simulateAddToFavorites: optionsMockSimulateAddToFavoritesInput.checked
                         },
                         advertisement: {
                             simulateInterstitial: optionsMockSimulateInterstitialInput.checked,
@@ -201,6 +217,8 @@
                     optionsMockSimulateShareInput.disabled = 'disabled'
                     optionsMockSimulateInviteFriendsInput.disabled = 'disabled'
                     optionsMockSimulateJoinCommunityInput.disabled = 'disabled'
+                    optionsMockSimulateAddToHomeScreenInput.disabled = 'disabled'
+                    optionsMockSimulateAddToFavoritesInput.disabled = 'disabled'
                     optionsMockSimulateInterstitialInput.disabled = 'disabled'
                     optionsMockSimulateRewardedInput.disabled = 'disabled'
                     optionsYandexAuthorizationScopesInput.disabled = 'disabled'
@@ -223,6 +241,8 @@
                     socialIsInviteFriendsSupportedText.innerText = instantGamesBridge.social.isInviteFriendsSupported
                     socialIsJoinCommunitySupportedText.innerText = instantGamesBridge.social.isJoinCommunitySupported
                     socialIsCreatePostSupportedText.innerText = instantGamesBridge.social.isCreatePostSupported
+                    socialIsAddToHomeScreenSupportedText.innerText = instantGamesBridge.social.isAddToHomeScreenSupported
+                    socialIsAddToFavoritesSupportedText.innerText = instantGamesBridge.social.isAddToFavoritesSupported
 
                     advertisementMinimumDelayBetweenInterstitialInput.value = instantGamesBridge.advertisement.minimumDelayBetweenInterstitial
 
@@ -330,6 +350,14 @@
 
         socialCreatePostButton.addEventListener('click', () => {
             instantGamesBridge.social.createPost(socialCreatePostInput.value)
+        })
+
+        socialAddToHomeScreenButton.addEventListener('click', () => {
+            instantGamesBridge.social.addToHomeScreen()
+        })
+
+        socialAddToFavoritesButton.addEventListener('click', () => {
+            instantGamesBridge.social.addToFavorites()
         })
     </script>
 </body>

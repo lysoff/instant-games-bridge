@@ -26,6 +26,13 @@ class YandexPlatform extends PlatformBase {
     }
 
 
+    // social
+    get isAddToHomeScreenSupported() {
+        return this.#isAddToHomeScreenSupported
+    }
+
+
+    #isAddToHomeScreenSupported = false
     #yandexPlayer = null
 
 
@@ -44,13 +51,19 @@ class YandexPlatform extends PlatformBase {
                             this._sdk = sdk
 
                             let getPlayerPromise = this.#getPlayer()
+
                             let getSafeStoragePromise = this._sdk.getStorage()
                                 .then(safeStorage => {
                                     this._localStorage = safeStorage
                                 })
 
+                            let checkAddToHomeScreenSupported = this._sdk.shortcut.canShowPrompt()
+                                .then(prompt => {
+                                    this.#isAddToHomeScreenSupported = prompt.canShow
+                                })
+
                             Promise
-                                .all([getPlayerPromise, getSafeStoragePromise])
+                                .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupported])
                                 .finally(() => {
                                     this._isInitialized = true
 
@@ -223,6 +236,42 @@ class YandexPlatform extends PlatformBase {
         }
 
         return this._showRewardedPromiseDecorator.promise
+    }
+
+
+    // social
+    addToHomeScreen() {
+        if (!this.isAddToHomeScreenSupported)
+            return Promise.reject()
+
+        if (!this._addToHomeScreenPromiseDecorator) {
+            this._addToHomeScreenPromiseDecorator = new PromiseDecorator()
+
+            this._sdk.shortcut.showPrompt()
+                .then(result => {
+                    if (result.outcome === 'accepted') {
+                        if (this._addToHomeScreenPromiseDecorator) {
+                            this._addToHomeScreenPromiseDecorator.resolve()
+                            this._addToHomeScreenPromiseDecorator = null
+                        }
+
+                        return
+                    }
+
+                    if (this._addToHomeScreenPromiseDecorator) {
+                        this._addToHomeScreenPromiseDecorator.reject()
+                        this._addToHomeScreenPromiseDecorator = null
+                    }
+                })
+                .catch(error => {
+                    if (this._addToHomeScreenPromiseDecorator) {
+                        this._addToHomeScreenPromiseDecorator.reject(error)
+                        this._addToHomeScreenPromiseDecorator = null
+                    }
+                })
+        }
+
+        return this._addToHomeScreenPromiseDecorator.promise
     }
 
 

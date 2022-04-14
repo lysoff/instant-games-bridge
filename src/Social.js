@@ -16,6 +16,14 @@ class Social {
         return this.#platformProvider.isCreatePostSupported
     }
 
+    get isAddToHomeScreenSupported() {
+        return this.#platformProvider.isAddToHomeScreenSupported
+    }
+
+    get isAddToFavoritesSupported() {
+        return this.#platformProvider.isAddToFavoritesSupported
+    }
+
     #platformProvider
 
     constructor(platformProvider) {
@@ -36,6 +44,14 @@ class Social {
 
     createPost(message) {
         return this.#platformProvider.createPost(message)
+    }
+
+    addToHomeScreen() {
+        return this.#platformProvider.addToHomeScreen()
+    }
+
+    addToFavorites() {
+        return this.#platformProvider.addToFavorites()
     }
 
 }
