@@ -71,6 +71,10 @@ class PlatformBase {
         return false
     }
 
+    get isCreatePostSupported() {
+        return false
+    }
+
 
     LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
 
@@ -95,6 +99,7 @@ class PlatformBase {
     _sharePromiseDecorator = null
     _inviteFriendsPromiseDecorator = null
     _joinCommunityPromiseDecorator = null
+    _createPostPromiseDecorator = null
 
 
     constructor(options) {
@@ -175,6 +180,10 @@ class PlatformBase {
     }
 
     share() {
+        return Promise.reject()
+    }
+
+    createPost(message) {
         return Promise.reject()
     }
 

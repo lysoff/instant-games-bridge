@@ -62,6 +62,10 @@ class VkPlatform extends PlatformBase {
         return true
     }
 
+    get isCreatePostSupported() {
+        return true
+    }
+
 
     initialize() {
         if (this._isInitialized)
@@ -365,6 +369,42 @@ class VkPlatform extends PlatformBase {
         }
 
         return this._sharePromiseDecorator.promise
+    }
+
+    createPost(message) {
+        if (!this._createPostPromiseDecorator) {
+            this._createPostPromiseDecorator = new PromiseDecorator()
+
+            this._sdk
+                .send('VKWebAppShowWallPostBox', { message })
+                .then(data => {
+                    if (data && data['post_id']) {
+                        if (this._createPostPromiseDecorator) {
+                            this._createPostPromiseDecorator.resolve()
+                            this._createPostPromiseDecorator = null
+                        }
+
+                        return
+                    }
+
+                    if (this._createPostPromiseDecorator) {
+                        this._createPostPromiseDecorator.reject()
+                        this._createPostPromiseDecorator = null
+                    }
+                })
+                .catch(error => {
+                    if (this._createPostPromiseDecorator) {
+                        if (error && error.error_data && error.error_data.error_reason)
+                            this._createPostPromiseDecorator.reject(error.error_data.error_reason)
+                        else
+                            this._createPostPromiseDecorator.reject()
+
+                        this._createPostPromiseDecorator = null
+                    }
+                })
+        }
+
+        return this._createPostPromiseDecorator.promise
     }
 
 }

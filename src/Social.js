@@ -12,6 +12,10 @@ class Social {
         return this.#platformProvider.isShareSupported
     }
 
+    get isCreatePostSupported() {
+        return this.#platformProvider.isCreatePostSupported
+    }
+
     #platformProvider
 
     constructor(platformProvider) {
@@ -28,6 +32,10 @@ class Social {
 
     share() {
         return this.#platformProvider.share()
+    }
+
+    createPost(message) {
+        return this.#platformProvider.createPost(message)
     }
 
 }

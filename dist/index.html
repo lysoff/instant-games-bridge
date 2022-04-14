@@ -93,9 +93,14 @@
             <p>Is Share Supported: <span id="social-is-share-supported-text"></span></p>
             <p>Is Invite Friends Supported: <span id="social-is-invite-friends-supported-text"></span></p>
             <p>Is Join Community: <span id="social-is-join-community-supported-text"></span></p>
+            <p>Is Create Post: <span id="social-is-create-post-supported-text"></span></p>
             <button id="social-share-button">Share</button>
             <button id="social-invite-friends-button">Invite Friends</button>
             <button id="social-join-community-button">Join Community</button>
+            <br>
+            <br>
+            <input type="text" id="social-create-post-input" placeholder="Message" />
+            <button id="social-create-post-button">Create Post</button>
         </div>
     </div>
 
@@ -149,9 +154,12 @@
         const socialIsShareSupportedText = document.getElementById('social-is-share-supported-text')
         const socialIsInviteFriendsSupportedText = document.getElementById('social-is-invite-friends-supported-text')
         const socialIsJoinCommunitySupportedText = document.getElementById('social-is-join-community-supported-text')
+        const socialIsCreatePostSupportedText = document.getElementById('social-is-create-post-supported-text')
+        const socialCreatePostInput = document.getElementById('social-create-post-input')
         const socialShareButton = document.getElementById('social-share-button')
         const socialInviteFriendsButton = document.getElementById('social-invite-friends-button')
         const socialJoinCommunityButton = document.getElementById('social-join-community-button')
+        const socialCreatePostButton = document.getElementById('social-create-post-button')
 
         initializeButton.addEventListener('click', () => {
             if (instantGamesBridge.isInitialized)
@@ -210,6 +218,7 @@
                     socialIsShareSupportedText.innerText = instantGamesBridge.social.isShareSupported
                     socialIsInviteFriendsSupportedText.innerText = instantGamesBridge.social.isInviteFriendsSupported
                     socialIsJoinCommunitySupportedText.innerText = instantGamesBridge.social.isJoinCommunitySupported
+                    socialIsCreatePostSupportedText.innerText = instantGamesBridge.social.isCreatePostSupported
 
                     advertisementMinimumDelayBetweenInterstitialInput.value = instantGamesBridge.advertisement.minimumDelayBetweenInterstitial
 
@@ -313,6 +322,10 @@
 
         socialJoinCommunityButton.addEventListener('click', () => {
             instantGamesBridge.social.joinCommunity()
+        })
+
+        socialCreatePostButton.addEventListener('click', () => {
+            instantGamesBridge.social.createPost(socialCreatePostInput.value)
         })
     </script>
 </body>
