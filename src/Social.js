@@ -4,8 +4,8 @@ class Social {
         return this.#platformProvider.isInviteFriendsSupported
     }
 
-    get isCommunitySupported() {
-        return this.#platformProvider.isCommunitySupported
+    get isJoinCommunitySupported() {
+        return this.#platformProvider.isJoinCommunitySupported
     }
 
     get isShareSupported() {

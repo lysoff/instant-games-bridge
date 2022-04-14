@@ -15,12 +15,12 @@ class PromiseDecorator {
         })
     }
 
-    resolve() {
-        this.#resolve()
+    resolve(data) {
+        this.#resolve(data)
     }
 
-    reject() {
-        this.#reject()
+    reject(error) {
+        this.#reject(error)
     }
 
 }

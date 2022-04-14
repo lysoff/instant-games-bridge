@@ -1,187 +1,127 @@
-import EventLite from 'event-lite'
 import PlatformBase from './PlatformBase'
 import PromiseDecorator from '../Common/PromiseDecorator'
 import { addJavaScript } from '../Common/utils'
-import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
+import { INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
 
 const YANDEX_SDK_URL = 'https://yandex.ru/games/sdk/v2'
-const LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
 
 class YandexPlatform extends PlatformBase {
 
+    // platform
     get id() {
         return 'yandex'
     }
 
-    get sdk() {
-        return this.#sdk
-    }
-
     get language() {
-        if (this.#sdk)
-            return this.#sdk.environment.i18n.lang
+        if (this._sdk)
+            return this._sdk.environment.i18n.lang
 
         return super.language
     }
 
-    get interstitialState() {
-        return this.#interstitialState
+
+    // player
+    get isPlayerAuthorizationSupported() {
+        return true
     }
 
-    get rewardedState() {
-        return this.#rewardedState
-    }
 
-    #sdk
-    #isInitialized
-    #initializationPromiseDecorator
-
-    #interstitialState
-    #rewardedState
-    #showInterstitialPromiseDecorator
-    #showRewardedPromiseDecorator
-
-    #player
-    #safeStorage
-    #gameData
+    #yandexPlayer = null
 
 
     initialize() {
-        if (this.#isInitialized)
+        if (this._isInitialized)
             return Promise.resolve()
 
-        if (!this.#initializationPromiseDecorator) {
-            this.#initializationPromiseDecorator = new PromiseDecorator()
-            addJavaScript(YANDEX_SDK_URL).then(() => {
-                window.YaGames
-                    .init()
-                    .then(sdk => {
-                        this.#sdk = sdk
+        if (!this._initializationPromiseDecorator) {
+            this._initializationPromiseDecorator = new PromiseDecorator()
 
-                        this.#sdk.getPlayer({ scopes: false })
-                            .then(player => {
-                                this.#player = player
+            addJavaScript(YANDEX_SDK_URL)
+                .then(() => {
+                    window.YaGames
+                        .init()
+                        .then(sdk => {
+                            this._sdk = sdk
 
-                                this.#isInitialized = true
+                            let getPlayerPromise = this.#getPlayer()
+                            let getSafeStoragePromise = this._sdk.getStorage()
+                                .then(safeStorage => {
+                                    this._localStorage = safeStorage
+                                })
 
-                                if (this.#initializationPromiseDecorator) {
-                                    this.#initializationPromiseDecorator.resolve()
-                                    this.#initializationPromiseDecorator = null
-                                }
-                            })
-                            .catch(error => {
-                                this.#sdk.getStorage()
-                                    .then(safeStorage => {
-                                        this.#safeStorage = safeStorage
+                            Promise
+                                .all([getPlayerPromise, getSafeStoragePromise])
+                                .finally(() => {
+                                    this._isInitialized = true
 
-                                        this.#isInitialized = true
-
-                                        if (this.#initializationPromiseDecorator) {
-                                            this.#initializationPromiseDecorator.resolve()
-                                            this.#initializationPromiseDecorator = null
-                                        }
-                                    })
-                            })
-                    })
-            })
+                                    if (this._initializationPromiseDecorator) {
+                                        this._initializationPromiseDecorator.resolve()
+                                        this._initializationPromiseDecorator = null
+                                    }
+                                })
+                        })
+                })
         }
 
-        return this.#initializationPromiseDecorator.promise
+        return this._initializationPromiseDecorator.promise
     }
 
 
-    showInterstitial() {
-        if (this.#interstitialState === INTERSTITIAL_STATE.OPENED)
-            return Promise.reject()
+    // player
+    authorizePlayer() {
+        if (this._authorizationPromiseDecorator == null) {
+            this._authorizationPromiseDecorator = new PromiseDecorator()
 
-        if (!this.#showInterstitialPromiseDecorator) {
-            this.#showInterstitialPromiseDecorator = new PromiseDecorator()
-            this.#sdk.adv.showFullscreenAdv({
-                callbacks: {
-                    onOpen: () => {
-                        if (this.#showInterstitialPromiseDecorator) {
-                            this.#showInterstitialPromiseDecorator.resolve()
-                            this.#showInterstitialPromiseDecorator = null
-                        }
-
-                        this.#setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                    },
-                    onClose: wasShown => {
-                        if (wasShown) {
-                            this.#setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                        } else {
-                            if (this.#showInterstitialPromiseDecorator) {
-                                this.#showInterstitialPromiseDecorator.reject()
-                                this.#showInterstitialPromiseDecorator = null
+            if (this._isPlayerAuthorized) {
+                this.#getPlayer().then(() => {
+                    if (this._authorizationPromiseDecorator) {
+                        this._authorizationPromiseDecorator.resolve()
+                        this._authorizationPromiseDecorator = null
+                    }
+                })
+            } else {
+                this._sdk.auth.openAuthDialog()
+                    .then(() => {
+                        this.#getPlayer().then(() => {
+                            if (this._authorizationPromiseDecorator) {
+                                this._authorizationPromiseDecorator.resolve()
+                                this._authorizationPromiseDecorator = null
                             }
-
-                            this.#setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                        })
+                    })
+                    .catch(() => {
+                        if (this._authorizationPromiseDecorator) {
+                            this._authorizationPromiseDecorator.reject()
+                            this._authorizationPromiseDecorator = null
                         }
-                    }
-                }
-            })
+                    })
+            }
         }
 
-        return this.#showInterstitialPromiseDecorator.promise
-    }
-
-    showRewarded() {
-        if (this.#rewardedState === REWARDED_STATE.OPENED || this.#rewardedState === REWARDED_STATE.REWARDED)
-            return Promise.reject()
-
-        if (!this.#showRewardedPromiseDecorator) {
-            this.#showRewardedPromiseDecorator = new PromiseDecorator()
-            this.#sdk.adv.showRewardedVideo({
-                callbacks: {
-                    onOpen: () => {
-                        if (this.#showRewardedPromiseDecorator) {
-                            this.#showRewardedPromiseDecorator.resolve()
-                            this.#showRewardedPromiseDecorator = null
-                        }
-
-                        this.#setRewardedState(REWARDED_STATE.OPENED)
-                    },
-                    onRewarded:  () => {
-                        this.#setRewardedState(REWARDED_STATE.REWARDED)
-                    },
-                    onClose: () => {
-                        this.#setRewardedState(REWARDED_STATE.CLOSED)
-                    },
-                    onError: error => {
-                        if (this.#showRewardedPromiseDecorator) {
-                            this.#showRewardedPromiseDecorator.reject(error)
-                            this.#showRewardedPromiseDecorator = null
-                        }
-
-                        this.#setRewardedState(REWARDED_STATE.FAILED)
-                    }
-                }
-            })
-        }
-
-        return this.#showRewardedPromiseDecorator.promise
+        return this._authorizationPromiseDecorator.promise
     }
 
 
+    // game
     getGameData(key) {
         return new Promise(resolve => {
-            if (this.#gameData) {
-                if (typeof this.#gameData[key] === 'undefined')
+            if (this._gameData) {
+                if (typeof this._gameData[key] === 'undefined')
                     resolve(null)
                 else
-                    resolve(this.#gameData[key])
+                    resolve(this._gameData[key])
 
                 return
             }
 
-            if (this.#player) {
-                this.#player.getData()
+            if (this.#yandexPlayer) {
+                this.#yandexPlayer.getData()
                     .then(loadedData => {
-                        this.#gameData = loadedData
-                        if (typeof this.#gameData[key] === 'undefined')
+                        this._gameData = loadedData
+                        if (typeof this._gameData[key] === 'undefined')
                             resolve(null)
                         else
-                            resolve(this.#gameData[key])
+                            resolve(this._gameData[key])
                     })
                     .catch(() => {
                         resolve(null)
@@ -190,81 +130,158 @@ class YandexPlatform extends PlatformBase {
                 return
             }
 
-            if (this.#safeStorage) {
-                let json = this.#safeStorage.getItem(LOCAL_STORAGE_GAME_DATA_KEY)
-                if (json)
-                    this.#gameData = JSON.parse(json)
-            } else {
-                try {
-                    let json = localStorage.getItem(LOCAL_STORAGE_GAME_DATA_KEY)
-                    if (json)
-                        this.#gameData = JSON.parse(json)
-                }
-                catch (e) { }
-            }
-
-            if (typeof this.#gameData[key] === 'undefined')
-                resolve(null)
-            else
-                resolve(this.#gameData[key])
+            return super.getGameData(key)
         })
     }
 
     setGameData(key, value) {
-        if (!this.#gameData)
-            this.#gameData = { }
+        if (!this._gameData)
+            this._gameData = { }
 
-        this.#gameData[key] = value
+        this._gameData[key] = value
         return this.#saveGameData()
     }
 
     deleteGameData(key) {
-        if (this.#gameData)
-            delete this.#gameData[key]
+        if (this._gameData) {
+            delete this._gameData[key]
+            return this.#saveGameData()
+        }
 
-        return this.#saveGameData()
+        return Promise.resolve()
     }
 
 
-    #setInterstitialState(state) {
-        if (this.#interstitialState === state)
-            return
+    // advertisement
+    showInterstitial() {
+        if (!this._canShowAdvertisement())
+            return Promise.reject()
 
-        this.#interstitialState = state
-        this.emit(ADVERTISEMENT_EVENT_NAME.INTERSTITIAL_STATE_CHANGED, this.#interstitialState)
+        if (!this._showInterstitialPromiseDecorator) {
+            this._showInterstitialPromiseDecorator = new PromiseDecorator()
+            this._sdk.adv.showFullscreenAdv({
+                callbacks: {
+                    onOpen: () => {
+                        if (this._showInterstitialPromiseDecorator) {
+                            this._showInterstitialPromiseDecorator.resolve()
+                            this._showInterstitialPromiseDecorator = null
+                        }
+
+                        this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                    },
+                    onClose: wasShown => {
+                        if (wasShown) {
+                            this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                        } else {
+                            if (this._showInterstitialPromiseDecorator) {
+                                this._showInterstitialPromiseDecorator.reject()
+                                this._showInterstitialPromiseDecorator = null
+                            }
+
+                            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                        }
+                    }
+                }
+            })
+        }
+
+        return this._showInterstitialPromiseDecorator.promise
     }
 
-    #setRewardedState(state) {
-        if (this.#rewardedState === state)
-            return
+    showRewarded() {
+        if (!this._canShowAdvertisement())
+            return Promise.reject()
 
-        this.#rewardedState = state
-        this.emit(ADVERTISEMENT_EVENT_NAME.REWARDED_STATE_CHANGED, this.#rewardedState)
+        if (!this._showRewardedPromiseDecorator) {
+            this._showRewardedPromiseDecorator = new PromiseDecorator()
+            this._sdk.adv.showRewardedVideo({
+                callbacks: {
+                    onOpen: () => {
+                        if (this._showRewardedPromiseDecorator) {
+                            this._showRewardedPromiseDecorator.resolve()
+                            this._showRewardedPromiseDecorator = null
+                        }
+
+                        this._setRewardedState(REWARDED_STATE.OPENED)
+                    },
+                    onRewarded:  () => {
+                        this._setRewardedState(REWARDED_STATE.REWARDED)
+                    },
+                    onClose: () => {
+                        this._setRewardedState(REWARDED_STATE.CLOSED)
+                    },
+                    onError: error => {
+                        if (this._showRewardedPromiseDecorator) {
+                            this._showRewardedPromiseDecorator.reject(error)
+                            this._showRewardedPromiseDecorator = null
+                        }
+
+                        this._setRewardedState(REWARDED_STATE.FAILED)
+                    }
+                }
+            })
+        }
+
+        return this._showRewardedPromiseDecorator.promise
+    }
+
+
+    #getPlayer() {
+        let scopes = false
+
+        if (this._options && this._options.authorization && this._options.authorization.scopes)
+            scopes = this._options.authorization.scopes
+
+        return new Promise(resolve => {
+            this._sdk.getPlayer({ scopes })
+                .then(player => {
+                    this._playerId = player.getUniqueID()
+                    this._isPlayerAuthorized = player.getMode() !== 'lite'
+
+                    let name = player.getName()
+                    if (name !== '')
+                        this._playerName = name
+
+                    this._playerPhotos = []
+                    let photoSmall = player.getPhoto('small')
+                    let photoMedium = player.getPhoto('medium')
+                    let photoLarge = player.getPhoto('large')
+
+                    if (photoSmall)
+                        this._playerPhotos.push(photoSmall)
+
+                    if (photoMedium)
+                        this._playerPhotos.push(photoMedium)
+
+                    if (photoLarge)
+                        this._playerPhotos.push(photoLarge)
+
+                    this.#yandexPlayer = player
+                })
+                .finally(() => {
+                    resolve()
+                })
+        })
     }
 
     #saveGameData() {
         return new Promise((resolve, reject) => {
-            if (this.#player) {
-                this.#player.setData(this.#gameData)
+            if (this.#yandexPlayer) {
+                this.#yandexPlayer.setData(this._gameData)
                     .then(() => {
                         resolve()
                     })
                     .catch(error => {
                         reject(error)
                     })
-            } else if (this.#safeStorage) {
-                this.#safeStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
-                resolve()
-            } else {
-                try {
-                    localStorage.setItem(LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this.#gameData))
-                }
-                catch (e) { }
-                resolve()
+
+                return
             }
+
+            return super._saveGameDataToLocalStorage()
         })
     }
+
 }
 
-EventLite.mixin(YandexPlatform.prototype)
 export default YandexPlatform

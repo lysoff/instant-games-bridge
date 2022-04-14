@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <style>
+        html, body {
+            background: #fff;
+        }
+
+        .container {
+            margin: auto;
+            max-width: 768px;
+        }
+
+        .section {
+            border: 2px solid #cecece;
+            padding:  0px 20px 20px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section">
+            <h2>Options</h2>
+            <h3>VK</h3>
+            <input type="text" id="options-vk-group-id-input" placeholder="Group ID" />
+
+            <h3>YANDEX</h3>
+            <input type="checkbox" id="options-yandex-authorization-scopes-input" />
+            <label for="options-yandex-authorization-scopes-input">Authorization Scopes</label>
+
+            <h3>MOCK</h3>
+            <input type="checkbox" id="options-mock-simulate-share-input" />
+            <label for="options-mock-simulate-share-input">Simulate Share</label>
+            <input type="checkbox" id="options-mock-simulate-invite-friends-input" />
+            <label for="options-mock-simulate-invite-friends-input">Simulate Invite Friends</label>
+            <input type="checkbox" id="options-mock-simulate-join-community-input" />
+            <label for="options-mock-simulate-join-community-input">Simulate Join Community</label>
+            <br>
+            <br>
+            <input type="checkbox" id="options-mock-simulate-interstitial-input" />
+            <label for="options-mock-simulate-interstitial-input">Simulate Interstitial</label>
+            <input type="checkbox" id="options-mock-simulate-rewarded-input" />
+            <label for="options-mock-simulate-rewarded-input">Simulate Rewarded</label>
+        </div>
+
+        <div class="section">
+            <h2>Common</h2>
+            <p>Is Initialized: <span id="is-initialized-text">false</span></p>
+            <p>Platform ID: <span id="platform-id-text"></span></p>
+            <p>Language: <span id="platform-language-text"></span></p>
+            <p>Payload: <span id="platform-payload-text"></span></p>
+            <button id="initialize-button">Initialize</button>
+        </div>
+
+        <div class="section" id="player-section">
+            <h2>Player</h2>
+            <p>Is Authorization Supported: <span id="is-player-authorization-supported-text"></span></p>
+            <p>Is Authorized: <span id="is-player-authorized-text"></span></p>
+            <p>ID: <span id="player-id-text"></span></p>
+            <p>Name: <span id="player-name-text"></span></p>
+            <p>Photos: <span id="player-photos-text"></span></p>
+            <button id="authorize-player-button">Authorize</button>
+        </div>
+
+        <div class="section" id="game-section">
+            <h2>Game</h2>
+            <input type="text" id="game-data-coins-input" placeholder="Coins" />
+            <input type="text" id="game-data-level-input" placeholder="Level" />
+            <br>
+            <br>
+            <button id="get-game-data-button">Get Data</button>
+            <button id="set-game-data-button">Set Data</button>
+            <button id="delete-game-data-button">Delete Data</button>
+        </div>
+
+        <div class="section" id="advertisement-section">
+            <h2>Advertisement</h2>
+            <input type="text" id="advertisement-minimum-delay-between-interstitial-input" placeholder="Minimum Delay Between Interstitial" />
+            <button id="advertisement-set-minimum-delay-between-interstitial-button">Set Minimum Delay Between Interstitial</button>
+            <p>Interstitial State: <span id="advertisement-interstitial-state-text"></span></p>
+            <p>Rewarded State: <span id="advertisement-rewarded-state-text"></span></p>
+            <button id="advertisement-show-interstitial-button">Show Interstitial</button>
+            <button id="advertisement-show-interstitial-ignore-delay-button">Show Interstitial (ignore delay)</button>
+            <button id="advertisement-show-rewarded-button">Show Rewarded</button>
+        </div>
+
+        <div class="section" id="social-section">
+            <h2>Social</h2>
+            <p>Is Share Supported: <span id="social-is-share-supported-text"></span></p>
+            <p>Is Invite Friends Supported: <span id="social-is-invite-friends-supported-text"></span></p>
+            <p>Is Join Community: <span id="social-is-join-community-supported-text"></span></p>
+            <button id="social-share-button">Share</button>
+            <button id="social-invite-friends-button">Invite Friends</button>
+            <button id="social-join-community-button">Join Community</button>
+        </div>
+    </div>
+
+    <script src="./instant-games-bridge.js"></script>
+    <script>
+        const playerSection = document.getElementById('player-section')
+        const gameSection = document.getElementById('game-section')
+        const advertisementSection = document.getElementById('advertisement-section')
+        const socialSection = document.getElementById('social-section')
+
+        const optionsVkGroupIdInput = document.getElementById('options-vk-group-id-input')
+        const optionsMockSimulateShareInput = document.getElementById('options-mock-simulate-share-input')
+        const optionsMockSimulateInviteFriendsInput = document.getElementById('options-mock-simulate-invite-friends-input')
+        const optionsMockSimulateJoinCommunityInput = document.getElementById('options-mock-simulate-join-community-input')
+        const optionsMockSimulateInterstitialInput = document.getElementById('options-mock-simulate-interstitial-input')
+        const optionsMockSimulateRewardedInput = document.getElementById('options-mock-simulate-rewarded-input')
+        const optionsYandexAuthorizationScopesInput = document.getElementById('options-yandex-authorization-scopes-input')
+
+        playerSection.style.display = 'none'
+        gameSection.style.display = 'none'
+        advertisementSection.style.display = 'none'
+        socialSection.style.display = 'none'
+
+        const isInitializedText = document.getElementById('is-initialized-text')
+        const platformIdText = document.getElementById('platform-id-text')
+        const platformLanguageText = document.getElementById('platform-language-text')
+        const platformPayloadText = document.getElementById('platform-payload-text')
+        const initializeButton = document.getElementById('initialize-button')
+
+        const isPlayerAuthorizationSupportedText = document.getElementById('is-player-authorization-supported-text')
+        const isPlayerAuthorizedText = document.getElementById('is-player-authorized-text')
+        const playerIdText = document.getElementById('player-id-text')
+        const playerNameText = document.getElementById('player-name-text')
+        const playerPhotosText = document.getElementById('player-photos-text')
+        const authorizePlayerButton = document.getElementById('authorize-player-button')
+
+        const gameDataCoinsInput = document.getElementById('game-data-coins-input')
+        const gameDataLevelInput = document.getElementById('game-data-level-input')
+        const getGameDataButton = document.getElementById('get-game-data-button')
+        const setGameDataButton = document.getElementById('set-game-data-button')
+        const deleteGameDataButton = document.getElementById('delete-game-data-button')
+
+        const advertisementMinimumDelayBetweenInterstitialInput = document.getElementById('advertisement-minimum-delay-between-interstitial-input')
+        const advertisementSetMinimumDelayBetweenInterstitialButton = document.getElementById('advertisement-set-minimum-delay-between-interstitial-button')
+        const advertisementInterstitialStateText = document.getElementById('advertisement-interstitial-state-text')
+        const advertisementRewardedStateText = document.getElementById('advertisement-rewarded-state-text')
+        const advertisementShowInterstitialButton = document.getElementById('advertisement-show-interstitial-button')
+        const advertisementShowInterstitialIgnoreDelayButton = document.getElementById('advertisement-show-interstitial-ignore-delay-button')
+        const advertisementShowRewardedButton = document.getElementById('advertisement-show-rewarded-button')
+
+        const socialIsShareSupportedText = document.getElementById('social-is-share-supported-text')
+        const socialIsInviteFriendsSupportedText = document.getElementById('social-is-invite-friends-supported-text')
+        const socialIsJoinCommunitySupportedText = document.getElementById('social-is-join-community-supported-text')
+        const socialShareButton = document.getElementById('social-share-button')
+        const socialInviteFriendsButton = document.getElementById('social-invite-friends-button')
+        const socialJoinCommunityButton = document.getElementById('social-join-community-button')
+
+        initializeButton.addEventListener('click', () => {
+            if (instantGamesBridge.isInitialized)
+                return
+
+            const bridgeOptions = {
+                platforms: {
+                    vk: {
+                        groupId: optionsVkGroupIdInput.value
+                    },
+                    yandex: {
+                        authorization: {
+                            scopes: optionsYandexAuthorizationScopesInput.checked
+                        }
+                    },
+                    mock: {
+                        social: {
+                            simulateShare: optionsMockSimulateShareInput.checked,
+                            simulateInviteFriends: optionsMockSimulateInviteFriendsInput.checked,
+                            simulateJoinCommunity: optionsMockSimulateJoinCommunityInput.checked
+                        },
+                        advertisement: {
+                            simulateInterstitial: optionsMockSimulateInterstitialInput.checked,
+                            simulateRewarded: optionsMockSimulateRewardedInput.checked
+                        }
+                    }
+                }
+            }
+
+            instantGamesBridge
+                .initialize(bridgeOptions)
+                .then(() => {
+                    initializeButton.disabled = 'disabled'
+                    optionsVkGroupIdInput.disabled = 'disabled'
+                    optionsMockSimulateShareInput.disabled = 'disabled'
+                    optionsMockSimulateInviteFriendsInput.disabled = 'disabled'
+                    optionsMockSimulateJoinCommunityInput.disabled = 'disabled'
+                    optionsMockSimulateInterstitialInput.disabled = 'disabled'
+                    optionsMockSimulateRewardedInput.disabled = 'disabled'
+                    optionsYandexAuthorizationScopesInput.disabled = 'disabled'
+
+                    isInitializedText.innerText = 'true'
+                    platformIdText.innerText = instantGamesBridge.platform.id
+                    platformLanguageText.innerText = instantGamesBridge.platform.language
+                    platformPayloadText.innerText = instantGamesBridge.platform.payload
+
+                    isPlayerAuthorizationSupportedText.innerText = instantGamesBridge.player.isAuthorizationSupported
+                    isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
+
+                    if (instantGamesBridge.player.isAuthorized) {
+                        playerIdText.innerText = instantGamesBridge.player.id
+                        playerNameText.innerText = instantGamesBridge.player.name
+                        playerPhotosText.innerText = instantGamesBridge.player.photos
+                    }
+
+                    socialIsShareSupportedText.innerText = instantGamesBridge.social.isShareSupported
+                    socialIsInviteFriendsSupportedText.innerText = instantGamesBridge.social.isInviteFriendsSupported
+                    socialIsJoinCommunitySupportedText.innerText = instantGamesBridge.social.isJoinCommunitySupported
+
+                    advertisementMinimumDelayBetweenInterstitialInput.value = instantGamesBridge.advertisement.minimumDelayBetweenInterstitial
+
+                    instantGamesBridge.advertisement.on('interstitial_state_changed', state => {
+                        advertisementInterstitialStateText.innerText = state
+                    })
+
+                    instantGamesBridge.advertisement.on('rewarded_state_changed', state => {
+                        advertisementRewardedStateText.innerText = state
+                    })
+
+                    playerSection.style.display = 'block'
+                    gameSection.style.display = 'block'
+                    advertisementSection.style.display = 'block'
+                    socialSection.style.display = 'block'
+                })
+        })
+
+        authorizePlayerButton.addEventListener('click', () => {
+            instantGamesBridge
+                .player
+                .authorize()
+                .then(() => {
+                    isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
+                    playerIdText.innerText = instantGamesBridge.player.id
+                    playerNameText.innerText = instantGamesBridge.player.name
+                    playerPhotosText.innerText = instantGamesBridge.player.photos
+                })
+                .catch(() => {
+
+                })
+        })
+
+        authorizePlayerButton.addEventListener('click', () => {
+            instantGamesBridge
+                .player
+                .authorize()
+                .then(() => {
+                    isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
+                    playerIdText.innerText = instantGamesBridge.player.id
+                    playerNameText.innerText = instantGamesBridge.player.name
+                    playerPhotosText.innerText = instantGamesBridge.player.photos
+                })
+                .catch(() => {
+
+                })
+        })
+
+        getGameDataButton.addEventListener('click', () => {
+            instantGamesBridge
+                .game
+                .getData('player_progress')
+                .then(playerProgress => {
+                    if (playerProgress) {
+                        gameDataCoinsInput.value = playerProgress.coins
+                        gameDataLevelInput.value = playerProgress.level
+                    }
+                })
+        })
+
+        setGameDataButton.addEventListener('click', () => {
+            instantGamesBridge
+                .game
+                .setData('player_progress', { coins: gameDataCoinsInput.value, level: gameDataLevelInput.value })
+        })
+
+        deleteGameDataButton.addEventListener('click', () => {
+            instantGamesBridge
+                .game
+                .deleteData('player_progress')
+            .then(() => {
+                gameDataCoinsInput.value = ''
+                gameDataLevelInput.value = ''
+            })
+        })
+
+        advertisementSetMinimumDelayBetweenInterstitialButton.addEventListener('click', () => {
+            instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(advertisementMinimumDelayBetweenInterstitialInput.value)
+            advertisementMinimumDelayBetweenInterstitialInput.value = instantGamesBridge.advertisement.minimumDelayBetweenInterstitial
+        })
+
+        advertisementShowInterstitialButton.addEventListener('click', () => {
+            instantGamesBridge.advertisement.showInterstitial()
+        })
+
+        advertisementShowInterstitialIgnoreDelayButton.addEventListener('click', () => {
+            instantGamesBridge.advertisement.showInterstitial({ ignoreDelay: true })
+        })
+
+        advertisementShowRewardedButton.addEventListener('click', () => {
+            instantGamesBridge.advertisement.showRewarded()
+        })
+
+        socialShareButton.addEventListener('click', () => {
+            instantGamesBridge.social.share()
+        })
+
+        socialInviteFriendsButton.addEventListener('click', () => {
+            instantGamesBridge.social.inviteFriends()
+        })
+
+        socialJoinCommunityButton.addEventListener('click', () => {
+            instantGamesBridge.social.joinCommunity()
+        })
+    </script>
+</body>
+</html>

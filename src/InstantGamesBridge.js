@@ -1,15 +1,16 @@
+import PromiseDecorator from './Common/PromiseDecorator'
 import MockPlatform from './Platform/MockPlatform'
 import VkPlatform from './Platform/VkPlatform'
 import YandexPlatform from './Platform/YandexPlatform'
-import Advertisement from './Advertisement'
+import Player from './Player'
 import Game from './Game'
+import Advertisement from './Advertisement'
 import Social from './Social'
-import PromiseDecorator from './Common/PromiseDecorator'
 
 class InstantGamesBridge {
 
     get version() {
-        return '1.2.1'
+        return '1.3.0'
     }
 
     get isInitialized() {
@@ -20,12 +21,16 @@ class InstantGamesBridge {
         return this.#platform
     }
 
-    get advertisement() {
-        return this.#advertisement
+    get player() {
+        return this.#player
     }
 
     get game() {
         return this.#game
+    }
+
+    get advertisement() {
+        return this.#advertisement
     }
 
     get social() {
@@ -36,8 +41,9 @@ class InstantGamesBridge {
     #initializationPromiseDecorator
 
     #platform
-    #advertisement
+    #player
     #game
+    #advertisement
     #social
 
     initialize(options) {
@@ -46,14 +52,16 @@ class InstantGamesBridge {
 
         if (!this.#initializationPromiseDecorator) {
             this.#initializationPromiseDecorator = new PromiseDecorator()
-            this.options = { ...options }
+            this._options = { ...options }
             this.#createPlatform()
             this.#platform
                 .initialize()
                 .then(() => {
-                    this.#advertisement = new Advertisement(this.#platform)
+                    this.#player = new Player(this.#platform)
                     this.#game = new Game(this.#platform)
+                    this.#advertisement = new Advertisement(this.#platform)
                     this.#social = new Social(this.#platform)
+
                     this.#isInitialized = true
                     console.log('%c InstantGamesBridge v.' + this.version + ' initialized. ', 'background: #01A5DA; color: white')
 
@@ -71,11 +79,11 @@ class InstantGamesBridge {
         let url = new URL(window.location.href)
         let yandexUrl = ['g', 'a', 'm', 'e', 's', '.', 's', '3', '.', 'y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
         if (url.hostname.includes(yandexUrl))
-            this.#platform = new YandexPlatform()
+            this.#platform = new YandexPlatform(this._options && this._options.platforms && this._options.platforms.yandex)
         else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key'))
-            this.#platform = new VkPlatform(this.options && this.options.platforms && this.options.platforms.vk)
+            this.#platform = new VkPlatform(this._options && this._options.platforms && this._options.platforms.vk)
         else
-            this.#platform = new MockPlatform(this.options && this.options.platforms && this.options.platforms.mock)
+            this.#platform = new MockPlatform(this._options && this._options.platforms && this._options.platforms.mock)
     }
 
 }

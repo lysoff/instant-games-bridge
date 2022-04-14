@@ -29,6 +29,10 @@ class Advertisement {
         return this.#platformProvider.rewardedState
     }
 
+    get minimumDelayBetweenInterstitial() {
+        return this.#minimumDelayBetweenInterstitial
+    }
+
     #platformProvider
     #interstitialTimer
     #minimumDelayBetweenInterstitial = 60
@@ -46,6 +50,12 @@ class Advertisement {
     }
 
     setMinimumDelayBetweenInterstitial(value) {
+        if (typeof value !== 'number') {
+            value = parseInt(value)
+            if (isNaN(value))
+                return
+        }
+
         this.#minimumDelayBetweenInterstitial = value
 
         if (this.#interstitialTimer) {

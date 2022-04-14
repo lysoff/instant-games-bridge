@@ -1,19 +1,15 @@
-import EventLite from 'event-lite'
 import PlatformBase from './PlatformBase'
 import PromiseDecorator from '../Common/PromiseDecorator'
 import { addJavaScript } from '../Common/utils'
-import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
+import { INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
 
 const VK_BRIDGE_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
 
 class VkPlatform extends PlatformBase {
 
+    // platform
     get id() {
         return 'vk'
-    }
-
-    get sdk() {
-        return this.#sdk
     }
 
     get language() {
@@ -42,19 +38,23 @@ class VkPlatform extends PlatformBase {
         return super.payload
     }
 
-    get interstitialState() {
-        return this.#interstitialState
+
+    // player
+    get isPlayerAuthorizationSupported() {
+        return true
     }
 
-    get rewardedState() {
-        return this.#rewardedState
+    get isPlayerAuthorized() {
+        return true
     }
 
+
+    // social
     get isInviteFriendsSupported() {
         return true
     }
 
-    get isCommunitySupported() {
+    get isJoinCommunitySupported() {
         return true
     }
 
@@ -62,117 +62,63 @@ class VkPlatform extends PlatformBase {
         return true
     }
 
-    #sdk
-    #isInitialized
-    #initializationPromiseDecorator
-
-    #interstitialState
-    #rewardedState
-    #showInterstitialPromiseDecorator
-    #showRewardedPromiseDecorator
-
 
     initialize() {
-        if (this.#isInitialized)
+        if (this._isInitialized)
             return Promise.resolve()
 
-        if (!this.#initializationPromiseDecorator) {
-            this.#initializationPromiseDecorator = new PromiseDecorator()
+        if (!this._initializationPromiseDecorator) {
+            this._initializationPromiseDecorator = new PromiseDecorator()
 
             addJavaScript(VK_BRIDGE_URL).then(() => {
-                this.#sdk = window.vkBridge
-                this.#sdk
+                this._sdk = window.vkBridge
+                this._sdk
                     .send('VKWebAppInit')
                     .then(() => {
-                        this.#isInitialized = true
 
-                        if (this.#initializationPromiseDecorator) {
-                            this.#initializationPromiseDecorator.resolve()
-                            this.#initializationPromiseDecorator = null
-                        }
+                        this._sdk.send('VKWebAppGetUserInfo')
+                            .then(data => {
+                                if (data) {
+                                    this._playerId = data['id']
+                                    this._playerName = data['first_name'] + ' ' + data['last_name']
+
+                                    if (data['photo_100'])
+                                        this._playerPhotos.push(data['photo_100'])
+
+                                    if (data['photo_200'])
+                                        this._playerPhotos.push(data['photo_200'])
+
+                                    if (data['photo_max_orig'])
+                                        this._playerPhotos.push(data['photo_max_orig'])
+                                }
+                            })
+                            .finally(() => {
+                                this._isInitialized = true
+
+                                if (this._initializationPromiseDecorator) {
+                                    this._initializationPromiseDecorator.resolve()
+                                    this._initializationPromiseDecorator = null
+                                }
+                            })
+
                     })
             })
         }
 
-        return this.#initializationPromiseDecorator.promise
+        return this._initializationPromiseDecorator.promise
     }
 
-    showInterstitial() {
-        if (!this.#showInterstitialPromiseDecorator) {
-            this.#showInterstitialPromiseDecorator = new PromiseDecorator()
-            this.#sdk
-                .send('VKWebAppShowNativeAds', { ad_format: 'preloader' })
-                .then(data => {
-                    if (data.result) {
-                        if (this.#showInterstitialPromiseDecorator) {
-                            this.#showInterstitialPromiseDecorator.resolve()
-                            this.#showInterstitialPromiseDecorator = null
-                        }
 
-                        this.#setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                        this.#setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                    } else {
-                        if (this.#showInterstitialPromiseDecorator) {
-                            this.#showInterstitialPromiseDecorator.reject()
-                            this.#showInterstitialPromiseDecorator = null
-                        }
-
-                        this.#setInterstitialState(INTERSTITIAL_STATE.FAILED)
-                    }
-                })
-                .catch(error => {
-                    if (this.#showInterstitialPromiseDecorator) {
-                        this.#showInterstitialPromiseDecorator.reject(error)
-                        this.#showInterstitialPromiseDecorator = null
-                    }
-
-                    this.#setInterstitialState(INTERSTITIAL_STATE.FAILED)
-                })
-        }
-
-        return this.#showInterstitialPromiseDecorator.promise
+    // player
+    authorizePlayer() {
+        return Promise.resolve()
     }
 
-    showRewarded() {
-        if (!this.#showRewardedPromiseDecorator) {
-            this.#showRewardedPromiseDecorator = new PromiseDecorator()
-            this.#sdk
-                .send('VKWebAppShowNativeAds', { ad_format: 'reward', use_waterfall: true })
-                .then(data => {
-                    if (data.result) {
-                        if (this.#showRewardedPromiseDecorator) {
-                            this.#showRewardedPromiseDecorator.resolve()
-                            this.#showRewardedPromiseDecorator = null
-                        }
 
-                        this.#setRewardedState(REWARDED_STATE.OPENED)
-                        this.#setRewardedState(REWARDED_STATE.REWARDED)
-                        this.#setRewardedState(REWARDED_STATE.CLOSED)
-                    } else {
-                        if (this.#showRewardedPromiseDecorator) {
-                            this.#showRewardedPromiseDecorator.reject()
-                            this.#showRewardedPromiseDecorator = null
-                        }
-
-                        this.#setRewardedState(REWARDED_STATE.FAILED)
-                    }
-                })
-                .catch(error => {
-                    if (this.#showRewardedPromiseDecorator) {
-                        this.#showRewardedPromiseDecorator.reject(error)
-                        this.#showRewardedPromiseDecorator = null
-                    }
-
-                    this.#setRewardedState(REWARDED_STATE.FAILED)
-                })
-        }
-
-        return this.#showRewardedPromiseDecorator.promise
-    }
-
+    // game
     getGameData(key) {
         return new Promise(resolve => {
-            this.#sdk
+            this._sdk
                 .send('VKWebAppStorageGet', { 'keys': [key] })
                 .then(data => {
                     if (data.keys[0].value === '') {
@@ -202,7 +148,7 @@ class VkPlatform extends PlatformBase {
             if (typeof value !== 'string')
                 data.value = JSON.stringify(value)
 
-            this.#sdk
+            this._sdk
                 .send('VKWebAppStorageSet', data)
                 .then(() => {
                     resolve()
@@ -220,97 +166,207 @@ class VkPlatform extends PlatformBase {
         return this.setGameData(key, '')
     }
 
+
+    // advertisement
+    showInterstitial() {
+        if (!this._canShowAdvertisement())
+            return Promise.reject()
+
+        if (!this._showInterstitialPromiseDecorator) {
+            this._showInterstitialPromiseDecorator = new PromiseDecorator()
+            this._sdk
+                .send('VKWebAppShowNativeAds', { ad_format: 'preloader' })
+                .then(data => {
+                    if (data.result) {
+                        if (this._showInterstitialPromiseDecorator) {
+                            this._showInterstitialPromiseDecorator.resolve()
+                            this._showInterstitialPromiseDecorator = null
+                        }
+
+                        this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                        this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                    } else {
+                        if (this._showInterstitialPromiseDecorator) {
+                            this._showInterstitialPromiseDecorator.reject()
+                            this._showInterstitialPromiseDecorator = null
+                        }
+
+                        this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                    }
+                })
+                .catch(error => {
+                    if (this._showInterstitialPromiseDecorator) {
+                        this._showInterstitialPromiseDecorator.reject(error)
+                        this._showInterstitialPromiseDecorator = null
+                    }
+
+                    this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                })
+        }
+
+        return this._showInterstitialPromiseDecorator.promise
+    }
+
+    showRewarded() {
+        if (!this._canShowAdvertisement())
+            return Promise.reject()
+
+        if (!this._showRewardedPromiseDecorator) {
+            this._showRewardedPromiseDecorator = new PromiseDecorator()
+            this._sdk
+                .send('VKWebAppShowNativeAds', { ad_format: 'reward', use_waterfall: true })
+                .then(data => {
+                    if (data.result) {
+                        if (this._showRewardedPromiseDecorator) {
+                            this._showRewardedPromiseDecorator.resolve()
+                            this._showRewardedPromiseDecorator = null
+                        }
+
+                        this._setRewardedState(REWARDED_STATE.OPENED)
+                        this._setRewardedState(REWARDED_STATE.REWARDED)
+                        this._setRewardedState(REWARDED_STATE.CLOSED)
+                    } else {
+                        if (this._showRewardedPromiseDecorator) {
+                            this._showRewardedPromiseDecorator.reject()
+                            this._showRewardedPromiseDecorator = null
+                        }
+
+                        this._setRewardedState(REWARDED_STATE.FAILED)
+                    }
+                })
+                .catch(error => {
+                    if (this._showRewardedPromiseDecorator) {
+                        this._showRewardedPromiseDecorator.reject(error)
+                        this._showRewardedPromiseDecorator = null
+                    }
+
+                    this._setRewardedState(REWARDED_STATE.FAILED)
+                })
+        }
+
+        return this._showRewardedPromiseDecorator.promise
+    }
+
+
+    // social
     inviteFriends() {
-        return new Promise((resolve, reject) => {
-            this.#sdk
+        if (!this._inviteFriendsPromiseDecorator) {
+            this._inviteFriendsPromiseDecorator = new PromiseDecorator()
+
+            this._sdk
                 .send('VKWebAppShowInviteBox')
                 .then(data => {
-
                     if (data.success) {
-                        resolve()
+                        if (this._inviteFriendsPromiseDecorator) {
+                            this._inviteFriendsPromiseDecorator.resolve()
+                            this._inviteFriendsPromiseDecorator = null
+                        }
+
                         return
                     }
 
-                    reject()
+                    if (this._inviteFriendsPromiseDecorator) {
+                        this._inviteFriendsPromiseDecorator.reject()
+                        this._inviteFriendsPromiseDecorator = null
+                    }
                 })
                 .catch(error => {
-                    if (error && error.error_data && error.error_data.error_reason)
-                        reject(error.error_data.error_reason)
-                    else
-                        reject()
+                    if (this._inviteFriendsPromiseDecorator) {
+                        if (error && error.error_data && error.error_data.error_reason)
+                            this._inviteFriendsPromiseDecorator.reject(error.error_data.error_reason)
+                        else
+                            this._inviteFriendsPromiseDecorator.reject()
+
+                        this._inviteFriendsPromiseDecorator = null
+                    }
                 })
-        })
+        }
+
+        return this._inviteFriendsPromiseDecorator.promise
     }
 
     joinCommunity() {
-        if (!this.options || !this.options.groupId)
+        if (!this._options || !this._options.groupId)
             return Promise.reject()
 
-        if (typeof this.options.groupId === 'string') {
-            let groupId = parseInt(this.options.groupId)
+        if (typeof this._options.groupId === 'string') {
+            let groupId = parseInt(this._options.groupId)
             if (!isNaN(groupId))
-                this.options.groupId = groupId
+                this._options.groupId = groupId
         }
 
-        return new Promise((resolve, reject) => {
-            this.#sdk
-                .send('VKWebAppJoinGroup', { 'group_id': this.options.groupId })
+        if (!this._joinCommunityPromiseDecorator) {
+            this._joinCommunityPromiseDecorator = new PromiseDecorator()
+
+            this._sdk
+                .send('VKWebAppJoinGroup', { 'group_id': this._options.groupId })
                 .then(data => {
                     if (data && data.result) {
-                        resolve()
-                        window.open('https://vk.com/public' + this.options.groupId)
+                        if (this._joinCommunityPromiseDecorator) {
+                            this._joinCommunityPromiseDecorator.resolve()
+                            this._joinCommunityPromiseDecorator = null
+                        }
+
+                        window.open('https://vk.com/public' + this._options.groupId)
                         return
                     }
 
-                    reject()
+                    if (this._joinCommunityPromiseDecorator) {
+                        this._joinCommunityPromiseDecorator.reject()
+                        this._joinCommunityPromiseDecorator = null
+                    }
                 })
                 .catch(error => {
-                    if (error && error.error_data && error.error_data.error_reason)
-                        reject(error.error_data.error_reason)
-                    else
-                        reject()
+                    if (this._joinCommunityPromiseDecorator) {
+                        if (error && error.error_data && error.error_data.error_reason)
+                            this._joinCommunityPromiseDecorator.reject(error.error_data.error_reason)
+                        else
+                            this._joinCommunityPromiseDecorator.reject()
+
+                        this._joinCommunityPromiseDecorator = null
+                    }
                 })
-        })
+        }
+
+        return this._joinCommunityPromiseDecorator.promise
     }
 
     share() {
-        return new Promise((resolve, reject) => {
-            this.#sdk
+        if (!this._sharePromiseDecorator) {
+            this._sharePromiseDecorator = new PromiseDecorator()
+
+            this._sdk
                 .send('VKWebAppShare')
                 .then(data => {
                     if (data && data.type) {
-                        resolve()
+                        if (this._sharePromiseDecorator) {
+                            this._sharePromiseDecorator.resolve()
+                            this._sharePromiseDecorator = null
+                        }
+
                         return
                     }
 
-                    reject()
+                    if (this._sharePromiseDecorator) {
+                        this._sharePromiseDecorator.reject()
+                        this._sharePromiseDecorator = null
+                    }
                 })
                 .catch(error => {
-                    if (error && error.error_data && error.error_data.error_reason)
-                        reject(error.error_data.error_reason)
-                    else
-                        reject()
+                    if (this._sharePromiseDecorator) {
+                        if (error && error.error_data && error.error_data.error_reason)
+                            this._sharePromiseDecorator.reject(error.error_data.error_reason)
+                        else
+                            this._sharePromiseDecorator.reject()
+
+                        this._sharePromiseDecorator = null
+                    }
                 })
-        })
-    }
+        }
 
-    #setInterstitialState(state) {
-        if (this.#interstitialState === state)
-            return
-
-        this.#interstitialState = state
-        this.emit(ADVERTISEMENT_EVENT_NAME.INTERSTITIAL_STATE_CHANGED, this.#interstitialState)
-    }
-
-    #setRewardedState(state) {
-        if (this.#rewardedState === state)
-            return
-
-        this.#rewardedState = state
-        this.emit(ADVERTISEMENT_EVENT_NAME.REWARDED_STATE_CHANGED, this.#rewardedState)
+        return this._sharePromiseDecorator.promise
     }
 
 }
 
-EventLite.mixin(VkPlatform.prototype)
 export default VkPlatform
