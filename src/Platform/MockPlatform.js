@@ -31,6 +31,13 @@ class MockPlatform extends PlatformBase {
         return false
     }
 
+    get isCreatePostSupported() {
+        if (this._options && this._options.social && this._options.social.simulateCreatePost)
+            return this._options.social.simulateCreatePost
+
+        return false
+    }
+
 
     // advertisement
     showInterstitial() {
@@ -74,6 +81,13 @@ class MockPlatform extends PlatformBase {
 
     share() {
         if (this.isShareSupported)
+            return Promise.resolve()
+        else
+            return Promise.reject()
+    }
+
+    createPost(message) {
+        if (this.isCreatePostSupported)
             return Promise.resolve()
         else
             return Promise.reject()

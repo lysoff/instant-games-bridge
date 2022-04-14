@@ -39,6 +39,8 @@
             <label for="options-mock-simulate-invite-friends-input">Simulate Invite Friends</label>
             <input type="checkbox" id="options-mock-simulate-join-community-input" />
             <label for="options-mock-simulate-join-community-input">Simulate Join Community</label>
+            <input type="checkbox" id="options-mock-simulate-create-post-input" />
+            <label for="options-mock-simulate-create-post-input">Simulate Create Post</label>
             <br>
             <br>
             <input type="checkbox" id="options-mock-simulate-interstitial-input" />
@@ -115,6 +117,7 @@
         const optionsMockSimulateShareInput = document.getElementById('options-mock-simulate-share-input')
         const optionsMockSimulateInviteFriendsInput = document.getElementById('options-mock-simulate-invite-friends-input')
         const optionsMockSimulateJoinCommunityInput = document.getElementById('options-mock-simulate-join-community-input')
+        const optionsMockSimulateCreatePostInput = document.getElementById('options-mock-simulate-create-post-input')
         const optionsMockSimulateInterstitialInput = document.getElementById('options-mock-simulate-interstitial-input')
         const optionsMockSimulateRewardedInput = document.getElementById('options-mock-simulate-rewarded-input')
         const optionsYandexAuthorizationScopesInput = document.getElementById('options-yandex-authorization-scopes-input')
@@ -179,7 +182,8 @@
                         social: {
                             simulateShare: optionsMockSimulateShareInput.checked,
                             simulateInviteFriends: optionsMockSimulateInviteFriendsInput.checked,
-                            simulateJoinCommunity: optionsMockSimulateJoinCommunityInput.checked
+                            simulateJoinCommunity: optionsMockSimulateJoinCommunityInput.checked,
+                            simulateCreatePost: optionsMockSimulateCreatePostInput.checked,
                         },
                         advertisement: {
                             simulateInterstitial: optionsMockSimulateInterstitialInput.checked,
