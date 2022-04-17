@@ -86,7 +86,7 @@ instantGamesBridge.platform.language
 instantGamesBridge.platform.payload
 ```
 
-###Player
+### Player
 ```js
 instantGamesBridge.player.isAuthorizationSupported
 
@@ -101,6 +101,12 @@ instantGamesBridge.player.photos // Array of player photos, sorted in order of i
 
 // If authorization is supported and player is not authorized
 instantGamesBridge.player.authorize()
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
 ```
 
 ### Game Data
