@@ -25,6 +25,19 @@ class PlatformBase {
         return url.searchParams.get('payload')
     }
 
+    get deviceType() {
+        if (navigator && navigator.userAgent) {
+            let userAgent = navigator.userAgent.toLowerCase()
+            if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent))
+                return 'mobile'
+
+            if (/ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP)))/.test(userAgent))
+                return 'tablet'
+        }
+
+        return 'desktop'
+    }
+
 
     // player
     get isPlayerAuthorizationSupported() {
@@ -83,6 +96,10 @@ class PlatformBase {
         return false
     }
 
+    get isRateSupported() {
+        return false
+    }
+
 
     LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
 
@@ -110,6 +127,7 @@ class PlatformBase {
     _createPostPromiseDecorator = null
     _addToHomeScreenPromiseDecorator = null
     _addToFavoritesPromiseDecorator = null
+    _ratePromiseDecorator = null
 
 
     constructor(options) {
@@ -202,6 +220,10 @@ class PlatformBase {
     }
 
     addToFavorites() {
+        return Promise.reject()
+    }
+
+    rate() {
         return Promise.reject()
     }
 

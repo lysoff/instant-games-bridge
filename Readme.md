@@ -19,7 +19,7 @@ Join community: https://t.me/instant_games_bridge.
 + [Setup](#setup)
 + [Platform](#platform)
 + [Player](#player)
-+ [Game Data](#game-data)
++ [Game](#game)
 + [Advertisement](#advertisement)
 + [Social](#social)
 
@@ -109,7 +109,7 @@ instantGamesBridge.player.authorize()
     })
 ```
 
-### Game Data
+### Game
 ```js
 // Get game data from storage
 instantGamesBridge.game.getData(key)

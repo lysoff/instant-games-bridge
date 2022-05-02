@@ -52,6 +52,13 @@ class MockPlatform extends PlatformBase {
         return false
     }
 
+    get isRateSupported() {
+        if (this._options && this._options.social && this._options.social.simulateRate)
+            return this._options.social.simulateRate
+
+        return false
+    }
+
 
     // advertisement
     showInterstitial() {
@@ -116,6 +123,13 @@ class MockPlatform extends PlatformBase {
 
     addToFavorites() {
         if (this.isAddToFavoritesSupported)
+            return Promise.resolve()
+        else
+            return Promise.reject()
+    }
+
+    rate() {
+        if (this.isRateSupported)
             return Promise.resolve()
         else
             return Promise.reject()

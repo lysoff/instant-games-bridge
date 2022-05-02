@@ -24,6 +24,10 @@ class Social {
         return this.#platformProvider.isAddToFavoritesSupported
     }
 
+    get isRateSupported() {
+        return this.#platformProvider.isRateSupported
+    }
+
     #platformProvider
 
     constructor(platformProvider) {
@@ -52,6 +56,10 @@ class Social {
 
     addToFavorites() {
         return this.#platformProvider.addToFavorites()
+    }
+
+    rate() {
+        return this.#platformProvider.rate()
     }
 
 }

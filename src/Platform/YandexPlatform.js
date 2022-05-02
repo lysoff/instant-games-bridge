@@ -19,6 +19,13 @@ class YandexPlatform extends PlatformBase {
         return super.language
     }
 
+    get deviceType() {
+        if (this._sdk)
+            return this._sdk.deviceInfo
+
+        return super.deviceType
+    }
+
 
     // player
     get isPlayerAuthorizationSupported() {
@@ -29,6 +36,10 @@ class YandexPlatform extends PlatformBase {
     // social
     get isAddToHomeScreenSupported() {
         return this.#isAddToHomeScreenSupported
+    }
+
+    get isRateSupported() {
+        return true
     }
 
 
@@ -272,6 +283,56 @@ class YandexPlatform extends PlatformBase {
         }
 
         return this._addToHomeScreenPromiseDecorator.promise
+    }
+
+    rate() {
+        if (!this._ratePromiseDecorator) {
+            this._ratePromiseDecorator = new PromiseDecorator()
+
+            this._sdk.feedback.canReview()
+                .then(result => {
+                    if (result.value) {
+
+                        this._sdk.feedback.requestReview()
+                            .then(({ feedbackSent }) => {
+                                if (feedbackSent) {
+                                    if (this._ratePromiseDecorator) {
+                                        this._ratePromiseDecorator.resolve()
+                                        this._ratePromiseDecorator = null
+                                    }
+
+                                    return
+                                }
+
+                                if (this._ratePromiseDecorator) {
+                                    this._ratePromiseDecorator.reject()
+                                    this._ratePromiseDecorator = null
+                                }
+                            })
+                            .catch(error => {
+                                if (this._ratePromiseDecorator) {
+                                    this._ratePromiseDecorator.reject(error)
+                                    this._ratePromiseDecorator = null
+                                }
+                            })
+
+                        return
+                    }
+
+                    if (this._ratePromiseDecorator) {
+                        this._ratePromiseDecorator.reject(result.reason)
+                        this._ratePromiseDecorator = null
+                    }
+                })
+                .catch(error => {
+                    if (this._ratePromiseDecorator) {
+                        this._ratePromiseDecorator.reject(error)
+                        this._ratePromiseDecorator = null
+                    }
+                })
+        }
+
+        return this._ratePromiseDecorator.promise
     }
 
 

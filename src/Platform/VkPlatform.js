@@ -38,6 +38,24 @@ class VkPlatform extends PlatformBase {
         return super.payload
     }
 
+    get deviceType() {
+        let url = new URL(window.location.href)
+        if (url.searchParams.has('platform')){
+            let platformType = url.searchParams.get('platform')
+
+            switch (platformType) {
+                case 'html5_ios':
+                case 'html5_android':
+                case 'html5_mobile':
+                    return 'mobile'
+                case 'web':
+                    return 'desktop'
+            }
+        }
+
+        return super.deviceType
+    }
+
 
     // player
     get isPlayerAuthorizationSupported() {
