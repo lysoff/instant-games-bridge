@@ -1,18 +1,36 @@
 import EventLite from 'event-lite'
-import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
+import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
+import PromiseDecorator from '../Common/PromiseDecorator'
 
-class PlatformBase {
+export const ACTION_NAME = {
+    INITIALIZE: 'initialize',
+    AUTHORIZE_PLAYER: 'authorize_player',
+    SHOW_INTERSTITIAL: 'show_interstitial',
+    SHOW_REWARDED: 'show_rewarded',
+    SHARE: 'share',
+    INVITE_FRIENDS: 'invite_friends',
+    JOIN_COMMUNITY: 'join_community',
+    CREATE_POST: 'create_post',
+    ADD_TO_HOME_SCREEN: 'add_to_home_screen',
+    ADD_TO_FAVORITES: 'add_to_favorites',
+    RATE: 'rate',
+    SET_LEADERBOARD_SCORE: 'set_leaderboard_score',
+    GET_LEADERBOARD_SCORE: 'get_leaderboard_score',
+    SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup'
+}
+
+class PlatformBridgeBase {
 
     // platform
-    get id() {
-        return null
+    get platformId() {
+        return 'mock'
     }
 
-    get sdk() {
-        return this._sdk
+    get platformSdk() {
+        return this._platformSdk
     }
 
-    get language() {
+    get platformLanguage() {
         let value = navigator.language
         if (typeof value === 'string')
             return value.substring(0, 2)
@@ -20,22 +38,9 @@ class PlatformBase {
         return 'en'
     }
 
-    get payload() {
+    get platformPayload() {
         let url = new URL(window.location.href)
         return url.searchParams.get('payload')
-    }
-
-    get deviceType() {
-        if (navigator && navigator.userAgent) {
-            let userAgent = navigator.userAgent.toLowerCase()
-            if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent))
-                return 'mobile'
-
-            if (/ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP)))/.test(userAgent))
-                return 'tablet'
-        }
-
-        return 'desktop'
     }
 
 
@@ -101,33 +106,61 @@ class PlatformBase {
     }
 
 
+    // device
+    get deviceType() {
+        if (navigator && navigator.userAgent) {
+            let userAgent = navigator.userAgent.toLowerCase()
+            if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent))
+                return 'mobile'
+
+            if (/ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP)))/.test(userAgent))
+                return 'tablet'
+        }
+
+        return 'desktop'
+    }
+
+
+    // leaderboard
+    get isLeaderboardSupported() {
+        return false
+    }
+
+    get isLeaderboardNativePopupSupported() {
+        return false
+    }
+
+    get isLeaderboardMultipleBoardsSupported() {
+        return false
+    }
+
+    get isLeaderboardSetScoreSupported() {
+        return false
+    }
+
+    get isLeaderboardGetScoreSupported() {
+        return false
+    }
+
+    get isLeaderboardGetEntriesSupported() {
+        return false
+    }
+
+
     LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
 
     _isInitialized = false
-    _initializationPromiseDecorator = null
-    _sdk = null
+    _platformSdk = null
     _localStorage = null
-
     _isPlayerAuthorized = false
-    _authorizationPromiseDecorator = null
     _playerId = null
     _playerName = null
     _playerPhotos = []
-
     _gameData = null
-
-    _showInterstitialPromiseDecorator = null
-    _showRewardedPromiseDecorator = null
     _interstitialState = null
     _rewardedState = null
 
-    _sharePromiseDecorator = null
-    _inviteFriendsPromiseDecorator = null
-    _joinCommunityPromiseDecorator = null
-    _createPostPromiseDecorator = null
-    _addToHomeScreenPromiseDecorator = null
-    _addToFavoritesPromiseDecorator = null
-    _ratePromiseDecorator = null
+    #promiseDecorators = { }
 
 
     constructor(options) {
@@ -228,6 +261,24 @@ class PlatformBase {
     }
 
 
+    // leaderboard
+    setLeaderboardScore(value, leaderboardId) {
+        return Promise.reject()
+    }
+
+    getLeaderboardScore(leaderboardId) {
+        return Promise.reject()
+    }
+
+    getLeaderboardEntries(leaderboardId) {
+        return Promise.reject()
+    }
+
+    showLeaderboardNativePopup(score, leaderboardId) {
+        return Promise.reject()
+    }
+
+
     _loadGameDataFromLocalStorage() {
         return new Promise((resolve, reject) => {
             try {
@@ -257,7 +308,7 @@ class PlatformBase {
 
 
     _setInterstitialState(state) {
-        if (this._interstitialState === state)
+        if (this._interstitialState === state && state !== INTERSTITIAL_STATE.FAILED)
             return
 
         this._interstitialState = state
@@ -265,7 +316,7 @@ class PlatformBase {
     }
 
     _setRewardedState(state) {
-        if (this._rewardedState === state)
+        if (this._rewardedState === state && state !== REWARDED_STATE.FAILED)
             return
 
         this._rewardedState = state
@@ -286,7 +337,30 @@ class PlatformBase {
         return true
     }
 
+    _createPromiseDecorator(actionName) {
+        let promiseDecorator = new PromiseDecorator()
+        this.#promiseDecorators[actionName] = promiseDecorator
+        return promiseDecorator
+    }
+
+    _getPromiseDecorator(actionName) {
+        return this.#promiseDecorators[actionName]
+    }
+
+    _resolvePromiseDecorator(id, data) {
+        if (this.#promiseDecorators[id]) {
+            this.#promiseDecorators[id].resolve(data)
+            delete this.#promiseDecorators[id]
+        }
+    }
+
+    _rejectPromiseDecorator(id, error) {
+        if (this.#promiseDecorators[id]) {
+            this.#promiseDecorators[id].reject(error)
+            delete this.#promiseDecorators[id]
+        }
+    }
 }
 
-EventLite.mixin(PlatformBase.prototype)
-export default PlatformBase
+EventLite.mixin(PlatformBridgeBase.prototype)
+export default PlatformBridgeBase

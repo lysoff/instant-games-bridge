@@ -1,50 +1,33 @@
 import EventLite from 'event-lite'
-import Timer, { STATE as TIMER_STATE } from './Common/Timer'
+import Timer, { STATE as TIMER_STATE } from '../Common/Timer'
+import ModuleBase from './ModuleBase'
+import { EVENT_NAME } from '../constants'
 
-export const EVENT_NAME = {
-    INTERSTITIAL_STATE_CHANGED: 'interstitial_state_changed',
-    REWARDED_STATE_CHANGED: 'rewarded_state_changed',
-}
-
-export const INTERSTITIAL_STATE = {
-    OPENED: 'opened',
-    CLOSED: 'closed',
-    FAILED: 'failed'
-}
-
-export const REWARDED_STATE = {
-    OPENED: 'opened',
-    CLOSED: 'closed',
-    FAILED: 'failed',
-    REWARDED: 'rewarded'
-}
-
-class Advertisement {
+class AdvertisementModule extends ModuleBase {
 
     get interstitialState() {
-        return this.#platformProvider.interstitialState
+        return this._platformBridge.interstitialState
     }
 
     get rewardedState() {
-        return this.#platformProvider.rewardedState
+        return this._platformBridge.rewardedState
     }
 
     get minimumDelayBetweenInterstitial() {
         return this.#minimumDelayBetweenInterstitial
     }
 
-    #platformProvider
     #interstitialTimer
     #minimumDelayBetweenInterstitial = 60
 
-    constructor(platformProvider) {
-        this.#platformProvider = platformProvider
+    constructor(platformBridge) {
+        super(platformBridge)
 
-        this.#platformProvider.on(
+        this._platformBridge.on(
             EVENT_NAME.INTERSTITIAL_STATE_CHANGED,
             state => this.emit(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, state))
 
-        this.#platformProvider.on(
+        this._platformBridge.on(
             EVENT_NAME.REWARDED_STATE_CHANGED,
             state => this.emit(EVENT_NAME.REWARDED_STATE_CHANGED, state))
     }
@@ -73,18 +56,19 @@ class Advertisement {
         if (this.#minimumDelayBetweenInterstitial > 0)
             this.#startInterstitialTimer()
 
-        return this.#platformProvider.showInterstitial()
+        return this._platformBridge.showInterstitial()
     }
 
     showRewarded() {
-        return this.#platformProvider.showRewarded()
+        return this._platformBridge.showRewarded()
     }
 
     #startInterstitialTimer() {
         this.#interstitialTimer = new Timer(this.#minimumDelayBetweenInterstitial)
         this.#interstitialTimer.start()
     }
+
 }
 
-EventLite.mixin(Advertisement.prototype)
-export default Advertisement
+EventLite.mixin(AdvertisementModule.prototype)
+export default AdvertisementModule

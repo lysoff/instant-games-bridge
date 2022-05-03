@@ -1,11 +1,15 @@
+import { MODULE_NAME } from './constants'
 import PromiseDecorator from './Common/PromiseDecorator'
-import MockPlatform from './Platform/MockPlatform'
-import VkPlatform from './Platform/VkPlatform'
-import YandexPlatform from './Platform/YandexPlatform'
-import Player from './Player'
-import Game from './Game'
-import Advertisement from './Advertisement'
-import Social from './Social'
+import PlatformBridgeBase from './PlatformBridges/PlatformBridgeBase'
+import VkPlatformBridge from './PlatformBridges/VkPlatformBridge'
+import YandexPlatformBridge from './PlatformBridges/YandexPlatformBridge'
+import PlatformModule from './Modules/PlatformModule'
+import PlayerModule from './Modules/PlayerModule'
+import GameModule from './Modules/GameModule'
+import AdvertisementModule from './Modules/AdvertisementModule'
+import SocialModule from './Modules/SocialModule'
+import DeviceModule from './Modules/DeviceModule'
+import LeaderboardModule from './Modules/LeaderboardModule'
 
 class InstantGamesBridge {
 
@@ -18,33 +22,39 @@ class InstantGamesBridge {
     }
 
     get platform() {
-        return this.#platform
+        return this.#getModule(MODULE_NAME.PLATFORM)
     }
 
     get player() {
-        return this.#player
+        return this.#getModule(MODULE_NAME.PLAYER)
     }
 
     get game() {
-        return this.#game
+        return this.#getModule(MODULE_NAME.GAME)
     }
 
     get advertisement() {
-        return this.#advertisement
+        return this.#getModule(MODULE_NAME.ADVERTISEMENT)
     }
 
     get social() {
-        return this.#social
+        return this.#getModule(MODULE_NAME.SOCIAL)
+    }
+
+    get device() {
+        return this.#getModule(MODULE_NAME.DEVICE)
+    }
+
+    get leaderboard() {
+        return this.#getModule(MODULE_NAME.LEADERBOARD)
     }
 
     #isInitialized = false
-    #initializationPromiseDecorator
+    #initializationPromiseDecorator = null
 
-    #platform
-    #player
-    #game
-    #advertisement
-    #social
+    #platformBridge = null
+    #modules = { }
+    #overriddenModules = { }
 
     initialize(options) {
         if (this.#isInitialized)
@@ -53,14 +63,17 @@ class InstantGamesBridge {
         if (!this.#initializationPromiseDecorator) {
             this.#initializationPromiseDecorator = new PromiseDecorator()
             this._options = { ...options }
-            this.#createPlatform()
-            this.#platform
+            this.#createPlatformBridge()
+            this.#platformBridge
                 .initialize()
                 .then(() => {
-                    this.#player = new Player(this.#platform)
-                    this.#game = new Game(this.#platform)
-                    this.#advertisement = new Advertisement(this.#platform)
-                    this.#social = new Social(this.#platform)
+                    this.#modules[MODULE_NAME.PLATFORM] = new PlatformModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.PLAYER] = new PlayerModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.GAME] = new GameModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.ADVERTISEMENT] = new AdvertisementModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.SOCIAL] = new SocialModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.DEVICE] = new DeviceModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.LEADERBOARD] = new LeaderboardModule(this.#platformBridge)
 
                     this.#isInitialized = true
                     console.log('%c InstantGamesBridge v.' + this.version + ' initialized. ', 'background: #01A5DA; color: white')
@@ -75,15 +88,35 @@ class InstantGamesBridge {
         return this.#initializationPromiseDecorator.promise
     }
 
-    #createPlatform() {
+    overrideModule(id, value) {
+        if (!this.#isInitialized)
+            return
+
+        let module = this.#modules[id]
+        if (module) {
+            this.#overriddenModules[id] = value
+
+            if (typeof value.initialize === 'function')
+                value.initialize(module)
+        }
+    }
+
+    #createPlatformBridge() {
         let url = new URL(window.location.href)
         let yandexUrl = ['g', 'a', 'm', 'e', 's', '.', 's', '3', '.', 'y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
         if (url.hostname.includes(yandexUrl))
-            this.#platform = new YandexPlatform(this._options && this._options.platforms && this._options.platforms.yandex)
+            this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms.yandex)
         else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key'))
-            this.#platform = new VkPlatform(this._options && this._options.platforms && this._options.platforms.vk)
+            this.#platformBridge = new VkPlatformBridge(this._options && this._options.platforms && this._options.platforms.vk)
         else
-            this.#platform = new MockPlatform(this._options && this._options.platforms && this._options.platforms.mock)
+            this.#platformBridge = new PlatformBridgeBase()
+    }
+
+    #getModule(id) {
+        if (this.#overriddenModules[id])
+            return this.#overriddenModules[id]
+
+        return this.#modules[id]
     }
 
 }

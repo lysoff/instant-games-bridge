@@ -23,7 +23,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="section">
+        <div class="section" id="options-section">
             <h2>Options</h2>
             <h3>VK</h3>
             <input type="text" id="options-vk-group-id-input" placeholder="Group ID" />
@@ -32,37 +32,21 @@
             <input type="checkbox" id="options-yandex-authorization-scopes-input" />
             <label for="options-yandex-authorization-scopes-input">Authorization Scopes</label>
 
-            <h3>MOCK</h3>
-            <input type="checkbox" id="options-mock-simulate-share-input" />
-            <label for="options-mock-simulate-share-input">Simulate Share</label>
-            <input type="checkbox" id="options-mock-simulate-invite-friends-input" />
-            <label for="options-mock-simulate-invite-friends-input">Simulate Invite Friends</label>
-            <input type="checkbox" id="options-mock-simulate-join-community-input" />
-            <label for="options-mock-simulate-join-community-input">Simulate Join Community</label>
-            <input type="checkbox" id="options-mock-simulate-create-post-input" />
-            <label for="options-mock-simulate-create-post-input">Simulate Create Post</label>
-            <input type="checkbox" id="options-mock-simulate-add-to-home-screen-input" />
-            <label for="options-mock-simulate-add-to-home-screen-input">Simulate Add To Home Screen</label>
-            <input type="checkbox" id="options-mock-simulate-add-to-favorites-input" />
-            <label for="options-mock-simulate-add-to-favorites-input">Simulate Add To Favorites</label>
-            <input type="checkbox" id="options-mock-simulate-rate-input" />
-            <label for="options-mock-simulate-rate-input">Simulate Rate</label>
             <br>
             <br>
-            <input type="checkbox" id="options-mock-simulate-interstitial-input" />
-            <label for="options-mock-simulate-interstitial-input">Simulate Interstitial</label>
-            <input type="checkbox" id="options-mock-simulate-rewarded-input" />
-            <label for="options-mock-simulate-rewarded-input">Simulate Rewarded</label>
+            <button id="initialize-button">Initialize</button>
         </div>
 
-        <div class="section">
-            <h2>Common</h2>
-            <p>Is Initialized: <span id="is-initialized-text">false</span></p>
-            <p>Platform ID: <span id="platform-id-text"></span></p>
+        <div class="section" id="platform-section">
+            <h2>Platform</h2>
+            <p>ID: <span id="platform-id-text"></span></p>
             <p>Language: <span id="platform-language-text"></span></p>
             <p>Payload: <span id="platform-payload-text"></span></p>
-            <p>Device Type: <span id="platform-device-type-text"></span></p>
-            <button id="initialize-button">Initialize</button>
+        </div>
+
+        <div class="section" id="device-section">
+            <h2>Device</h2>
+            <p>Type: <span id="device-type-text"></span></p>
         </div>
 
         <div class="section" id="player-section">
@@ -121,34 +105,30 @@
 
     <script src="./instant-games-bridge.js"></script>
     <script>
+        const optionsSection = document.getElementById('options-section')
+        const platformSection = document.getElementById('platform-section')
+        const deviceSection = document.getElementById('device-section')
         const playerSection = document.getElementById('player-section')
         const gameSection = document.getElementById('game-section')
         const advertisementSection = document.getElementById('advertisement-section')
         const socialSection = document.getElementById('social-section')
 
         const optionsVkGroupIdInput = document.getElementById('options-vk-group-id-input')
-        const optionsMockSimulateShareInput = document.getElementById('options-mock-simulate-share-input')
-        const optionsMockSimulateInviteFriendsInput = document.getElementById('options-mock-simulate-invite-friends-input')
-        const optionsMockSimulateJoinCommunityInput = document.getElementById('options-mock-simulate-join-community-input')
-        const optionsMockSimulateCreatePostInput = document.getElementById('options-mock-simulate-create-post-input')
-        const optionsMockSimulateAddToHomeScreenInput = document.getElementById('options-mock-simulate-add-to-home-screen-input')
-        const optionsMockSimulateAddToFavoritesInput = document.getElementById('options-mock-simulate-add-to-favorites-input')
-        const optionsMockSimulateRateInput = document.getElementById('options-mock-simulate-rate-input')
-        const optionsMockSimulateInterstitialInput = document.getElementById('options-mock-simulate-interstitial-input')
-        const optionsMockSimulateRewardedInput = document.getElementById('options-mock-simulate-rewarded-input')
         const optionsYandexAuthorizationScopesInput = document.getElementById('options-yandex-authorization-scopes-input')
 
+        platformSection.style.display = 'none'
+        deviceSection.style.display = 'none'
         playerSection.style.display = 'none'
         gameSection.style.display = 'none'
         advertisementSection.style.display = 'none'
         socialSection.style.display = 'none'
 
-        const isInitializedText = document.getElementById('is-initialized-text')
         const platformIdText = document.getElementById('platform-id-text')
         const platformLanguageText = document.getElementById('platform-language-text')
         const platformPayloadText = document.getElementById('platform-payload-text')
-        const platformDeviceTypeText = document.getElementById('platform-device-type-text')
         const initializeButton = document.getElementById('initialize-button')
+
+        const deviceTypeText = document.getElementById('device-type-text')
 
         const isPlayerAuthorizationSupportedText = document.getElementById('is-player-authorization-supported-text')
         const isPlayerAuthorizedText = document.getElementById('is-player-authorized-text')
@@ -200,21 +180,6 @@
                         authorization: {
                             scopes: optionsYandexAuthorizationScopesInput.checked
                         }
-                    },
-                    mock: {
-                        social: {
-                            simulateShare: optionsMockSimulateShareInput.checked,
-                            simulateInviteFriends: optionsMockSimulateInviteFriendsInput.checked,
-                            simulateJoinCommunity: optionsMockSimulateJoinCommunityInput.checked,
-                            simulateCreatePost: optionsMockSimulateCreatePostInput.checked,
-                            simulateAddToHomeScreen: optionsMockSimulateAddToHomeScreenInput.checked,
-                            simulateAddToFavorites: optionsMockSimulateAddToFavoritesInput.checked,
-                            simulateRate: optionsMockSimulateRateInput.checked
-                        },
-                        advertisement: {
-                            simulateInterstitial: optionsMockSimulateInterstitialInput.checked,
-                            simulateRewarded: optionsMockSimulateRewardedInput.checked
-                        }
                     }
                 }
             }
@@ -222,23 +187,14 @@
             instantGamesBridge
                 .initialize(bridgeOptions)
                 .then(() => {
+                    optionsSection.style.display = 'none'
                     initializeButton.disabled = 'disabled'
-                    optionsVkGroupIdInput.disabled = 'disabled'
-                    optionsMockSimulateShareInput.disabled = 'disabled'
-                    optionsMockSimulateInviteFriendsInput.disabled = 'disabled'
-                    optionsMockSimulateJoinCommunityInput.disabled = 'disabled'
-                    optionsMockSimulateAddToHomeScreenInput.disabled = 'disabled'
-                    optionsMockSimulateAddToFavoritesInput.disabled = 'disabled'
-                    optionsMockSimulateRateInput.disabled = 'disabled'
-                    optionsMockSimulateInterstitialInput.disabled = 'disabled'
-                    optionsMockSimulateRewardedInput.disabled = 'disabled'
-                    optionsYandexAuthorizationScopesInput.disabled = 'disabled'
 
-                    isInitializedText.innerText = 'true'
                     platformIdText.innerText = instantGamesBridge.platform.id
                     platformLanguageText.innerText = instantGamesBridge.platform.language
                     platformPayloadText.innerText = instantGamesBridge.platform.payload
-                    platformDeviceTypeText.innerText = instantGamesBridge.platform.deviceType
+
+                    deviceTypeText.innerText = instantGamesBridge.device.type
 
                     isPlayerAuthorizationSupportedText.innerText = instantGamesBridge.player.isAuthorizationSupported
                     isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
@@ -267,6 +223,8 @@
                         advertisementRewardedStateText.innerText = state
                     })
 
+                    platformSection.style.display = 'block'
+                    deviceSection.style.display = 'block'
                     playerSection.style.display = 'block'
                     gameSection.style.display = 'block'
                     advertisementSection.style.display = 'block'
@@ -283,24 +241,6 @@
                     playerIdText.innerText = instantGamesBridge.player.id
                     playerNameText.innerText = instantGamesBridge.player.name
                     playerPhotosText.innerText = instantGamesBridge.player.photos
-                })
-                .catch(() => {
-
-                })
-        })
-
-        authorizePlayerButton.addEventListener('click', () => {
-            instantGamesBridge
-                .player
-                .authorize()
-                .then(() => {
-                    isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
-                    playerIdText.innerText = instantGamesBridge.player.id
-                    playerNameText.innerText = instantGamesBridge.player.name
-                    playerPhotosText.innerText = instantGamesBridge.player.photos
-                })
-                .catch(() => {
-
                 })
         })
 

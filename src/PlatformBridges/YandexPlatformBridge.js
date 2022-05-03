@@ -1,27 +1,27 @@
-import PlatformBase from './PlatformBase'
+import PlatformBridgeBase from './PlatformBridgeBase'
 import PromiseDecorator from '../Common/PromiseDecorator'
 import { addJavaScript } from '../Common/utils'
-import { INTERSTITIAL_STATE, REWARDED_STATE } from '../Advertisement'
+import { INTERSTITIAL_STATE, REWARDED_STATE } from '../Modules/AdvertisementModule'
 
 const YANDEX_SDK_URL = 'https://yandex.ru/games/sdk/v2'
 
-class YandexPlatform extends PlatformBase {
+class YandexPlatformBridge extends PlatformBridgeBase {
 
     // platform
-    get id() {
+    get platformId() {
         return 'yandex'
     }
 
-    get language() {
-        if (this._sdk)
-            return this._sdk.environment.i18n.lang
+    get platformLanguage() {
+        if (this._platformSdk)
+            return this._platformSdk.environment.i18n.lang
 
-        return super.language
+        return super.platformLanguage
     }
 
     get deviceType() {
-        if (this._sdk)
-            return this._sdk.deviceInfo
+        if (this._platformSdk)
+            return this._platformSdk.deviceInfo
 
         return super.deviceType
     }
@@ -43,6 +43,28 @@ class YandexPlatform extends PlatformBase {
     }
 
 
+    // leaderboard
+    get isLeaderboardSupported() {
+        return true
+    }
+
+    get isLeaderboardMultipleBoardsSupported() {
+        return true
+    }
+
+    get isLeaderboardSetScoreSupported() {
+        return true
+    }
+
+    get isLeaderboardGetScoreSupported() {
+        return true
+    }
+
+    get isLeaderboardGetEntriesSupported() {
+        return true
+    }
+
+
     #isAddToHomeScreenSupported = false
     #yandexPlayer = null
 
@@ -59,16 +81,16 @@ class YandexPlatform extends PlatformBase {
                     window.YaGames
                         .init()
                         .then(sdk => {
-                            this._sdk = sdk
+                            this._platformSdk = sdk
 
                             let getPlayerPromise = this.#getPlayer()
 
-                            let getSafeStoragePromise = this._sdk.getStorage()
+                            let getSafeStoragePromise = this._platformSdk.getStorage()
                                 .then(safeStorage => {
                                     this._localStorage = safeStorage
                                 })
 
-                            let checkAddToHomeScreenSupported = this._sdk.shortcut.canShowPrompt()
+                            let checkAddToHomeScreenSupported = this._platformSdk.shortcut.canShowPrompt()
                                 .then(prompt => {
                                     this.#isAddToHomeScreenSupported = prompt.canShow
                                 })
@@ -104,7 +126,7 @@ class YandexPlatform extends PlatformBase {
                     }
                 })
             } else {
-                this._sdk.auth.openAuthDialog()
+                this._platformSdk.auth.openAuthDialog()
                     .then(() => {
                         this.#getPlayer().then(() => {
                             if (this._authorizationPromiseDecorator) {
@@ -183,7 +205,7 @@ class YandexPlatform extends PlatformBase {
 
         if (!this._showInterstitialPromiseDecorator) {
             this._showInterstitialPromiseDecorator = new PromiseDecorator()
-            this._sdk.adv.showFullscreenAdv({
+            this._platformSdk.adv.showFullscreenAdv({
                 callbacks: {
                     onOpen: () => {
                         if (this._showInterstitialPromiseDecorator) {
@@ -218,7 +240,7 @@ class YandexPlatform extends PlatformBase {
 
         if (!this._showRewardedPromiseDecorator) {
             this._showRewardedPromiseDecorator = new PromiseDecorator()
-            this._sdk.adv.showRewardedVideo({
+            this._platformSdk.adv.showRewardedVideo({
                 callbacks: {
                     onOpen: () => {
                         if (this._showRewardedPromiseDecorator) {
@@ -258,7 +280,7 @@ class YandexPlatform extends PlatformBase {
         if (!this._addToHomeScreenPromiseDecorator) {
             this._addToHomeScreenPromiseDecorator = new PromiseDecorator()
 
-            this._sdk.shortcut.showPrompt()
+            this._platformSdk.shortcut.showPrompt()
                 .then(result => {
                     if (result.outcome === 'accepted') {
                         if (this._addToHomeScreenPromiseDecorator) {
@@ -289,11 +311,11 @@ class YandexPlatform extends PlatformBase {
         if (!this._ratePromiseDecorator) {
             this._ratePromiseDecorator = new PromiseDecorator()
 
-            this._sdk.feedback.canReview()
+            this._platformSdk.feedback.canReview()
                 .then(result => {
                     if (result.value) {
 
-                        this._sdk.feedback.requestReview()
+                        this._platformSdk.feedback.requestReview()
                             .then(({ feedbackSent }) => {
                                 if (feedbackSent) {
                                     if (this._ratePromiseDecorator) {
@@ -343,7 +365,7 @@ class YandexPlatform extends PlatformBase {
             scopes = this._options.authorization.scopes
 
         return new Promise(resolve => {
-            this._sdk.getPlayer({ scopes })
+            this._platformSdk.getPlayer({ scopes })
                 .then(player => {
                     this._playerId = player.getUniqueID()
                     this._isPlayerAuthorized = player.getMode() !== 'lite'
@@ -394,4 +416,4 @@ class YandexPlatform extends PlatformBase {
 
 }
 
-export default YandexPlatform
+export default YandexPlatformBridge
