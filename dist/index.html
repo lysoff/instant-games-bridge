@@ -7,6 +7,20 @@
     <style>
         html, body {
             background: #fff;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+            overflow-y: scroll;
+            overflow-x: clip;
+        }
+
+        h1, h2 {
+            margin: 0px;
+            padding: 0px 0px 10px 0px;
+        }
+
+        p {
+            margin: 5px 0px;
         }
 
         .container {
@@ -16,7 +30,7 @@
 
         .section {
             border: 2px solid #cecece;
-            padding:  0px 20px 20px;
+            padding: 20px;
             margin: 10px;
         }
     </style>
@@ -24,16 +38,7 @@
 <body>
     <div class="container">
         <div class="section" id="options-section">
-            <h2>Options</h2>
-            <h3>VK</h3>
-            <input type="text" id="options-vk-group-id-input" placeholder="Group ID" />
-
-            <h3>YANDEX</h3>
-            <input type="checkbox" id="options-yandex-authorization-scopes-input" />
-            <label for="options-yandex-authorization-scopes-input">Authorization Scopes</label>
-
-            <br>
-            <br>
+            <h2>Instant Games Bridge Sandbox</h2>
             <button id="initialize-button">Initialize</button>
         </div>
 
@@ -56,6 +61,11 @@
             <p>ID: <span id="player-id-text"></span></p>
             <p>Name: <span id="player-name-text"></span></p>
             <p>Photos: <span id="player-photos-text"></span></p>
+            <hr>
+            <label for="authorize-player-yandex-scopes-input">Yandex: Authorization Scopes</label>
+            <input type="checkbox" id="authorize-player-yandex-scopes-input" >
+            <br>
+            <br>
             <button id="authorize-player-button">Authorize</button>
         </div>
 
@@ -74,8 +84,10 @@
             <h2>Advertisement</h2>
             <input type="text" id="advertisement-minimum-delay-between-interstitial-input" placeholder="Minimum Delay Between Interstitial" />
             <button id="advertisement-set-minimum-delay-between-interstitial-button">Set Minimum Delay Between Interstitial</button>
+            <br><br>
             <p>Interstitial State: <span id="advertisement-interstitial-state-text"></span></p>
             <p>Rewarded State: <span id="advertisement-rewarded-state-text"></span></p>
+            <br>
             <button id="advertisement-show-interstitial-button">Show Interstitial</button>
             <button id="advertisement-show-interstitial-ignore-delay-button">Show Interstitial (ignore delay)</button>
             <button id="advertisement-show-rewarded-button">Show Rewarded</button>
@@ -90,16 +102,63 @@
             <p>Is Add To Home Screen Supported: <span id="social-is-add-to-home-screen-supported-text"></span></p>
             <p>Is Add To Favorites Supported: <span id="social-is-add-to-favorites-supported-text"></span></p>
             <p>Is Rate Supported: <span id="social-is-rate-supported-text"></span></p>
-            <button id="social-share-button">Share</button>
+            <br>
+
             <button id="social-invite-friends-button">Invite Friends</button>
-            <button id="social-join-community-button">Join Community</button>
             <button id="social-add-to-home-screen-button">Add To Home Screen</button>
             <button id="social-add-to-favorites-button">Add To Favorites</button>
             <button id="social-rate-button">Rate</button>
             <br>
             <br>
-            <input type="text" id="social-create-post-input" placeholder="Message" />
+            <input type="text" id="social-vk-share-link-input" placeholder="VK: Link" />
+            <button id="social-share-button">Share</button>
+            <br>
+            <br>
+            <input type="text" id="social-vk-group-id-input" placeholder="VK: Group ID" />
+            <button id="social-join-community-button">Join Community</button>
+            <br>
+            <br>
+            <input type="text" id="social-create-post-message-input" placeholder="VK: Message" />
+            <input type="text" id="social-create-post-attachments-input" placeholder="VK: Attachments" />
             <button id="social-create-post-button">Create Post</button>
+        </div>
+
+        <div class="section" id="leaderboard-section">
+            <h2>Leaderboard</h2>
+            <p>Is Supported: <span id="leaderboard-is-supported-text"></span></p>
+            <p>Is Native Popup Supported: <span id="leaderboard-is-native-popup-supported-text"></span></p>
+            <p>Is Multiple Boards Supported: <span id="leaderboard-is-multiple-boards-supported-text"></span></p>
+            <p>Is Set Score Supported: <span id="leaderboard-is-set-score-supported-text"></span></p>
+            <p>Is Get Score Supported: <span id="leaderboard-is-get-score-supported-text"></span></p>
+            <p>Is Get Entries Supported: <span id="leaderboard-is-get-entries-supported-text"></span></p>
+            <hr>
+            <br>
+            <input type="text" id="leaderboard-board-id-input" placeholder="Yandex: Board Name" />
+            <input type="text" id="leaderboard-score-input" placeholder="Score" />
+            <button id="leaderboard-set-score-button">Set Score</button>
+            <button id="leaderboard-get-score-button">Get Score</button>
+            <br><br>
+            <hr>
+            <br>
+            <label for="leaderboard-vk-global-input">VK: Global</label>
+            <input type="checkbox" id="leaderboard-vk-global-input">
+            <br>
+            <br>
+            <button id="leaderboard-show-native-popup-button">Show Native Popup</button>
+            <br>
+            <br>
+            <hr>
+            <br>
+            <label for="leaderboard-yandex-include-user-input">Yandex: Include User</label>
+            <input type="checkbox" id="leaderboard-yandex-include-user-input">
+            <br>
+            <input type="text" id="leaderboard-yandex-quantity-around-input" placeholder="Yandex: Quantity Around">
+            <br>
+            <input type="text" id="leaderboard-yandex-quantity-top-input" placeholder="Yandex: Quantity Top">
+            <br>
+            <br>
+            <button id="leaderboard-get-entries-button">Get Entries</button>
+            <p id="leaderboard-entries-container"></p>
         </div>
     </div>
 
@@ -112,9 +171,7 @@
         const gameSection = document.getElementById('game-section')
         const advertisementSection = document.getElementById('advertisement-section')
         const socialSection = document.getElementById('social-section')
-
-        const optionsVkGroupIdInput = document.getElementById('options-vk-group-id-input')
-        const optionsYandexAuthorizationScopesInput = document.getElementById('options-yandex-authorization-scopes-input')
+        const leaderboardSection = document.getElementById('leaderboard-section')
 
         platformSection.style.display = 'none'
         deviceSection.style.display = 'none'
@@ -122,6 +179,7 @@
         gameSection.style.display = 'none'
         advertisementSection.style.display = 'none'
         socialSection.style.display = 'none'
+        leaderboardSection.style.display = 'none'
 
         const platformIdText = document.getElementById('platform-id-text')
         const platformLanguageText = document.getElementById('platform-language-text')
@@ -135,6 +193,7 @@
         const playerIdText = document.getElementById('player-id-text')
         const playerNameText = document.getElementById('player-name-text')
         const playerPhotosText = document.getElementById('player-photos-text')
+        const authorizePlayerYandexScopesInput = document.getElementById('authorize-player-yandex-scopes-input')
         const authorizePlayerButton = document.getElementById('authorize-player-button')
 
         const gameDataCoinsInput = document.getElementById('game-data-coins-input')
@@ -158,35 +217,44 @@
         const socialIsAddToHomeScreenSupportedText = document.getElementById('social-is-add-to-home-screen-supported-text')
         const socialIsAddToFavoritesSupportedText = document.getElementById('social-is-add-to-favorites-supported-text')
         const socialIsRateSupportedText = document.getElementById('social-is-rate-supported-text')
+        const socialVkGroupIdInput = document.getElementById('social-vk-group-id-input')
+        const socialVkShareLinkInput = document.getElementById('social-vk-share-link-input')
         const socialShareButton = document.getElementById('social-share-button')
         const socialInviteFriendsButton = document.getElementById('social-invite-friends-button')
         const socialJoinCommunityButton = document.getElementById('social-join-community-button')
-        const socialCreatePostInput = document.getElementById('social-create-post-input')
+        const socialCreatePostMessageInput = document.getElementById('social-create-post-message-input')
+        const socialCreatePostAttachmentsInput = document.getElementById('social-create-post-attachments-input')
         const socialCreatePostButton = document.getElementById('social-create-post-button')
         const socialAddToHomeScreenButton = document.getElementById('social-add-to-home-screen-button')
         const socialAddToFavoritesButton = document.getElementById('social-add-to-favorites-button')
         const socialRateButton = document.getElementById('social-rate-button')
 
+        const leaderboardIsSupportedText = document.getElementById('leaderboard-is-supported-text')
+        const leaderboardIsNativePopupSupportedText = document.getElementById('leaderboard-is-native-popup-supported-text')
+        const leaderboardIsMultipleBoardsSupportedText = document.getElementById('leaderboard-is-multiple-boards-supported-text')
+        const leaderboardIsGetScoreSupportedText = document.getElementById('leaderboard-is-get-score-supported-text')
+        const leaderboardIsSetScoreSupportedText = document.getElementById('leaderboard-is-set-score-supported-text')
+        const leaderboardIsGetEntriesSupportedText = document.getElementById('leaderboard-is-get-entries-supported-text')
+        const leaderboardIdInput = document.getElementById('leaderboard-board-id-input')
+        const leaderboardScoreInput = document.getElementById('leaderboard-score-input')
+        const leaderboardSetScoreButton = document.getElementById('leaderboard-set-score-button')
+        const leaderboardGetScoreButton = document.getElementById('leaderboard-get-score-button')
+        const leaderboardVkGlobalInput = document.getElementById('leaderboard-vk-global-input')
+        const leaderboardShowNativePopupButton = document.getElementById('leaderboard-show-native-popup-button')
+        const leaderboardYandexIncludeUserInput = document.getElementById('leaderboard-yandex-include-user-input')
+        const leaderboardYandexQuantityAroundInput = document.getElementById('leaderboard-yandex-quantity-around-input')
+        const leaderboardYandexQuantityTopInput = document.getElementById('leaderboard-yandex-quantity-top-input')
+        const leaderboardGetEntriesButton = document.getElementById('leaderboard-get-entries-button')
+        const leaderboardEntriesContainer = document.getElementById('leaderboard-entries-container')
+
         initializeButton.addEventListener('click', () => {
             if (instantGamesBridge.isInitialized)
                 return
 
-            const bridgeOptions = {
-                platforms: {
-                    vk: {
-                        groupId: optionsVkGroupIdInput.value
-                    },
-                    yandex: {
-                        authorization: {
-                            scopes: optionsYandexAuthorizationScopesInput.checked
-                        }
-                    }
-                }
-            }
-
             instantGamesBridge
-                .initialize(bridgeOptions)
+                .initialize()
                 .then(() => {
+
                     optionsSection.style.display = 'none'
                     initializeButton.disabled = 'disabled'
 
@@ -223,19 +291,27 @@
                         advertisementRewardedStateText.innerText = state
                     })
 
+                    leaderboardIsSupportedText.innerText = instantGamesBridge.leaderboard.isSupported
+                    leaderboardIsNativePopupSupportedText.innerText = instantGamesBridge.leaderboard.isNativePopupSupported
+                    leaderboardIsMultipleBoardsSupportedText.innerText = instantGamesBridge.leaderboard.isMultipleBoardsSupported
+                    leaderboardIsGetScoreSupportedText.innerText = instantGamesBridge.leaderboard.isGetScoreSupported
+                    leaderboardIsSetScoreSupportedText.innerText = instantGamesBridge.leaderboard.isSetScoreSupported
+                    leaderboardIsGetEntriesSupportedText.innerText = instantGamesBridge.leaderboard.isGetEntriesSupported
+
                     platformSection.style.display = 'block'
                     deviceSection.style.display = 'block'
                     playerSection.style.display = 'block'
                     gameSection.style.display = 'block'
                     advertisementSection.style.display = 'block'
                     socialSection.style.display = 'block'
+                    leaderboardSection.style.display = 'block'
                 })
         })
 
         authorizePlayerButton.addEventListener('click', () => {
             instantGamesBridge
                 .player
-                .authorize()
+                .authorize({ yandex: { scopes: authorizePlayerYandexScopesInput.checked }})
                 .then(() => {
                     isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
                     playerIdText.innerText = instantGamesBridge.player.id
@@ -266,14 +342,15 @@
             instantGamesBridge
                 .game
                 .deleteData('player_progress')
-            .then(() => {
-                gameDataCoinsInput.value = ''
-                gameDataLevelInput.value = ''
-            })
+                .then(() => {
+                    gameDataCoinsInput.value = ''
+                    gameDataLevelInput.value = ''
+                })
         })
 
         advertisementSetMinimumDelayBetweenInterstitialButton.addEventListener('click', () => {
-            instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(advertisementMinimumDelayBetweenInterstitialInput.value)
+            let value = advertisementMinimumDelayBetweenInterstitialInput.value
+            instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(value)
             advertisementMinimumDelayBetweenInterstitialInput.value = instantGamesBridge.advertisement.minimumDelayBetweenInterstitial
         })
 
@@ -290,7 +367,13 @@
         })
 
         socialShareButton.addEventListener('click', () => {
-            instantGamesBridge.social.share()
+            let data = {
+                vk: {
+                    link: socialVkShareLinkInput.value
+                }
+            }
+
+            instantGamesBridge.social.share(data)
         })
 
         socialInviteFriendsButton.addEventListener('click', () => {
@@ -298,11 +381,17 @@
         })
 
         socialJoinCommunityButton.addEventListener('click', () => {
-            instantGamesBridge.social.joinCommunity()
+            instantGamesBridge.social.joinCommunity({ vk: { groupId: socialVkGroupIdInput.value } })
         })
 
         socialCreatePostButton.addEventListener('click', () => {
-            instantGamesBridge.social.createPost(socialCreatePostInput.value)
+            let data = {
+                vk: {
+                    message: socialCreatePostMessageInput.value,
+                    attachments: socialCreatePostAttachmentsInput.value,
+                }
+            }
+            instantGamesBridge.social.createPost(data)
         })
 
         socialAddToHomeScreenButton.addEventListener('click', () => {
@@ -315,6 +404,52 @@
 
         socialRateButton.addEventListener('click', () => {
             instantGamesBridge.social.rate()
+        })
+
+        leaderboardGetScoreButton.addEventListener('click', () => {
+            instantGamesBridge
+                .leaderboard
+                .getScore({ yandex: { leaderboardName: leaderboardIdInput.value } })
+                .then(score => {
+                    if (score)
+                        leaderboardScoreInput.value = score
+                })
+        })
+
+        leaderboardSetScoreButton.addEventListener('click', () => {
+            instantGamesBridge
+                .leaderboard
+                .setScore({ yandex: { score: leaderboardScoreInput.value, leaderboardName: leaderboardIdInput.value }})
+        })
+
+        leaderboardShowNativePopupButton.addEventListener('click', () => {
+            let score = leaderboardScoreInput.value
+            if (!score)
+                score = 1
+
+            instantGamesBridge
+                .leaderboard
+                .showNativePopup({ vk: { userResult: score, global: leaderboardVkGlobalInput.checked } })
+        })
+
+        leaderboardGetEntriesButton.addEventListener('click', () => {
+            instantGamesBridge
+                .leaderboard
+                .getEntries({
+                    yandex: {
+                        leaderboardName: leaderboardIdInput.value,
+                        quantityTop: leaderboardYandexQuantityTopInput.value,
+                        includeUser: leaderboardYandexIncludeUserInput.checked,
+                        quantityAround: leaderboardYandexQuantityAroundInput.value
+                    }
+                })
+                .then(data => {
+                    let text = ''
+                    data.forEach(e => {
+                        text += 'ID: ' + e.id + ', name: ' + e.name + ', score: ' + e.score + ', rank: ' + e.rank + ', small photo: ' + e.photos[0]
+                    })
+                    leaderboardEntriesContainer.innerText = text
+                })
         })
     </script>
 </body>

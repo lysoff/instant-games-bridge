@@ -22,7 +22,11 @@ class PlayerModule extends ModuleBase {
         return this._platformBridge.playerPhotos
     }
 
-    authorize() {
+    authorize(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.authorize(platformDependedOptions)
+
         return this._platformBridge.authorizePlayer()
     }
 

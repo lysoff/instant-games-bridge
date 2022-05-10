@@ -1,3 +1,9 @@
+export const PLATFORM_ID = {
+    VK: 'vk',
+    YANDEX: 'yandex',
+    MOCK: 'mock'
+}
+
 export const MODULE_NAME = {
     PLATFORM: 'platform',
     PLAYER: 'player',

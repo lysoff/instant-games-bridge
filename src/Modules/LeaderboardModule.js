@@ -26,20 +26,36 @@ class LeaderboardModule extends ModuleBase {
         return this._platformBridge.isLeaderboardGetEntriesSupported
     }
 
-    setScore(value, leaderboardId) {
-        return this._platformBridge.setLeaderboardScore(value, leaderboardId)
+    setScore(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.setScore(platformDependedOptions)
+
+        return this._platformBridge.setLeaderboardScore(options)
     }
 
-    getScore(leaderboardId) {
-        return this._platformBridge.getLeaderboardScore(leaderboardId)
+    getScore(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.getScore(platformDependedOptions)
+
+        return this._platformBridge.getLeaderboardScore(options)
     }
 
-    getEntries(leaderboardId) {
-        return this._platformBridge.getLeaderboardEntries(leaderboardId)
+    getEntries(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.getEntries(platformDependedOptions)
+
+        return this._platformBridge.getLeaderboardEntries(options)
     }
 
-    showNativePopup(score, leaderboardId) {
-        return this._platformBridge.showLeaderboardNativePopup(score, leaderboardId)
+    showNativePopup(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.showNativePopup(platformDependedOptions)
+
+        return this._platformBridge.showLeaderboardNativePopup(options)
     }
 
 }

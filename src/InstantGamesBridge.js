@@ -1,4 +1,4 @@
-import { MODULE_NAME } from './constants'
+import { PLATFORM_ID, MODULE_NAME, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from './constants'
 import PromiseDecorator from './Common/PromiseDecorator'
 import PlatformBridgeBase from './PlatformBridges/PlatformBridgeBase'
 import VkPlatformBridge from './PlatformBridges/VkPlatformBridge'
@@ -47,6 +47,26 @@ class InstantGamesBridge {
 
     get leaderboard() {
         return this.#getModule(MODULE_NAME.LEADERBOARD)
+    }
+
+    get PLATFORM_ID() {
+        return PLATFORM_ID
+    }
+
+    get MODULE_NAME() {
+        return MODULE_NAME
+    }
+
+    get EVENT_NAME() {
+        return EVENT_NAME
+    }
+
+    get INTERSTITIAL_STATE() {
+        return INTERSTITIAL_STATE
+    }
+
+    get REWARDED_STATE() {
+        return REWARDED_STATE
     }
 
     #isInitialized = false

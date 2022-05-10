@@ -32,14 +32,27 @@ class AdvertisementModule extends ModuleBase {
             state => this.emit(EVENT_NAME.REWARDED_STATE_CHANGED, state))
     }
 
-    setMinimumDelayBetweenInterstitial(value) {
-        if (typeof value !== 'number') {
-            value = parseInt(value)
-            if (isNaN(value))
-                return
+    setMinimumDelayBetweenInterstitial(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.setMinimumDelayBetweenInterstitial(platformDependedOptions)
+
+        let optionsType = typeof options
+        let delay = this.#minimumDelayBetweenInterstitial
+
+        switch (optionsType) {
+            case 'number': {
+                delay = options
+                break
+            }
+            case 'string': {
+                delay = parseInt(options)
+                if (isNaN(delay))
+                    return
+            }
         }
 
-        this.#minimumDelayBetweenInterstitial = value
+        this.#minimumDelayBetweenInterstitial = delay
 
         if (this.#interstitialTimer) {
             this.#interstitialTimer.stop()
@@ -48,10 +61,16 @@ class AdvertisementModule extends ModuleBase {
     }
 
     showInterstitial(options) {
-        let ignoreDelay = options && options.ignoreDelay
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.showInterstitial(platformDependedOptions)
+
+        let ignoreDelay = false
+        if (options && typeof options.ignoreDelay === 'boolean')
+            ignoreDelay = options.ignoreDelay
 
         if (this.#interstitialTimer && this.#interstitialTimer.state !== TIMER_STATE.COMPLETED && !ignoreDelay)
-            return Promise.reject('The minimum delay between interstitials has not passed')
+            return Promise.reject()
 
         if (this.#minimumDelayBetweenInterstitial > 0)
             this.#startInterstitialTimer()

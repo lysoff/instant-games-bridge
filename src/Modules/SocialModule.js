@@ -34,16 +34,28 @@ class SocialModule extends ModuleBase {
         return this._platformBridge.inviteFriends()
     }
 
-    joinCommunity() {
-        return this._platformBridge.joinCommunity()
+    joinCommunity(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.joinCommunity(platformDependedOptions)
+
+        return this._platformBridge.joinCommunity(options)
     }
 
-    share() {
-        return this._platformBridge.share()
+    share(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.share(platformDependedOptions)
+
+        return this._platformBridge.share(options)
     }
 
-    createPost(message) {
-        return this._platformBridge.createPost(message)
+    createPost(options) {
+        let platformDependedOptions = options[this._platformBridge.platformId]
+        if (platformDependedOptions)
+            return this.createPost(platformDependedOptions)
+
+        return this._platformBridge.createPost(options)
     }
 
     addToHomeScreen() {

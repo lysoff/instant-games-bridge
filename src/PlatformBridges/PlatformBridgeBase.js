@@ -1,5 +1,5 @@
 import EventLite from 'event-lite'
-import { EVENT_NAME as ADVERTISEMENT_EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
+import { PLATFORM_ID, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
 import PromiseDecorator from '../Common/PromiseDecorator'
 
 export const ACTION_NAME = {
@@ -16,6 +16,7 @@ export const ACTION_NAME = {
     RATE: 'rate',
     SET_LEADERBOARD_SCORE: 'set_leaderboard_score',
     GET_LEADERBOARD_SCORE: 'get_leaderboard_score',
+    GET_LEADERBOARD_ENTRIES: 'get_leaderboard_entries',
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup'
 }
 
@@ -23,7 +24,7 @@ class PlatformBridgeBase {
 
     // platform
     get platformId() {
-        return 'mock'
+        return PLATFORM_ID.MOCK
     }
 
     get platformSdk() {
@@ -179,7 +180,7 @@ class PlatformBridgeBase {
 
 
     // player
-    authorizePlayer() {
+    authorizePlayer(options) {
         return Promise.reject()
     }
 
@@ -262,19 +263,19 @@ class PlatformBridgeBase {
 
 
     // leaderboard
-    setLeaderboardScore(value, leaderboardId) {
+    setLeaderboardScore(options) {
         return Promise.reject()
     }
 
-    getLeaderboardScore(leaderboardId) {
+    getLeaderboardScore(options) {
         return Promise.reject()
     }
 
-    getLeaderboardEntries(leaderboardId) {
+    getLeaderboardEntries(options) {
         return Promise.reject()
     }
 
-    showLeaderboardNativePopup(score, leaderboardId) {
+    showLeaderboardNativePopup(options) {
         return Promise.reject()
     }
 
@@ -312,7 +313,7 @@ class PlatformBridgeBase {
             return
 
         this._interstitialState = state
-        this.emit(ADVERTISEMENT_EVENT_NAME.INTERSTITIAL_STATE_CHANGED, this._interstitialState)
+        this.emit(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, this._interstitialState)
     }
 
     _setRewardedState(state) {
@@ -320,7 +321,7 @@ class PlatformBridgeBase {
             return
 
         this._rewardedState = state
-        this.emit(ADVERTISEMENT_EVENT_NAME.REWARDED_STATE_CHANGED, this._rewardedState)
+        this.emit(EVENT_NAME.REWARDED_STATE_CHANGED, this._rewardedState)
     }
 
     _canShowAdvertisement() {
