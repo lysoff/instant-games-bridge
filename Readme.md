@@ -18,46 +18,19 @@ Join community: https://t.me/instant_games_bridge.
 ## Usage
 + [Setup](#setup)
 + [Platform](#platform)
++ [Device](#device)
 + [Player](#player)
 + [Game](#game)
 + [Advertisement](#advertisement)
 + [Social](#social)
++ [Leaderboard](#leaderboard)
 
 ### Setup
 First you need to initialize the SDK:
 ```html
-<script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.3.0/dist/instant-games-bridge.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.4.0/dist/instant-games-bridge.js"></script>
 <script>
-    // Optional parameter
-    let bridgeOptions = {
-        platforms: {
-            vk: {
-                groupId: 199747461 // If you want to use instantGamesBridge.social.joinCommunity() method
-            },
-            yandex: {
-                authorization: {
-                    scopes: true // Request player name and photo, default = false
-                }
-            },
-            // Default = false for all simulations in mock
-            mock: {
-                social: {
-                    simulateShare: true,
-                    simulateInviteFriends: true,
-                    simulateJoinCommunity: true,
-                    simulateCreatePost: true,
-                    simulateAddToHomeScreen: true,
-                    simulateAddToFavorites: true
-                },
-                advertisement: {
-                    simulateInterstitial: true,
-                    simulateRewarded: true
-                }
-            }
-        }
-    }
-    
-    instantGamesBridge.initialize(bridgeOptions)
+    instantGamesBridge.initialize()
         .then(() => {
             // Initialized. You can use other methods.
         })
@@ -86,10 +59,18 @@ instantGamesBridge.platform.language
 instantGamesBridge.platform.payload
 ```
 
+### Device
+```js
+// 'mobile', 'tablet', 'desktop', 'tv'
+instantGamesBridge.device.type
+```
+
 ### Player
 ```js
+// VK, Yandex: true
 instantGamesBridge.player.isAuthorizationSupported
 
+// VK: true, Yandex: true/false
 instantGamesBridge.player.isAuthorized
 
 // If player is authorized
@@ -100,7 +81,12 @@ instantGamesBridge.player.name
 instantGamesBridge.player.photos // Array of player photos, sorted in order of increasing photo size
 
 // If authorization is supported and player is not authorized
-instantGamesBridge.player.authorize()
+let authorizationOptions = {
+    yandex: {
+        scopes: true // Request access to name and photo
+    }
+}
+instantGamesBridge.player.authorize(authorizationOptions)
     .then(() => {
         // Success
     })
@@ -142,19 +128,34 @@ instantGamesBridge.game.deleteData(key)
 ```
 
 ### Advertisement
-#### Methods
 ```js
+/* -- -- -- Delays Between Interstitials -- -- -- */
 instantGamesBridge.advertisement.minimumDelayBetweenInterstitial // Default = 60 seconds
 
-// You can override minimum delay
-let seconds = 30
-instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(seconds)
+// You can override minimum delay. You can use platform specific delays:
+let delayOptions = {
+    vk: 30,
+    yandex: 60,
+    mock: 0
+}
+// Or common to all platforms:
+let delayOptions = 60
+instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(delayOptions)
 
-// Optional parameter
+/* -- -- -- Interstitial -- -- -- */
+//  You can use platform specific ignoring:
+let interstitialOptions = {
+    vk: {
+        ignoreDelay: true
+    },
+    yandex: {
+        ignoreDelay: false
+    }
+}
+// Or common to all platforms:
 let interstitialOptions = {
     ignoreDelay: true // Default = false
 }
-
 // Request to show interstitial ads
 instantGamesBridge.advertisement.showInterstitial(interstitialOptions)
     .then(() => {
@@ -164,6 +165,7 @@ instantGamesBridge.advertisement.showInterstitial(interstitialOptions)
         // Error
     })
 
+/* -- -- -- Rewarded Video -- -- -- */
 // Request to show rewarded video ads
 instantGamesBridge.advertisement.showRewarded()
     .then(() => {
@@ -172,10 +174,13 @@ instantGamesBridge.advertisement.showRewarded()
     .catch(error => {
         // Error
     })
-```
-#### Events
-```js
+
+/* -- -- -- Advertisement States -- -- -- */
+// Fired when interstitial state changed ('opened', 'closed', 'failed')
 instantGamesBridge.advertisement.on('interstitial_state_changed', state => console.log('Interstitial state:', state))
+
+// Fired when rewarded video state changed ('opened', 'rewarded', 'closed', 'failed')
+// It is recommended to give a reward when the state is 'rewarded'
 instantGamesBridge.advertisement.on('rewarded_state_changed', state => console.log('Rewarded state:', state))
 ```
 
@@ -192,7 +197,16 @@ instantGamesBridge.social.isAddToFavoritesSupported
 // VK, Yandex: partial supported
 instantGamesBridge.social.isAddToHomeScreenSupported
 
-instantGamesBridge.social.share()
+// VK: false
+// Yandex: true
+instantGamesBridge.social.isRateSupported
+
+let shareOptions = {
+    vk: {
+        link: 'https://vk.com/wordle.game'
+    }
+}
+instantGamesBridge.social.share(shareOptions)
     .then(() => {
         // Success
     })
@@ -200,8 +214,12 @@ instantGamesBridge.social.share()
         // Error
     })
 
-// For VK - you need to pass the group id when you call the instantGamesBridge.initialize() method
-instantGamesBridge.social.joinCommunity()
+let joinCommunityOptions = {
+    vk: {
+        groupId: '199747461'
+    }
+}
+instantGamesBridge.social.joinCommunity(joinCommunityOptions)
     .then(() => {
         // Success
     })
@@ -217,7 +235,13 @@ instantGamesBridge.social.inviteFriends()
         // Error
     })
 
-instantGamesBridge.social.createPost(text)
+let createPostOptions = {
+    vk: {
+        message: 'Hello world!',
+        attachments: 'photo-199747461_457239629'
+    }
+}
+instantGamesBridge.social.createPost(createPostOptions)
     .then(() => {
         // Success
     })
@@ -234,6 +258,90 @@ instantGamesBridge.social.addToHomeScreen()
     })
 
 instantGamesBridge.social.addToFavorites()
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+
+instantGamesBridge.social.rate()
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+```
+
+### Leaderboard
+```js
+// VK, Yandex: true
+instantGamesBridge.leaderboard.isSupported
+
+// VK: true, Yandex: false
+instantGamesBridge.leaderboard.isNativePopupSupported
+
+// VK: false, Yandex: true
+instantGamesBridge.leaderboard.isMultipleBoardsSupported
+instantGamesBridge.leaderboard.isSetScoreSupported
+instantGamesBridge.leaderboard.isGetScoreSupported
+instantGamesBridge.leaderboard.isGetEntriesSupported
+
+let setScoreOptions = {
+    yandex: {
+        leaderboardName: 'YOU_LEADERBOARD_NAME',
+        score: 42
+    }
+}
+instantGamesBridge.leaderboard.setScore(setScoreOptions)
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+
+let getScoreOptions = {
+    yandex: {
+        leaderboardName: 'YOU_LEADERBOARD_NAME',
+    }
+}
+instantGamesBridge.leaderboard.getScore(getScoreOptions)
+    .then(score => {
+        // Success
+        console.log(score)
+    })
+    .catch(error => {
+        // Error
+    })
+
+let getEntriesOptions = {
+    yandex: {
+        leaderboardName: 'YOU_LEADERBOARD_NAME',
+        includeUser: true, // Default = false
+        quantityAround: 10, // Default = 5
+        quantityTop: 10 // Default = 5
+    }
+}
+instantGamesBridge.leaderboard.getEntries(getEntriesOptions)
+    .then(entries => {
+        // Success
+        entries.forEach(e => {
+            console.log('ID: ' + e.id + ', name: ' + e.name + ', score: ' + e.score + ', rank: ' + e.rank + ', small photo: ' + e.photos[0])
+        })
+    })
+    .catch(error => {
+        // Error
+    })
+
+let showNativePopupOptions = {
+    vk: {
+        userResult: 42,
+        global: true // Default = false
+    }
+}
+instantGamesBridge.leaderboard.showNativePopup(showNativePopupOptions)
     .then(() => {
         // Success
     })
