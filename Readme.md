@@ -17,6 +17,7 @@ Join community: https://t.me/instant_games_bridge.
 
 ## Usage
 + [Setup](#setup)
++ [Modules Overriding](#modules-overriding)
 + [Platform](#platform)
 + [Device](#device)
 + [Player](#player)
@@ -38,6 +39,36 @@ First you need to initialize the SDK:
             // Error
         })
 </script>
+```
+
+### Modules Overriding
+```js
+// You can override any module ('advertisement', 'device', 'game', 'player', 'platform', 'social', 'leaderboard').
+// Сorrect public interface and return types are required!
+class CustomAdvertisementModule {
+
+    initialize(builtinModule) {
+        this.builtinModule = builtinModule
+    }
+
+    showInterstitial(options) {
+        console.log('CustomAdvertisementModule.showInterstitial')
+        return new Promise((resolve, reject) => {
+            // custom logic
+        })
+    }
+
+    showRewarded() {
+        console.log('CustomAdvertisementModule.showRewarded')
+        // Fallback to builtin module
+        return this.builtinModule.showRewarded()
+    }
+
+    // ... other methods
+
+}
+
+instantGamesBridge.overrideModule(instantGamesBridge.MODULE_NAME.ADVERTISEMENT, new CustomAdvertisementModule())
 ```
 
 ### Platform
