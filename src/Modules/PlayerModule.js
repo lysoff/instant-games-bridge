@@ -27,7 +27,7 @@ class PlayerModule extends ModuleBase {
         if (platformDependedOptions)
             return this.authorize(platformDependedOptions)
 
-        return this._platformBridge.authorizePlayer()
+        return this._platformBridge.authorizePlayer(options)
     }
 
 }
