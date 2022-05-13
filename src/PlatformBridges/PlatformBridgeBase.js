@@ -326,7 +326,7 @@ class PlatformBridgeBase {
 
     _canShowAdvertisement() {
         if (this._interstitialState) {
-            if (this._interstitialState !== INTERSTITIAL_STATE.CLOSED)
+            if (this._interstitialState !== INTERSTITIAL_STATE.CLOSED && this._interstitialState !== INTERSTITIAL_STATE.FAILED)
                 return false
         }
 
