@@ -84,7 +84,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                         .then(sdk => {
                             this._platformSdk = sdk
 
-                            let getPlayerPromise = this.#getPlayer(true)
+                            let getPlayerPromise = this.#getPlayer()
                             let getSafeStoragePromise = this._platformSdk.getStorage()
                                 .then(safeStorage => {
                                     this._localStorage = safeStorage
@@ -442,7 +442,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     #getPlayer(options) {
         return new Promise(resolve => {
-            let parameters = { }
+            let parameters = {
+                scopes: true
+            }
+
             if (options && typeof options.scopes === 'boolean')
                 parameters.scopes = options.scopes
 
