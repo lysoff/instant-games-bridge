@@ -23,9 +23,11 @@ class PlayerModule extends ModuleBase {
     }
 
     authorize(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.authorize(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.authorize(platformDependedOptions)
+        }
 
         return this._platformBridge.authorizePlayer(options)
     }

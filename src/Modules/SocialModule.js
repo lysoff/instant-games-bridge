@@ -35,25 +35,31 @@ class SocialModule extends ModuleBase {
     }
 
     joinCommunity(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.joinCommunity(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.joinCommunity(platformDependedOptions)
+        }
 
         return this._platformBridge.joinCommunity(options)
     }
 
     share(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.share(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.share(platformDependedOptions)
+        }
 
         return this._platformBridge.share(options)
     }
 
     createPost(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.createPost(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.createPost(platformDependedOptions)
+        }
 
         return this._platformBridge.createPost(options)
     }

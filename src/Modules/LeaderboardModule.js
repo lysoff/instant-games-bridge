@@ -27,33 +27,41 @@ class LeaderboardModule extends ModuleBase {
     }
 
     setScore(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.setScore(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.setScore(platformDependedOptions)
+        }
 
         return this._platformBridge.setLeaderboardScore(options)
     }
 
     getScore(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.getScore(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.getScore(platformDependedOptions)
+        }
 
         return this._platformBridge.getLeaderboardScore(options)
     }
 
     getEntries(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.getEntries(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.getEntries(platformDependedOptions)
+        }
 
         return this._platformBridge.getLeaderboardEntries(options)
     }
 
     showNativePopup(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.showNativePopup(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.showNativePopup(platformDependedOptions)
+        }
 
         return this._platformBridge.showLeaderboardNativePopup(options)
     }

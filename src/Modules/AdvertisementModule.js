@@ -33,9 +33,11 @@ class AdvertisementModule extends ModuleBase {
     }
 
     setMinimumDelayBetweenInterstitial(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.setMinimumDelayBetweenInterstitial(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.setMinimumDelayBetweenInterstitial(platformDependedOptions)
+        }
 
         let optionsType = typeof options
         let delay = this.#minimumDelayBetweenInterstitial
@@ -61,9 +63,11 @@ class AdvertisementModule extends ModuleBase {
     }
 
     showInterstitial(options) {
-        let platformDependedOptions = options[this._platformBridge.platformId]
-        if (platformDependedOptions)
-            return this.showInterstitial(platformDependedOptions)
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions)
+                return this.showInterstitial(platformDependedOptions)
+        }
 
         let ignoreDelay = false
         if (options && typeof options.ignoreDelay === 'boolean')
