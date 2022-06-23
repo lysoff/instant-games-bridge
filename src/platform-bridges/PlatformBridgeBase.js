@@ -1,6 +1,6 @@
 import EventLite from 'event-lite'
 import { PLATFORM_ID, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
-import PromiseDecorator from '../Common/PromiseDecorator'
+import PromiseDecorator from '../common/PromiseDecorator'
 
 export const ACTION_NAME = {
     INITIALIZE: 'initialize',

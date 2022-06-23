@@ -1,5 +1,5 @@
 import PlatformBridgeBase, {ACTION_NAME} from './PlatformBridgeBase'
-import { addJavaScript } from '../Common/utils'
+import { addJavaScript } from '../common/utils'
 import { PLATFORM_ID, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
 
 const VK_BRIDGE_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'

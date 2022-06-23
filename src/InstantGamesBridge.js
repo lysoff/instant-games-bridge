@@ -1,20 +1,21 @@
 import { PLATFORM_ID, MODULE_NAME, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from './constants'
-import PromiseDecorator from './Common/PromiseDecorator'
-import PlatformBridgeBase from './PlatformBridges/PlatformBridgeBase'
-import VkPlatformBridge from './PlatformBridges/VkPlatformBridge'
-import YandexPlatformBridge from './PlatformBridges/YandexPlatformBridge'
-import PlatformModule from './Modules/PlatformModule'
-import PlayerModule from './Modules/PlayerModule'
-import GameModule from './Modules/GameModule'
-import AdvertisementModule from './Modules/AdvertisementModule'
-import SocialModule from './Modules/SocialModule'
-import DeviceModule from './Modules/DeviceModule'
-import LeaderboardModule from './Modules/LeaderboardModule'
+import PromiseDecorator from './common/PromiseDecorator'
+import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
+import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
+import YandexPlatformBridge from './platform-bridges/YandexPlatformBridge'
+import TggPlatformBridge from './platform-bridges/TggPlatformBridge'
+import PlatformModule from './modules/PlatformModule'
+import PlayerModule from './modules/PlayerModule'
+import GameModule from './modules/GameModule'
+import AdvertisementModule from './modules/AdvertisementModule'
+import SocialModule from './modules/SocialModule'
+import DeviceModule from './modules/DeviceModule'
+import LeaderboardModule from './modules/LeaderboardModule'
 
 class InstantGamesBridge {
 
     get version() {
-        return '1.4.4'
+        return '1.4.5'
     }
 
     get isInitialized() {
@@ -122,14 +123,40 @@ class InstantGamesBridge {
     }
 
     #createPlatformBridge() {
-        let url = new URL(window.location.href)
-        let yandexUrl = ['g', 'a', 'm', 'e', 's', '.', 's', '3', '.', 'y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
-        if (url.hostname.includes(yandexUrl))
-            this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms.yandex)
-        else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key'))
-            this.#platformBridge = new VkPlatformBridge(this._options && this._options.platforms && this._options.platforms.vk)
-        else
-            this.#platformBridge = new PlatformBridgeBase()
+        let platformId = PLATFORM_ID.MOCK
+
+        if (this._options && this._options.forciblySetPlatformId) {
+            platformId = this._options.forciblySetPlatformId
+        } else {
+            let url = new URL(window.location.href)
+            let yandexUrl = ['g', 'a', 'm', 'e', 's', '.', 's', '3', '.', 'y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
+            if (url.hostname.includes(yandexUrl)) {
+                platformId = PLATFORM_ID.YANDEX
+            } else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key')) {
+                platformId = PLATFORM_ID.VK
+            } else if (url.searchParams.has('platform')) {
+                switch (url.searchParams.get('platform')) {
+                    case 'tgg':
+                        platformId = PLATFORM_ID.TGG
+                        break
+                }
+            }
+        }
+
+        switch (platformId) {
+            case PLATFORM_ID.VK:
+                this.#platformBridge = new VkPlatformBridge(this._options && this._options.platforms && this._options.platforms.vk)
+                break
+            case PLATFORM_ID.YANDEX:
+                this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms.yandex)
+                break
+            case PLATFORM_ID.TGG:
+                this.#platformBridge = new TggPlatformBridge(this._options && this._options.platforms && this._options.platforms.tgg)
+                break
+            case PLATFORM_ID.MOCK:
+                this.#platformBridge = new PlatformBridgeBase()
+                break
+        }
     }
 
     #getModule(id) {

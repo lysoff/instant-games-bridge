@@ -1,5 +1,5 @@
 import EventLite from 'event-lite'
-import Timer, { STATE as TIMER_STATE } from '../Common/Timer'
+import Timer, { STATE as TIMER_STATE } from '../common/Timer'
 import ModuleBase from './ModuleBase'
 import { EVENT_NAME } from '../constants'
 

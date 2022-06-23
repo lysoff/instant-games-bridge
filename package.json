@@ -1,28 +1,27 @@
 {
     "name": "instant-games-bridge",
-    "version": "1.4.4",
+    "version": "1.4.5",
     "description": "One SDK for cross platform publishing HTML5 games",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
         "build": "webpack"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/mewtongames/instant-games-bridge.git"
+        "url": "git+https://github.com/instant-games-bridge/instant-games-bridge"
     },
     "author": "Mewton Games",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/mewtongames/instant-games-bridge/issues"
+        "url": "https://github.com/instant-games-bridge/instant-games-bridge/issues"
     },
-    "homepage": "https://github.com/mewtongames/instant-games-bridge",
+    "homepage": "https://github.com/instant-games-bridge/instant-games-bridge",
     "dependencies": {
-        "event-lite": "^0.1.2",
-        "webpack": "^5.70.0",
-        "webpack-cli": "^4.9.2"
+        "event-lite": "^0.1.2"
     },
     "devDependencies": {
+        "webpack": "^5.70.0",
+        "webpack-cli": "^4.9.2",
         "@babel/core": "^7.17.8",
         "@babel/preset-env": "^7.16.11",
         "babel-loader": "^8.2.3"

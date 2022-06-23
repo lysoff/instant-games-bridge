@@ -1,6 +1,7 @@
 export const PLATFORM_ID = {
     VK: 'vk',
     YANDEX: 'yandex',
+    TGG: 'tgg',
     MOCK: 'mock'
 }
 
