@@ -126,17 +126,27 @@ class InstantGamesBridge {
         let platformId = PLATFORM_ID.MOCK
 
         if (this._options && this._options.forciblySetPlatformId) {
-            platformId = this._options.forciblySetPlatformId
+            switch (this._options.forciblySetPlatformId) {
+                case PLATFORM_ID.VK:
+                    platformId = PLATFORM_ID.VK
+                    break
+                case PLATFORM_ID.YANDEX:
+                    platformId = PLATFORM_ID.YANDEX
+                    break
+                case PLATFORM_ID.TGG:
+                    platformId = PLATFORM_ID.TGG
+                    break
+            }
         } else {
             let url = new URL(window.location.href)
-            let yandexUrl = ['g', 'a', 'm', 'e', 's', '.', 's', '3', '.', 'y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
-            if (url.hostname.includes(yandexUrl)) {
+            let yandexUrl = ['y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
+            if (url.hostname.includes(yandexUrl) || url.hash.includes('yandex')) {
                 platformId = PLATFORM_ID.YANDEX
             } else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('platform')) {
                 switch (url.searchParams.get('platform')) {
-                    case 'tgg':
+                    case PLATFORM_ID.TGG:
                         platformId = PLATFORM_ID.TGG
                         break
                 }
