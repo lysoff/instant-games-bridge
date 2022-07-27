@@ -1,4 +1,4 @@
-import { PLATFORM_ID, MODULE_NAME, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from './constants'
+import { PLATFORM_ID, MODULE_NAME, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, VISIBILITY_STATE } from './constants'
 import PromiseDecorator from './common/PromiseDecorator'
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
 import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
@@ -7,6 +7,7 @@ import TggPlatformBridge from './platform-bridges/TggPlatformBridge'
 import PlatformModule from './modules/PlatformModule'
 import PlayerModule from './modules/PlayerModule'
 import GameModule from './modules/GameModule'
+import StorageModule from './modules/StorageModule'
 import AdvertisementModule from './modules/AdvertisementModule'
 import SocialModule from './modules/SocialModule'
 import DeviceModule from './modules/DeviceModule'
@@ -15,7 +16,7 @@ import LeaderboardModule from './modules/LeaderboardModule'
 class InstantGamesBridge {
 
     get version() {
-        return '1.4.6'
+        return '1.5.0'
     }
 
     get isInitialized() {
@@ -32,6 +33,10 @@ class InstantGamesBridge {
 
     get game() {
         return this.#getModule(MODULE_NAME.GAME)
+    }
+
+    get storage() {
+        return this.#getModule(MODULE_NAME.STORAGE)
     }
 
     get advertisement() {
@@ -70,6 +75,14 @@ class InstantGamesBridge {
         return REWARDED_STATE
     }
 
+    get STORAGE_TYPE() {
+        return STORAGE_TYPE
+    }
+
+    get VISIBILITY_STATE() {
+        return VISIBILITY_STATE
+    }
+
     #isInitialized = false
     #initializationPromiseDecorator = null
 
@@ -78,8 +91,9 @@ class InstantGamesBridge {
     #overriddenModules = { }
 
     initialize(options) {
-        if (this.#isInitialized)
+        if (this.#isInitialized) {
             return Promise.resolve()
+        }
 
         if (!this.#initializationPromiseDecorator) {
             this.#initializationPromiseDecorator = new PromiseDecorator()
@@ -91,6 +105,7 @@ class InstantGamesBridge {
                     this.#modules[MODULE_NAME.PLATFORM] = new PlatformModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.PLAYER] = new PlayerModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.GAME] = new GameModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.STORAGE] = new StorageModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.ADVERTISEMENT] = new AdvertisementModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.SOCIAL] = new SocialModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.DEVICE] = new DeviceModule(this.#platformBridge)
@@ -110,15 +125,17 @@ class InstantGamesBridge {
     }
 
     overrideModule(id, value) {
-        if (!this.#isInitialized)
+        if (!this.#isInitialized) {
             return
+        }
 
         let module = this.#modules[id]
         if (module) {
             this.#overriddenModules[id] = value
 
-            if (typeof value.initialize === 'function')
+            if (typeof value.initialize === 'function') {
                 value.initialize(module)
+            }
         }
     }
 
@@ -127,15 +144,18 @@ class InstantGamesBridge {
 
         if (this._options && this._options.forciblySetPlatformId) {
             switch (this._options.forciblySetPlatformId) {
-                case PLATFORM_ID.VK:
+                case PLATFORM_ID.VK: {
                     platformId = PLATFORM_ID.VK
                     break
-                case PLATFORM_ID.YANDEX:
+                }
+                case PLATFORM_ID.YANDEX: {
                     platformId = PLATFORM_ID.YANDEX
                     break
-                case PLATFORM_ID.TGG:
+                }
+                case PLATFORM_ID.TGG: {
                     platformId = PLATFORM_ID.TGG
                     break
+                }
             }
         } else {
             let url = new URL(window.location.href)
@@ -146,32 +166,38 @@ class InstantGamesBridge {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('platform')) {
                 switch (url.searchParams.get('platform')) {
-                    case PLATFORM_ID.TGG:
+                    case PLATFORM_ID.TGG: {
                         platformId = PLATFORM_ID.TGG
                         break
+                    }
                 }
             }
         }
 
         switch (platformId) {
-            case PLATFORM_ID.VK:
+            case PLATFORM_ID.VK: {
                 this.#platformBridge = new VkPlatformBridge(this._options && this._options.platforms && this._options.platforms.vk)
                 break
-            case PLATFORM_ID.YANDEX:
+            }
+            case PLATFORM_ID.YANDEX: {
                 this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms.yandex)
                 break
-            case PLATFORM_ID.TGG:
+            }
+            case PLATFORM_ID.TGG: {
                 this.#platformBridge = new TggPlatformBridge(this._options && this._options.platforms && this._options.platforms.tgg)
                 break
-            case PLATFORM_ID.MOCK:
+            }
+            case PLATFORM_ID.MOCK: {
                 this.#platformBridge = new PlatformBridgeBase()
                 break
+            }
         }
     }
 
     #getModule(id) {
-        if (this.#overriddenModules[id])
+        if (this.#overriddenModules[id]) {
             return this.#overriddenModules[id]
+        }
 
         return this.#modules[id]
     }

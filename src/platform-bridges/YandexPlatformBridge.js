@@ -1,6 +1,6 @@
-import PlatformBridgeBase, { ACTION_NAME } from './PlatformBridgeBase'
+import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import { PLATFORM_ID, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
+import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, ERROR } from '../constants'
 
 const YANDEX_SDK_URL = 'https://yandex.ru/games/sdk/v2'
 
@@ -12,15 +12,17 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     get platformLanguage() {
-        if (this._platformSdk)
+        if (this._platformSdk) {
             return this._platformSdk.environment.i18n.lang
+        }
 
         return super.platformLanguage
     }
 
     get deviceType() {
-        if (this._platformSdk)
+        if (this._platformSdk) {
             return this._platformSdk.deviceInfo.type
+        }
 
         return super.deviceType
     }
@@ -66,12 +68,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     #isAddToHomeScreenSupported = false
     #yandexPlayer = null
-    #leaderboards
+    #leaderboards = null
 
 
     initialize() {
-        if (this._isInitialized)
+        if (this._isInitialized) {
             return Promise.resolve()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.INITIALIZE)
         if (!promiseDecorator) {
@@ -104,6 +107,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedPromise, getLeaderboardsPromise])
                                 .finally(() => {
                                     this._isInitialized = true
+
+                                    this._defaultStorageType = this.#yandexPlayer === null
+                                        ? STORAGE_TYPE.LOCAL_STORAGE
+                                        : STORAGE_TYPE.PLATFORM_INTERNAL
+
                                     this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
                                 })
                         })
@@ -141,62 +149,144 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
 
-    // game
-    getGameData(key) {
-        return new Promise(resolve => {
-            if (this._gameData) {
-                if (typeof this._gameData[key] === 'undefined')
-                    resolve(null)
-                else
-                    resolve(this._gameData[key])
-
-                return
-            }
-
-            if (this.#yandexPlayer) {
-                this.#yandexPlayer.getData()
-                    .then(loadedData => {
-                        this._gameData = loadedData
-                        if (typeof this._gameData[key] === 'undefined')
-                            resolve(null)
-                        else
-                            resolve(this._gameData[key])
-                    })
-                    .catch(() => {
-                        resolve(null)
-                    })
-
-                return
-            }
-
-            super.getGameData(key)
-                .then(data => resolve(data))
-                .catch(() => resolve(null))
-        })
-    }
-
-    setGameData(key, value) {
-        if (!this._gameData)
-            this._gameData = { }
-
-        this._gameData[key] = value
-        return this.#saveGameData()
-    }
-
-    deleteGameData(key) {
-        if (this._gameData) {
-            delete this._gameData[key]
-            return this.#saveGameData()
+    // storage
+    isStorageSupported(storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return this.#yandexPlayer !== null
         }
 
-        return Promise.resolve()
+        return super.isStorageSupported(storageType)
+    }
+
+    getDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                if (this._platformStorageCachedData) {
+                    if (Array.isArray(key)) {
+                        let values = []
+
+                        for (let i = 0; i < key.length; i++) {
+                            let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                                ? null
+                                : this._platformStorageCachedData[key[i]]
+
+                            values.push(value)
+                        }
+
+                        resolve(values)
+                        return
+                    }
+
+                    resolve(typeof this._platformStorageCachedData[key] === 'undefined' ? null : this._platformStorageCachedData[key])
+                    return
+                }
+
+                if (this.#yandexPlayer) {
+                    this.#yandexPlayer.getData()
+                        .then(data => {
+                            this._platformStorageCachedData = data
+
+                            if (Array.isArray(key)) {
+                                let values = []
+
+                                for (let i = 0; i < key.length; i++) {
+                                    let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                                        ? null
+                                        : this._platformStorageCachedData[key[i]]
+
+                                    values.push(value)
+                                }
+
+                                resolve(values)
+                                return
+                            }
+
+                            resolve(typeof this._platformStorageCachedData[key] === 'undefined' ? null : this._platformStorageCachedData[key])
+                        })
+                        .catch(error => {
+                            reject(error)
+                        })
+                } else {
+                    reject()
+                }
+            })
+        }
+
+        return super.getDataFromStorage(key, storageType)
+    }
+
+    setDataToStorage(key, value, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                if (this.#yandexPlayer) {
+                    let data = this._platformStorageCachedData !== null
+                        ? { ...this._platformStorageCachedData }
+                        : { }
+
+                    if (Array.isArray(key)) {
+                        for (let i = 0; i < key.length; i++) {
+                            data[key[i]] = value[i]
+                        }
+                    } else {
+                        data[key] = value
+                    }
+
+                    this.#yandexPlayer.setData(data)
+                        .then(() => {
+                            this._platformStorageCachedData = data
+                            resolve()
+                        })
+                        .catch(error => {
+                            reject(error)
+                        })
+                } else {
+                    reject()
+                }
+            })
+        }
+
+        return super.setDataToStorage(key, value, storageType)
+    }
+
+    deleteDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                if (this.#yandexPlayer) {
+                    let data = this._platformStorageCachedData !== null
+                        ? { ...this._platformStorageCachedData }
+                        : { }
+
+                    if (Array.isArray(key)) {
+                        for (let i = 0; i < key.length; i++) {
+                            delete data[key[i]]
+                        }
+                    } else {
+                        delete data[key]
+                    }
+
+                    this.#yandexPlayer.setData(data)
+                        .then(() => {
+                            this._platformStorageCachedData = data
+                            resolve()
+                        })
+                        .catch(error => {
+                            reject(error)
+                        })
+                } else {
+                    reject()
+                }
+            })
+        }
+
+        return super.deleteDataFromStorage(key, storageType)
     }
 
 
     // advertisement
     showInterstitial() {
-        if (!this._canShowAdvertisement())
+        if (!this._canShowAdvertisement()) {
             return Promise.reject()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
         if (!promiseDecorator) {
@@ -224,8 +314,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     showRewarded() {
-        if (!this._canShowAdvertisement())
+        if (!this._canShowAdvertisement()) {
             return Promise.reject()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_REWARDED)
         if (!promiseDecorator) {
@@ -257,8 +348,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     // social
     addToHomeScreen() {
-        if (!this.isAddToHomeScreenSupported)
+        if (!this.isAddToHomeScreenSupported) {
             return Promise.reject()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.ADD_TO_HOME_SCREEN)
         if (!promiseDecorator) {
@@ -289,7 +381,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             this._platformSdk.feedback.canReview()
                 .then(result => {
                     if (result.value) {
-
                         this._platformSdk.feedback.requestReview()
                             .then(({ feedbackSent }) => {
                                 if (feedbackSent) {
@@ -319,21 +410,24 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     // leaderboard
     setLeaderboardScore(options) {
-        if (!this._isPlayerAuthorized)
+        if (!this._isPlayerAuthorized) {
             return Promise.reject()
+        }
 
-        if (!this.#leaderboards || !options || !options.score || !options.leaderboardName)
+        if (!this.#leaderboards || !options || !options.score || !options.leaderboardName) {
             return Promise.reject()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SET_LEADERBOARD_SCORE)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SET_LEADERBOARD_SCORE)
 
-            if (typeof options.score === 'string')
+            if (typeof options.score === 'string') {
                 options.score = parseInt(options.score)
+            }
 
             this.#leaderboards.setLeaderboardScore(options.leaderboardName, options.score)
-                .then(result => {
+                .then(() => {
                     this._resolvePromiseDecorator(ACTION_NAME.SET_LEADERBOARD_SCORE)
                 })
                 .catch(error => {
@@ -345,11 +439,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     getLeaderboardScore(options) {
-        if (!this._isPlayerAuthorized)
+        if (!this._isPlayerAuthorized) {
             return Promise.reject()
+        }
 
-        if (!this.#leaderboards || !options || !options.leaderboardName)
+        if (!this.#leaderboards || !options || !options.leaderboardName) {
             return Promise.reject()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_LEADERBOARD_SCORE)
         if (!promiseDecorator) {
@@ -368,11 +464,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     getLeaderboardEntries(options) {
-        if (!this._isPlayerAuthorized)
+        if (!this._isPlayerAuthorized) {
             return Promise.reject()
+        }
 
-        if (!this.#leaderboards || !options || !options.leaderboardName)
+        if (!this.#leaderboards || !options || !options.leaderboardName) {
             return Promise.reject()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_LEADERBOARD_ENTRIES)
         if (!promiseDecorator) {
@@ -384,20 +482,25 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 quantityTop: 5
             }
 
-            if (typeof options.includeUser === 'boolean')
+            if (typeof options.includeUser === 'boolean') {
                 parameters.includeUser = options.includeUser
+            }
 
-            if (typeof options.quantityAround === 'string')
+            if (typeof options.quantityAround === 'string') {
                 options.quantityAround = parseInt(options.quantityAround)
+            }
 
-            if (typeof options.quantityAround === 'number')
+            if (typeof options.quantityAround === 'number') {
                 parameters.quantityAround = options.quantityAround
+            }
 
-            if (typeof options.quantityTop === 'string')
+            if (typeof options.quantityTop === 'string') {
                 options.quantityTop = parseInt(options.quantityTop)
+            }
 
-            if (typeof options.quantityTop === 'number')
+            if (typeof options.quantityTop === 'number') {
                 parameters.quantityTop = options.quantityTop
+            }
 
             this.#leaderboards.getLeaderboardEntries(options.leaderboardName, parameters)
                 .then(result => {
@@ -410,14 +513,17 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                             let photoMedium = e.player.getAvatarSrc('medium')
                             let photoLarge = e.player.getAvatarSrc('large')
 
-                            if (photoSmall)
+                            if (photoSmall) {
                                 photos.push(photoSmall)
+                            }
 
-                            if (photoMedium)
+                            if (photoMedium) {
                                 photos.push(photoMedium)
+                            }
 
-                            if (photoLarge)
+                            if (photoLarge) {
                                 photos.push(photoLarge)
+                            }
 
                             return {
                                 id: e.player.uniqueID,
@@ -446,8 +552,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 scopes: true
             }
 
-            if (options && typeof options.scopes === 'boolean')
+            if (options && typeof options.scopes === 'boolean') {
                 parameters.scopes = options.scopes
+            }
 
             this._platformSdk.getPlayer(parameters)
                 .then(player => {
@@ -455,48 +562,32 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._isPlayerAuthorized = player.getMode() !== 'lite'
 
                     let name = player.getName()
-                    if (name !== '')
+                    if (name !== '') {
                         this._playerName = name
+                    }
 
                     this._playerPhotos = []
                     let photoSmall = player.getPhoto('small')
                     let photoMedium = player.getPhoto('medium')
                     let photoLarge = player.getPhoto('large')
 
-                    if (photoSmall)
+                    if (photoSmall) {
                         this._playerPhotos.push(photoSmall)
+                    }
 
-                    if (photoMedium)
+                    if (photoMedium) {
                         this._playerPhotos.push(photoMedium)
+                    }
 
-                    if (photoLarge)
+                    if (photoLarge) {
                         this._playerPhotos.push(photoLarge)
+                    }
 
                     this.#yandexPlayer = player
                 })
                 .finally(() => {
                     resolve()
                 })
-        })
-    }
-
-    #saveGameData() {
-        return new Promise((resolve, reject) => {
-            if (this.#yandexPlayer) {
-                this.#yandexPlayer.setData(this._gameData)
-                    .then(() => {
-                        resolve()
-                    })
-                    .catch(error => {
-                        reject(error)
-                    })
-
-                return
-            }
-
-            this._saveGameDataToLocalStorage()
-                .then(() => resolve())
-                .catch(error => reject(error))
         })
     }
 

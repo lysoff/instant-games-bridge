@@ -29,8 +29,9 @@ class LeaderboardModule extends ModuleBase {
     setScore(options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
-            if (platformDependedOptions)
+            if (platformDependedOptions) {
                 return this.setScore(platformDependedOptions)
+            }
         }
 
         return this._platformBridge.setLeaderboardScore(options)
@@ -39,8 +40,9 @@ class LeaderboardModule extends ModuleBase {
     getScore(options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
-            if (platformDependedOptions)
+            if (platformDependedOptions) {
                 return this.getScore(platformDependedOptions)
+            }
         }
 
         return this._platformBridge.getLeaderboardScore(options)
@@ -49,8 +51,9 @@ class LeaderboardModule extends ModuleBase {
     getEntries(options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
-            if (platformDependedOptions)
+            if (platformDependedOptions) {
                 return this.getEntries(platformDependedOptions)
+            }
         }
 
         return this._platformBridge.getLeaderboardEntries(options)
@@ -59,8 +62,9 @@ class LeaderboardModule extends ModuleBase {
     showNativePopup(options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
-            if (platformDependedOptions)
+            if (platformDependedOptions) {
                 return this.showNativePopup(platformDependedOptions)
+            }
         }
 
         return this._platformBridge.showLeaderboardNativePopup(options)

@@ -1,5 +1,5 @@
-import PlatformBridgeBase, { ACTION_NAME } from './PlatformBridgeBase'
-import { PLATFORM_ID } from '../constants'
+import PlatformBridgeBase from './PlatformBridgeBase'
+import { PLATFORM_ID, ACTION_NAME, STORAGE_TYPE, ERROR } from '../constants'
 import { addJavaScript } from '../common/utils'
 
 const TGG_SDK_URL = 'https://storage.yandexcloud.net/tgg-sdk/v1.2.0/tggsdk.js'
@@ -27,8 +27,9 @@ class TggPlatformBridge extends PlatformBridgeBase {
 
 
     initialize() {
-        if (this._isInitialized)
+        if (this._isInitialized) {
             return Promise.resolve()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.INITIALIZE)
         if (!promiseDecorator) {
@@ -45,6 +46,7 @@ class TggPlatformBridge extends PlatformBridgeBase {
                             })
                             .finally(() => {
                                 this._isInitialized = true
+                                this._defaultStorageType = STORAGE_TYPE.PLATFORM_INTERNAL
                                 this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
                             })
                     })
@@ -62,47 +64,120 @@ class TggPlatformBridge extends PlatformBridgeBase {
     }
 
 
-    // game
-    getGameData(key) {
-        return new Promise((resolve, reject) => {
-            if (this._gameData) {
-                if (typeof this._gameData[key] === 'undefined')
-                    resolve(null)
-                else
-                    resolve(this._gameData[key])
-
-                return
-            }
-
-            this._platformSdk.game.getData()
-                .then(loadedData => {
-                    this._gameData = loadedData
-                    if (typeof this._gameData[key] === 'undefined')
-                        resolve(null)
-                    else
-                        resolve(this._gameData[key])
-                })
-                .catch(error => {
-                    reject(error)
-                })
-        })
-    }
-
-    setGameData(key, value) {
-        if (!this._gameData)
-            this._gameData = { }
-
-        this._gameData[key] = value
-        return this._platformSdk.game.setData(this._gameData)
-    }
-
-    deleteGameData(key) {
-        if (this._gameData && typeof this._gameData[key] !== 'undefined') {
-            delete this._gameData[key]
-            return this._platformSdk.game.setData(this._gameData)
+    // storage
+    isStorageSupported(storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return true
         }
 
-        return Promise.resolve()
+        return super.isStorageSupported(storageType)
+    }
+
+    getDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                if (this._platformStorageCachedData) {
+                    if (Array.isArray(key)) {
+                        let values = []
+
+                        for (let i = 0; i < key.length; i++) {
+                            let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                                ? null
+                                : this._platformStorageCachedData[key[i]]
+
+                            values.push(value)
+                        }
+
+                        resolve(values)
+                        return
+                    }
+
+                    resolve(typeof this._platformStorageCachedData[key] === 'undefined' ? null : this._platformStorageCachedData[key])
+                    return
+                }
+
+                this._platformSdk.game.getData()
+                    .then(loadedData => {
+                        this._platformStorageCachedData = loadedData
+
+                        if (Array.isArray(key)) {
+                            let values = []
+
+                            for (let i = 0; i < key.length; i++) {
+                                let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                                    ? null
+                                    : this._platformStorageCachedData[key[i]]
+
+                                values.push(value)
+                            }
+
+                            resolve(values)
+                            return
+                        }
+
+                        resolve(typeof this._platformStorageCachedData[key] === 'undefined' ? null : this._platformStorageCachedData[key])
+                    })
+                    .catch(error => {
+                        reject(error)
+                    })
+            })
+        }
+
+        return super.getDataFromStorage(key, storageType)
+    }
+
+    setDataToStorage(key, value, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                let data = this._platformStorageCachedData !== null
+                    ? { ...this._platformStorageCachedData }
+                    : { }
+
+                if (Array.isArray(key)) {
+                    for (let i = 0; i < key.length; i++) {
+                        data[key[i]] = value[i]
+                    }
+                } else {
+                    data[key] = value
+                }
+
+                this._platformSdk.game.setData(data)
+                    .then(() => {
+                        this._platformStorageCachedData = data
+                        resolve()
+                    })
+                    .catch(error => reject(error))
+            })
+        }
+
+        return super.setDataToStorage(key, value, storageType)
+    }
+
+    deleteDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                let data = this._platformStorageCachedData !== null
+                    ? {...this._platformStorageCachedData}
+                    : { }
+
+                if (Array.isArray(key)) {
+                    for (let i = 0; i < key.length; i++) {
+                        delete data[key[i]]
+                    }
+                } else {
+                    delete data[key]
+                }
+
+                this._platformSdk.game.setData(data)
+                    .then(() => {
+                        this._platformStorageCachedData = data
+                        resolve()
+                    })
+                    .catch(error => reject(error))
+            })
+        }
+
+        return super.deleteDataFromStorage(key, storageType)
     }
 
 }

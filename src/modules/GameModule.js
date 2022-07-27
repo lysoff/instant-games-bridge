@@ -1,19 +1,18 @@
+import EventLite from 'event-lite'
 import ModuleBase from './ModuleBase'
+import { EVENT_NAME } from '../constants'
 
 class GameModule extends ModuleBase {
 
-    getData(key) {
-        return this._platformBridge.getGameData(key)
-    }
+    constructor(platformBridge) {
+        super(platformBridge)
 
-    setData(key, value) {
-        return this._platformBridge.setGameData(key, value)
-    }
-
-    deleteData(key) {
-        return this._platformBridge.deleteGameData(key)
+        this._platformBridge.on(
+            EVENT_NAME.VISIBILITY_CHANGED,
+            state => this.emit(EVENT_NAME.VISIBILITY_CHANGED, state))
     }
 
 }
 
+EventLite.mixin(GameModule.prototype)
 export default GameModule

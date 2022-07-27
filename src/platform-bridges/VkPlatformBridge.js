@@ -1,6 +1,7 @@
-import PlatformBridgeBase, {ACTION_NAME} from './PlatformBridgeBase'
+import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import { PLATFORM_ID, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
+import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, ERROR } from '../constants'
+import PromiseDecorator from '../common/PromiseDecorator'
 
 const VK_BRIDGE_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
 
@@ -19,14 +20,18 @@ class VkPlatformBridge extends PlatformBridgeBase {
             catch (e) { }
 
             switch (language) {
-                case 0:
+                case 0: {
                     return 'ru'
-                case 1:
+                }
+                case 1: {
                     return 'uk'
-                case 2:
+                }
+                case 2: {
                     return 'be'
-                case 3:
+                }
+                case 3: {
                     return 'en'
+                }
             }
         }
 
@@ -35,8 +40,9 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     get platformPayload() {
         let url = new URL(window.location.href)
-        if (url.searchParams.has('hash'))
+        if (url.searchParams.has('hash')) {
             return url.searchParams.get('hash')
+        }
 
         return super.platformPayload
     }
@@ -51,10 +57,12 @@ class VkPlatformBridge extends PlatformBridgeBase {
             switch (platformType) {
                 case 'html5_ios':
                 case 'html5_android':
-                case 'html5_mobile':
+                case 'html5_mobile': {
                     return 'mobile'
-                case 'web':
+                }
+                case 'web': {
                     return 'desktop'
+                }
             }
         }
 
@@ -93,8 +101,9 @@ class VkPlatformBridge extends PlatformBridgeBase {
         let url = new URL(window.location.href)
         if (url.searchParams.has('platform')) {
             let platformType = url.searchParams.get('platform')
-            if (platformType === 'html5_android')
+            if (platformType === 'html5_android') {
                 return true
+            }
         }
 
         return false
@@ -116,8 +125,9 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
 
     initialize() {
-        if (this._isInitialized)
+        if (this._isInitialized) {
             return Promise.resolve()
+        }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.INITIALIZE)
         if (!promiseDecorator) {
@@ -125,7 +135,6 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
             addJavaScript(VK_BRIDGE_URL).then(() => {
                 this._platformSdk = window.vkBridge
-
                 this._platformSdk
                     .send('VKWebAppInit')
                     .then(() => {
@@ -136,18 +145,22 @@ class VkPlatformBridge extends PlatformBridgeBase {
                                     this._playerId = data['id']
                                     this._playerName = data['first_name'] + ' ' + data['last_name']
 
-                                    if (data['photo_100'])
+                                    if (data['photo_100']) {
                                         this._playerPhotos.push(data['photo_100'])
+                                    }
 
-                                    if (data['photo_200'])
+                                    if (data['photo_200']) {
                                         this._playerPhotos.push(data['photo_200'])
+                                    }
 
-                                    if (data['photo_max_orig'])
+                                    if (data['photo_max_orig']) {
                                         this._playerPhotos.push(data['photo_max_orig'])
+                                    }
                                 }
                             })
                             .finally(() => {
                                 this._isInitialized = true
+                                this._defaultStorageType = STORAGE_TYPE.PLATFORM_INTERNAL
                                 this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
                             })
 
@@ -165,66 +178,143 @@ class VkPlatformBridge extends PlatformBridgeBase {
     }
 
 
-    // game
-    getGameData(key) {
-        return new Promise(resolve => {
-            this._platformSdk
-                .send('VKWebAppStorageGet', { 'keys': [key] })
-                .then(data => {
-                    if (data.keys[0].value === '') {
-                        resolve(null)
-                        return
-                    }
+    // storage
+    isStorageSupported(storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return true
+        }
 
-                    let value
-                    try {
-                        value = JSON.parse(data.keys[0].value)
-                    } catch (e) {
-                        value = data.keys[0].value
-                    }
-
-                    resolve(value)
-                })
-                .catch(() => {
-                    resolve(null)
-                })
-        })
+        return super.isStorageSupported(storageType)
     }
 
-    setGameData(key, value) {
-        return new Promise((resolve, reject) => {
-            let data = { key, value }
+    getDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                let keys = Array.isArray(key) ? key : [key]
 
-            if (typeof value !== 'string')
-                data.value = JSON.stringify(value)
+                this._platformSdk
+                    .send('VKWebAppStorageGet', { keys })
+                    .then(data => {
+                        if (Array.isArray(key)) {
+                            let values = []
 
-            this._platformSdk
-                .send('VKWebAppStorageSet', data)
-                .then(() => {
-                    resolve()
-                })
-                .catch(error => {
-                    if (error && error.error_data && error.error_data.error_reason)
-                        reject(error.error_data.error_reason)
-                    else
-                        reject()
-                })
-        })
+                            for (let i = 0; i < key.length; i++) {
+                                if (data.keys[i].value === '') {
+                                    values.push(null)
+                                    continue
+                                }
+
+                                let value
+                                try {
+                                    value = JSON.parse(data.keys[i].value)
+                                } catch (e) {
+                                    value = data.keys[i].value
+                                }
+
+                                values.push(value)
+                            }
+
+                            resolve(values)
+                            return
+                        }
+
+                        if (data.keys[0].value === '') {
+                            resolve(null)
+                            return
+                        }
+
+                        let value
+                        try {
+                            value = JSON.parse(data.keys[0].value)
+                        } catch (e) {
+                            value = data.keys[0].value
+                        }
+
+                        resolve(value)
+                    })
+                    .catch(error => {
+                        if (error && error.error_data && error.error_data.error_reason) {
+                            reject(error.error_data.error_reason)
+                        } else {
+                            reject()
+                        }
+                    })
+            })
+        }
+
+        return super.getDataFromStorage(key, storageType)
     }
 
-    deleteGameData(key) {
-        return this.setGameData(key, '')
+    setDataToStorage(key, value, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            if (Array.isArray(key)) {
+                let promises = []
+
+                for (let i = 0; i < key.length; i++) {
+                    let data = { key: key[i], value: value[i] }
+
+                    if (typeof value[i] !== 'string') {
+                        data.value = JSON.stringify(value[i])
+                    }
+
+                    promises.push(this._platformSdk.send('VKWebAppStorageSet', data))
+                }
+
+                return Promise.all(promises)
+            } else {
+                let data = { key, value }
+
+                if (typeof value !== 'string') {
+                    data.value = JSON.stringify(value)
+                }
+
+                return new Promise((resolve, reject) => {
+                    this._platformSdk
+                        .send('VKWebAppStorageSet', data)
+                        .then(() => {
+                            resolve()
+                        })
+                        .catch(error => {
+                            if (error && error.error_data && error.error_data.error_reason) {
+                                reject(error.error_data.error_reason)
+                            } else {
+                                reject()
+                            }
+                        })
+                })
+            }
+        }
+
+        return super.setDataToStorage(key, value, storageType)
+    }
+
+    deleteDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            if (Array.isArray(key)) {
+                let promises = []
+
+                for (let i = 0; i < key.length; i++) {
+                    promises.push(this.setDataToStorage(key[i], '', storageType))
+                }
+
+                return Promise.all(promises)
+            } else {
+                return this.setDataToStorage(key, '', storageType)
+            }
+        }
+
+        return super.deleteDataFromStorage(key, storageType)
     }
 
 
     // advertisement
     showInterstitial() {
-        if (!this._canShowAdvertisement())
+        if (!this._canShowAdvertisement()) {
             return Promise.reject()
+        }
 
         return this.#sendRequestToVKBridge(ACTION_NAME.SHOW_INTERSTITIAL, 'VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
             .then(() => {
-
                 this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
 
                 this._platformSdk
@@ -232,20 +322,19 @@ class VkPlatformBridge extends PlatformBridgeBase {
                     .then(data => {
                         this._setInterstitialState(data.result ? INTERSTITIAL_STATE.CLOSED : INTERSTITIAL_STATE.FAILED)
                     })
-                    .catch(error => {
+                    .catch(() => {
                         this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
                     })
-
             })
     }
 
     showRewarded() {
-        if (!this._canShowAdvertisement())
+        if (!this._canShowAdvertisement()) {
             return Promise.reject()
+        }
 
         return this.#sendRequestToVKBridge(ACTION_NAME.SHOW_REWARDED, 'VKWebAppCheckNativeAds', { ad_format: 'reward', use_waterfall: true })
             .then(() => {
-
                 this._setRewardedState(REWARDED_STATE.OPENED)
 
                 this._platformSdk
@@ -258,10 +347,9 @@ class VkPlatformBridge extends PlatformBridgeBase {
                             this._setRewardedState(REWARDED_STATE.FAILED)
                         }
                     })
-                    .catch(error => {
+                    .catch(() => {
                         this._setRewardedState(REWARDED_STATE.FAILED)
                     })
-
             })
     }
 
@@ -272,15 +360,17 @@ class VkPlatformBridge extends PlatformBridgeBase {
     }
 
     joinCommunity(options) {
-        if (!options || !options.groupId)
+        if (!options || !options.groupId) {
             return Promise.reject()
+        }
 
         let groupId = options.groupId
 
         if (typeof groupId === 'string') {
             groupId = parseInt(groupId)
-            if (isNaN(groupId))
+            if (isNaN(groupId)) {
                 return Promise.reject()
+            }
         }
 
         return this.#sendRequestToVKBridge(ACTION_NAME.JOIN_COMMUNITY, 'VKWebAppJoinGroup', { 'group_id': groupId })
@@ -291,26 +381,30 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     share(options) {
         let parameters = { }
-        if (options && options.link)
+        if (options && options.link) {
             parameters.link = options.link
+        }
 
         return this.#sendRequestToVKBridge(ACTION_NAME.SHARE, 'VKWebAppShare', parameters, 'type')
     }
 
     createPost(options) {
         let parameters = { }
-        if (options && options.message)
+        if (options && options.message) {
             parameters.message = options.message
+        }
 
-        if (options && options.attachments)
+        if (options && options.attachments) {
             parameters.attachments = options.attachments
+        }
 
         return this.#sendRequestToVKBridge(ACTION_NAME.CREATE_POST, 'VKWebAppShowWallPostBox', parameters, 'post_id')
     }
 
     addToHomeScreen() {
-        if (!this.isAddToHomeScreenSupported)
+        if (!this.isAddToHomeScreenSupported) {
             return Promise.reject()
+        }
 
         return this.#sendRequestToVKBridge(ACTION_NAME.ADD_TO_HOME_SCREEN, 'VKWebAppAddToHomeScreen')
     }
@@ -322,15 +416,18 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     // leaderboard
     showLeaderboardNativePopup(options) {
-        if (!this.isLeaderboardNativePopupSupported)
+        if (!this.isLeaderboardNativePopupSupported) {
             return Promise.reject()
+        }
 
-        if (!options || !options.userResult)
+        if (!options || !options.userResult) {
             return Promise.reject()
+        }
 
         let data = { user_result: options.userResult }
-        if (typeof options.global === 'boolean')
+        if (typeof options.global === 'boolean') {
             data.global = options.global ? 1 : 0
+        }
 
         return this.#sendRequestToVKBridge(ACTION_NAME.SHOW_LEADERBOARD_NATIVE_POPUP, 'VKWebAppShowLeaderBoardBox', data)
     }

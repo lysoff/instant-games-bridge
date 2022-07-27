@@ -1,24 +1,6 @@
 import EventLite from 'event-lite'
-import { PLATFORM_ID, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
+import { PLATFORM_ID, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, ERROR, VISIBILITY_STATE } from '../constants'
 import PromiseDecorator from '../common/PromiseDecorator'
-
-export const ACTION_NAME = {
-    INITIALIZE: 'initialize',
-    AUTHORIZE_PLAYER: 'authorize_player',
-    SHOW_INTERSTITIAL: 'show_interstitial',
-    SHOW_REWARDED: 'show_rewarded',
-    SHARE: 'share',
-    INVITE_FRIENDS: 'invite_friends',
-    JOIN_COMMUNITY: 'join_community',
-    CREATE_POST: 'create_post',
-    ADD_TO_HOME_SCREEN: 'add_to_home_screen',
-    ADD_TO_FAVORITES: 'add_to_favorites',
-    RATE: 'rate',
-    SET_LEADERBOARD_SCORE: 'set_leaderboard_score',
-    GET_LEADERBOARD_SCORE: 'get_leaderboard_score',
-    GET_LEADERBOARD_ENTRIES: 'get_leaderboard_entries',
-    SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup'
-}
 
 class PlatformBridgeBase {
 
@@ -33,8 +15,9 @@ class PlatformBridgeBase {
 
     get platformLanguage() {
         let value = navigator.language
-        if (typeof value === 'string')
+        if (typeof value === 'string') {
             return value.substring(0, 2)
+        }
 
         return 'en'
     }
@@ -64,6 +47,12 @@ class PlatformBridgeBase {
 
     get playerPhotos() {
         return this._playerPhotos
+    }
+
+
+    // storage
+    get defaultStorageType() {
+        return this._defaultStorageType
     }
 
 
@@ -111,11 +100,13 @@ class PlatformBridgeBase {
     get deviceType() {
         if (navigator && navigator.userAgent) {
             let userAgent = navigator.userAgent.toLowerCase()
-            if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent))
+            if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
                 return 'mobile'
+            }
 
-            if (/ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP)))/.test(userAgent))
+            if (/ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP)))/.test(userAgent)) {
                 return 'tablet'
+            }
         }
 
         return 'desktop'
@@ -148,16 +139,15 @@ class PlatformBridgeBase {
     }
 
 
-    LOCAL_STORAGE_GAME_DATA_KEY = 'game_data'
-
     _isInitialized = false
     _platformSdk = null
-    _localStorage = null
     _isPlayerAuthorized = false
     _playerId = null
     _playerName = null
     _playerPhotos = []
-    _gameData = null
+    _localStorage = null
+    _defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
+    _platformStorageCachedData = null
     _interstitialState = null
     _rewardedState = null
 
@@ -165,13 +155,16 @@ class PlatformBridgeBase {
 
 
     constructor(options) {
-        if (options)
-            this._options = { ...options }
+        try { this._localStorage = window.localStorage } catch (e) { }
 
-        try {
-            this._localStorage = window.localStorage
+        document.addEventListener('visibilitychange', () => {
+            let visibilityState = document.visibilityState === 'visible' ? VISIBILITY_STATE.VISIBLE : VISIBILITY_STATE.HIDDEN
+            this.emit(EVENT_NAME.VISIBILITY_CHANGED, visibilityState)
+        })
+
+        if (options) {
+            this._options = { ...options }
         }
-        catch (e) { }
     }
 
     initialize() {
@@ -185,40 +178,91 @@ class PlatformBridgeBase {
     }
 
 
-    // game
-    getGameData(key) {
-        return new Promise(resolve => {
-            this._loadGameDataFromLocalStorage()
-                .finally(() => {
-                    if (!this._gameData) {
-                        resolve(null)
-                        return
+    // storage
+    isStorageSupported(storageType) {
+        switch (storageType) {
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                return this._localStorage !== null
+            }
+            case STORAGE_TYPE.PLATFORM_INTERNAL: {
+                return false
+            }
+            default: {
+                return false
+            }
+        }
+    }
+
+    getDataFromStorage(key, storageType) {
+        switch (storageType) {
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                if (this._localStorage) {
+                    if (Array.isArray(key)) {
+                        let values = []
+
+                        for (let i = 0; i < key.length; i++) {
+                            values.push(this._getDataFromLocalStorage(key[i]))
+                        }
+
+                        return Promise.resolve(values)
                     }
 
-                    let data = this._gameData[key]
-                    if (typeof data !== 'undefined')
-                        resolve(data)
-                    else
-                        resolve(null)
-                })
-        })
-    }
-
-    setGameData(key, value) {
-        if (!this._gameData)
-            this._gameData = { }
-
-        this._gameData[key] = value
-        return this._saveGameDataToLocalStorage()
-    }
-
-    deleteGameData(key) {
-        if (this._gameData) {
-            delete this._gameData[key]
-            return this._saveGameDataToLocalStorage()
+                    let value = this._getDataFromLocalStorage(key)
+                    return Promise.resolve(value)
+                } else {
+                    return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+                }
+            }
+            default: {
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+            }
         }
+    }
 
-        return Promise.resolve()
+    setDataToStorage(key, value, storageType) {
+        switch (storageType) {
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                if (this._localStorage) {
+                    if (Array.isArray(key)) {
+                        for (let i = 0; i < key.length; i++) {
+                            this._setDataToLocalStorage(key[i], value[i])
+                        }
+                        return Promise.resolve()
+                    }
+
+                    this._setDataToLocalStorage(key, value)
+                    return Promise.resolve()
+                } else {
+                    return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+                }
+            }
+            default: {
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+            }
+        }
+    }
+
+    deleteDataFromStorage(key, storageType) {
+        switch (storageType) {
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                if (this._localStorage) {
+                    if (Array.isArray(key)) {
+                        for (let i = 0; i < key.length; i++) {
+                            this._deleteDataFromLocalStorage(key[i])
+                        }
+                        return Promise.resolve()
+                    }
+
+                    this._deleteDataFromLocalStorage(key)
+                    return Promise.resolve()
+                } else {
+                    return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+                }
+            }
+            default: {
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+            }
+        }
     }
 
 
@@ -280,59 +324,55 @@ class PlatformBridgeBase {
     }
 
 
-    _loadGameDataFromLocalStorage() {
-        return new Promise((resolve, reject) => {
-            try {
-                let json = this._localStorage.getItem(this.LOCAL_STORAGE_GAME_DATA_KEY)
-                if (json)
-                    this._gameData = JSON.parse(json)
+    _getDataFromLocalStorage(key) {
+        let value = this._localStorage.getItem(key)
 
-                resolve()
+        if (typeof value === 'string') {
+            try {
+                value = JSON.parse(value)
             }
-            catch (e) {
-                reject(e)
-            }
-        })
+            catch (e) { }
+        }
+
+        return value
     }
 
-    _saveGameDataToLocalStorage() {
-        return new Promise((resolve, reject) => {
-            try {
-                this._localStorage.setItem(this.LOCAL_STORAGE_GAME_DATA_KEY, JSON.stringify(this._gameData))
-                resolve()
-            }
-            catch (e) {
-                reject(e)
-            }
-        })
+    _setDataToLocalStorage(key, value) {
+        if (typeof value === 'object') {
+            value = JSON.stringify(value)
+        }
+
+        this._localStorage.setItem(key, value)
+    }
+
+    _deleteDataFromLocalStorage(key) {
+        this._localStorage.removeItem(key)
     }
 
 
     _setInterstitialState(state) {
-        if (this._interstitialState === state && state !== INTERSTITIAL_STATE.FAILED)
+        if (this._interstitialState === state && state !== INTERSTITIAL_STATE.FAILED) {
             return
+        }
 
         this._interstitialState = state
         this.emit(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, this._interstitialState)
     }
 
     _setRewardedState(state) {
-        if (this._rewardedState === state && state !== REWARDED_STATE.FAILED)
+        if (this._rewardedState === state && state !== REWARDED_STATE.FAILED) {
             return
+        }
 
         this._rewardedState = state
         this.emit(EVENT_NAME.REWARDED_STATE_CHANGED, this._rewardedState)
     }
 
     _canShowAdvertisement() {
-        if (this._interstitialState) {
-            if (this._interstitialState !== INTERSTITIAL_STATE.CLOSED && this._interstitialState !== INTERSTITIAL_STATE.FAILED)
-                return false
-        }
-
-        if (this._rewardedState) {
-            if (this._rewardedState !== REWARDED_STATE.CLOSED && this._rewardedState !== REWARDED_STATE.FAILED)
-                return false
+        if (this._interstitialState && this._interstitialState === INTERSTITIAL_STATE.OPENED) {
+            return false
+        } else if (this._rewardedState && (this._rewardedState === REWARDED_STATE.OPENED || this._rewardedState !== REWARDED_STATE.REWARDED)) {
+            return false
         }
 
         return true

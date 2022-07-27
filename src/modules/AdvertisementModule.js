@@ -35,8 +35,9 @@ class AdvertisementModule extends ModuleBase {
     setMinimumDelayBetweenInterstitial(options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
-            if (platformDependedOptions)
+            if (platformDependedOptions) {
                 return this.setMinimumDelayBetweenInterstitial(platformDependedOptions)
+            }
         }
 
         let optionsType = typeof options
@@ -49,8 +50,9 @@ class AdvertisementModule extends ModuleBase {
             }
             case 'string': {
                 delay = parseInt(options)
-                if (isNaN(delay))
+                if (isNaN(delay)) {
                     return
+                }
             }
         }
 
@@ -65,19 +67,23 @@ class AdvertisementModule extends ModuleBase {
     showInterstitial(options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
-            if (platformDependedOptions)
+            if (platformDependedOptions) {
                 return this.showInterstitial(platformDependedOptions)
+            }
         }
 
         let ignoreDelay = false
-        if (options && typeof options.ignoreDelay === 'boolean')
+        if (options && typeof options.ignoreDelay === 'boolean') {
             ignoreDelay = options.ignoreDelay
+        }
 
-        if (this.#interstitialTimer && this.#interstitialTimer.state !== TIMER_STATE.COMPLETED && !ignoreDelay)
+        if (this.#interstitialTimer && this.#interstitialTimer.state !== TIMER_STATE.COMPLETED && !ignoreDelay) {
             return Promise.reject()
+        }
 
-        if (this.#minimumDelayBetweenInterstitial > 0)
+        if (this.#minimumDelayBetweenInterstitial > 0) {
             this.#startInterstitialTimer()
+        }
 
         return this._platformBridge.showInterstitial()
     }

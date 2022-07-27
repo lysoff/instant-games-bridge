@@ -39,22 +39,22 @@
     <div class="container">
         <div class="section" id="options-section">
             <h2>Instant Games Bridge Sandbox</h2>
-            <button id="initialize-button">Initialize</button>
+            <p>Loading..</p>
         </div>
 
-        <div class="section" id="platform-section">
+        <div class="section" id="platform-section" style="display: none">
             <h2>Platform</h2>
             <p>ID: <span id="platform-id-text"></span></p>
             <p>Language: <span id="platform-language-text"></span></p>
             <p>Payload: <span id="platform-payload-text"></span></p>
         </div>
 
-        <div class="section" id="device-section">
+        <div class="section" id="device-section" style="display: none">
             <h2>Device</h2>
             <p>Type: <span id="device-type-text"></span></p>
         </div>
 
-        <div class="section" id="player-section">
+        <div class="section" id="player-section" style="display: none">
             <h2>Player</h2>
             <p>Is Authorization Supported: <span id="is-player-authorization-supported-text"></span></p>
             <p>Is Authorized: <span id="is-player-authorized-text"></span></p>
@@ -69,18 +69,27 @@
             <button id="authorize-player-button">Authorize</button>
         </div>
 
-        <div class="section" id="game-section">
-            <h2>Game</h2>
-            <input type="text" id="game-data-coins-input" placeholder="Coins" />
-            <input type="text" id="game-data-level-input" placeholder="Level" />
+        <div class="section" id="storage-section" style="display: none">
+            <h2>Storage</h2>
+            <p>Is LocalStorage Supported: <span id="is-storage-local-storage-supported-text"></span></p>
+            <p>Is PlatformInternal Supported: <span id="is-storage-platform-internal-supported-text"></span></p>
+            <br>
+            <input type="text" id="storage-data-coins-input" placeholder="Coins" />
+            <input type="text" id="storage-data-level-input" placeholder="Level" />
             <br>
             <br>
-            <button id="get-game-data-button">Get Data</button>
-            <button id="set-game-data-button">Set Data</button>
-            <button id="delete-game-data-button">Delete Data</button>
+            <select id="storage-type-input">
+                <option value="local_storage">LocalStorage</option>
+                <option value="platform_internal">PlatformInternal</option>
+            </select>
+            <br>
+            <br>
+            <button id="get-storage-data-button">Get Data</button>
+            <button id="set-storage-data-button">Set Data</button>
+            <button id="delete-storage-data-button">Delete Data</button>
         </div>
 
-        <div class="section" id="advertisement-section">
+        <div class="section" id="advertisement-section" style="display: none">
             <h2>Advertisement</h2>
             <input type="text" id="advertisement-minimum-delay-between-interstitial-input" placeholder="Minimum Delay Between Interstitial" />
             <button id="advertisement-set-minimum-delay-between-interstitial-button">Set Minimum Delay Between Interstitial</button>
@@ -93,7 +102,7 @@
             <button id="advertisement-show-rewarded-button">Show Rewarded</button>
         </div>
 
-        <div class="section" id="social-section">
+        <div class="section" id="social-section" style="display: none">
             <h2>Social</h2>
             <p>Is Share Supported: <span id="social-is-share-supported-text"></span></p>
             <p>Is Invite Friends Supported: <span id="social-is-invite-friends-supported-text"></span></p>
@@ -123,7 +132,7 @@
             <button id="social-create-post-button">Create Post</button>
         </div>
 
-        <div class="section" id="leaderboard-section">
+        <div class="section" id="leaderboard-section" style="display: none">
             <h2>Leaderboard</h2>
             <p>Is Supported: <span id="leaderboard-is-supported-text"></span></p>
             <p>Is Native Popup Supported: <span id="leaderboard-is-native-popup-supported-text"></span></p>
@@ -168,7 +177,7 @@
         const platformSection = document.getElementById('platform-section')
         const deviceSection = document.getElementById('device-section')
         const playerSection = document.getElementById('player-section')
-        const gameSection = document.getElementById('game-section')
+        const storageSection = document.getElementById('storage-section')
         const advertisementSection = document.getElementById('advertisement-section')
         const socialSection = document.getElementById('social-section')
         const leaderboardSection = document.getElementById('leaderboard-section')
@@ -176,7 +185,7 @@
         platformSection.style.display = 'none'
         deviceSection.style.display = 'none'
         playerSection.style.display = 'none'
-        gameSection.style.display = 'none'
+        storageSection.style.display = 'none'
         advertisementSection.style.display = 'none'
         socialSection.style.display = 'none'
         leaderboardSection.style.display = 'none'
@@ -184,7 +193,6 @@
         const platformIdText = document.getElementById('platform-id-text')
         const platformLanguageText = document.getElementById('platform-language-text')
         const platformPayloadText = document.getElementById('platform-payload-text')
-        const initializeButton = document.getElementById('initialize-button')
 
         const deviceTypeText = document.getElementById('device-type-text')
 
@@ -196,11 +204,14 @@
         const authorizePlayerYandexScopesInput = document.getElementById('authorize-player-yandex-scopes-input')
         const authorizePlayerButton = document.getElementById('authorize-player-button')
 
-        const gameDataCoinsInput = document.getElementById('game-data-coins-input')
-        const gameDataLevelInput = document.getElementById('game-data-level-input')
-        const getGameDataButton = document.getElementById('get-game-data-button')
-        const setGameDataButton = document.getElementById('set-game-data-button')
-        const deleteGameDataButton = document.getElementById('delete-game-data-button')
+        const isStorageLocalStorageSupportedText = document.getElementById('is-storage-local-storage-supported-text')
+        const isStoragePlatformInternalSupportedText = document.getElementById('is-storage-platform-internal-supported-text')
+        const storageDataCoinsInput = document.getElementById('storage-data-coins-input')
+        const storageDataLevelInput = document.getElementById('storage-data-level-input')
+        const storageTypeInput = document.getElementById('storage-type-input')
+        const getStorageDataButton = document.getElementById('get-storage-data-button')
+        const setStorageDataButton = document.getElementById('set-storage-data-button')
+        const deleteStorageDataButton = document.getElementById('delete-storage-data-button')
 
         const advertisementMinimumDelayBetweenInterstitialInput = document.getElementById('advertisement-minimum-delay-between-interstitial-input')
         const advertisementSetMinimumDelayBetweenInterstitialButton = document.getElementById('advertisement-set-minimum-delay-between-interstitial-button')
@@ -247,123 +258,119 @@
         const leaderboardGetEntriesButton = document.getElementById('leaderboard-get-entries-button')
         const leaderboardEntriesContainer = document.getElementById('leaderboard-entries-container')
 
-        initializeButton.addEventListener('click', () => {
-            if (instantGamesBridge.isInitialized)
-                return
+        bridge
+            .initialize()
+            .then(() => {
+                optionsSection.style.display = 'none'
 
-            instantGamesBridge
-                .initialize()
-                .then(() => {
+                platformIdText.innerText = bridge.platform.id
+                platformLanguageText.innerText = bridge.platform.language
+                platformPayloadText.innerText = bridge.platform.payload
 
-                    optionsSection.style.display = 'none'
-                    initializeButton.disabled = 'disabled'
+                deviceTypeText.innerText = bridge.device.type
 
-                    platformIdText.innerText = instantGamesBridge.platform.id
-                    platformLanguageText.innerText = instantGamesBridge.platform.language
-                    platformPayloadText.innerText = instantGamesBridge.platform.payload
+                isPlayerAuthorizationSupportedText.innerText = bridge.player.isAuthorizationSupported
+                isPlayerAuthorizedText.innerText = bridge.player.isAuthorized
 
-                    deviceTypeText.innerText = instantGamesBridge.device.type
+                if (bridge.player.isAuthorized) {
+                    playerIdText.innerText = bridge.player.id
+                    playerNameText.innerText = bridge.player.name
+                    playerPhotosText.innerText = bridge.player.photos
+                }
 
-                    isPlayerAuthorizationSupportedText.innerText = instantGamesBridge.player.isAuthorizationSupported
-                    isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
+                isStorageLocalStorageSupportedText.innerText = bridge.storage.isSupported(bridge.STORAGE_TYPE.LOCAL_STORAGE)
+                isStoragePlatformInternalSupportedText.innerText = bridge.storage.isSupported(bridge.STORAGE_TYPE.PLATFORM_INTERNAL)
 
-                    if (instantGamesBridge.player.isAuthorized) {
-                        playerIdText.innerText = instantGamesBridge.player.id
-                        playerNameText.innerText = instantGamesBridge.player.name
-                        playerPhotosText.innerText = instantGamesBridge.player.photos
-                    }
+                socialIsShareSupportedText.innerText = bridge.social.isShareSupported
+                socialIsInviteFriendsSupportedText.innerText = bridge.social.isInviteFriendsSupported
+                socialIsJoinCommunitySupportedText.innerText = bridge.social.isJoinCommunitySupported
+                socialIsCreatePostSupportedText.innerText = bridge.social.isCreatePostSupported
+                socialIsAddToHomeScreenSupportedText.innerText = bridge.social.isAddToHomeScreenSupported
+                socialIsAddToFavoritesSupportedText.innerText = bridge.social.isAddToFavoritesSupported
+                socialIsRateSupportedText.innerText = bridge.social.isRateSupported
 
-                    socialIsShareSupportedText.innerText = instantGamesBridge.social.isShareSupported
-                    socialIsInviteFriendsSupportedText.innerText = instantGamesBridge.social.isInviteFriendsSupported
-                    socialIsJoinCommunitySupportedText.innerText = instantGamesBridge.social.isJoinCommunitySupported
-                    socialIsCreatePostSupportedText.innerText = instantGamesBridge.social.isCreatePostSupported
-                    socialIsAddToHomeScreenSupportedText.innerText = instantGamesBridge.social.isAddToHomeScreenSupported
-                    socialIsAddToFavoritesSupportedText.innerText = instantGamesBridge.social.isAddToFavoritesSupported
-                    socialIsRateSupportedText.innerText = instantGamesBridge.social.isRateSupported
+                advertisementMinimumDelayBetweenInterstitialInput.value = bridge.advertisement.minimumDelayBetweenInterstitial
 
-                    advertisementMinimumDelayBetweenInterstitialInput.value = instantGamesBridge.advertisement.minimumDelayBetweenInterstitial
-
-                    instantGamesBridge.advertisement.on('interstitial_state_changed', state => {
-                        advertisementInterstitialStateText.innerText = state
-                    })
-
-                    instantGamesBridge.advertisement.on('rewarded_state_changed', state => {
-                        advertisementRewardedStateText.innerText = state
-                    })
-
-                    leaderboardIsSupportedText.innerText = instantGamesBridge.leaderboard.isSupported
-                    leaderboardIsNativePopupSupportedText.innerText = instantGamesBridge.leaderboard.isNativePopupSupported
-                    leaderboardIsMultipleBoardsSupportedText.innerText = instantGamesBridge.leaderboard.isMultipleBoardsSupported
-                    leaderboardIsGetScoreSupportedText.innerText = instantGamesBridge.leaderboard.isGetScoreSupported
-                    leaderboardIsSetScoreSupportedText.innerText = instantGamesBridge.leaderboard.isSetScoreSupported
-                    leaderboardIsGetEntriesSupportedText.innerText = instantGamesBridge.leaderboard.isGetEntriesSupported
-
-                    platformSection.style.display = 'block'
-                    deviceSection.style.display = 'block'
-                    playerSection.style.display = 'block'
-                    gameSection.style.display = 'block'
-                    advertisementSection.style.display = 'block'
-                    socialSection.style.display = 'block'
-                    leaderboardSection.style.display = 'block'
+                bridge.advertisement.on('interstitial_state_changed', state => {
+                    advertisementInterstitialStateText.innerText = state
                 })
-        })
+
+                bridge.advertisement.on('rewarded_state_changed', state => {
+                    advertisementRewardedStateText.innerText = state
+                })
+
+                leaderboardIsSupportedText.innerText = bridge.leaderboard.isSupported
+                leaderboardIsNativePopupSupportedText.innerText = bridge.leaderboard.isNativePopupSupported
+                leaderboardIsMultipleBoardsSupportedText.innerText = bridge.leaderboard.isMultipleBoardsSupported
+                leaderboardIsGetScoreSupportedText.innerText = bridge.leaderboard.isGetScoreSupported
+                leaderboardIsSetScoreSupportedText.innerText = bridge.leaderboard.isSetScoreSupported
+                leaderboardIsGetEntriesSupportedText.innerText = bridge.leaderboard.isGetEntriesSupported
+
+                platformSection.style.display = 'block'
+                deviceSection.style.display = 'block'
+                playerSection.style.display = 'block'
+                storageSection.style.display = 'block'
+                advertisementSection.style.display = 'block'
+                socialSection.style.display = 'block'
+                leaderboardSection.style.display = 'block'
+            })
 
         authorizePlayerButton.addEventListener('click', () => {
-            instantGamesBridge
+            bridge
                 .player
                 .authorize({ yandex: { scopes: authorizePlayerYandexScopesInput.checked }})
                 .then(() => {
-                    isPlayerAuthorizedText.innerText = instantGamesBridge.player.isAuthorized
-                    playerIdText.innerText = instantGamesBridge.player.id
-                    playerNameText.innerText = instantGamesBridge.player.name
-                    playerPhotosText.innerText = instantGamesBridge.player.photos
+                    isPlayerAuthorizedText.innerText = bridge.player.isAuthorized
+                    playerIdText.innerText = bridge.player.id
+                    playerNameText.innerText = bridge.player.name
+                    playerPhotosText.innerText = bridge.player.photos
                 })
         })
 
-        getGameDataButton.addEventListener('click', () => {
-            instantGamesBridge
-                .game
-                .getData('player_progress')
+        getStorageDataButton.addEventListener('click', () => {
+            bridge.storage
+                .get('player_progress', storageTypeInput.value)
                 .then(playerProgress => {
                     if (playerProgress) {
-                        gameDataCoinsInput.value = playerProgress.coins
-                        gameDataLevelInput.value = playerProgress.level
+                        storageDataCoinsInput.value = playerProgress.coins
+                        storageDataLevelInput.value = playerProgress.level
                     }
                 })
+                .catch(error => console.log(error))
         })
 
-        setGameDataButton.addEventListener('click', () => {
-            instantGamesBridge
-                .game
-                .setData('player_progress', { coins: gameDataCoinsInput.value, level: gameDataLevelInput.value })
+        setStorageDataButton.addEventListener('click', () => {
+            bridge.storage
+                .set('player_progress', { coins: storageDataCoinsInput.value, level: storageDataLevelInput.value }, storageTypeInput.value)
+                .catch(error => console.log(error))
         })
 
-        deleteGameDataButton.addEventListener('click', () => {
-            instantGamesBridge
-                .game
-                .deleteData('player_progress')
+        deleteStorageDataButton.addEventListener('click', () => {
+            bridge.storage
+                .delete('player_progress', storageTypeInput.value)
                 .then(() => {
-                    gameDataCoinsInput.value = ''
-                    gameDataLevelInput.value = ''
+                    storageDataCoinsInput.value = ''
+                    storageDataLevelInput.value = ''
                 })
+                .catch(error => console.log(error))
         })
 
         advertisementSetMinimumDelayBetweenInterstitialButton.addEventListener('click', () => {
             let value = advertisementMinimumDelayBetweenInterstitialInput.value
-            instantGamesBridge.advertisement.setMinimumDelayBetweenInterstitial(value)
-            advertisementMinimumDelayBetweenInterstitialInput.value = instantGamesBridge.advertisement.minimumDelayBetweenInterstitial
+            bridge.advertisement.setMinimumDelayBetweenInterstitial(value)
+            advertisementMinimumDelayBetweenInterstitialInput.value = bridge.advertisement.minimumDelayBetweenInterstitial
         })
 
         advertisementShowInterstitialButton.addEventListener('click', () => {
-            instantGamesBridge.advertisement.showInterstitial()
+            bridge.advertisement.showInterstitial()
         })
 
         advertisementShowInterstitialIgnoreDelayButton.addEventListener('click', () => {
-            instantGamesBridge.advertisement.showInterstitial({ ignoreDelay: true })
+            bridge.advertisement.showInterstitial({ ignoreDelay: true })
         })
 
         advertisementShowRewardedButton.addEventListener('click', () => {
-            instantGamesBridge.advertisement.showRewarded()
+            bridge.advertisement.showRewarded()
         })
 
         socialShareButton.addEventListener('click', () => {
@@ -373,15 +380,15 @@
                 }
             }
 
-            instantGamesBridge.social.share(data)
+            bridge.social.share(data)
         })
 
         socialInviteFriendsButton.addEventListener('click', () => {
-            instantGamesBridge.social.inviteFriends()
+            bridge.social.inviteFriends()
         })
 
         socialJoinCommunityButton.addEventListener('click', () => {
-            instantGamesBridge.social.joinCommunity({ vk: { groupId: socialVkGroupIdInput.value } })
+            bridge.social.joinCommunity({ vk: { groupId: socialVkGroupIdInput.value } })
         })
 
         socialCreatePostButton.addEventListener('click', () => {
@@ -391,23 +398,23 @@
                     attachments: socialCreatePostAttachmentsInput.value,
                 }
             }
-            instantGamesBridge.social.createPost(data)
+            bridge.social.createPost(data)
         })
 
         socialAddToHomeScreenButton.addEventListener('click', () => {
-            instantGamesBridge.social.addToHomeScreen()
+            bridge.social.addToHomeScreen()
         })
 
         socialAddToFavoritesButton.addEventListener('click', () => {
-            instantGamesBridge.social.addToFavorites()
+            bridge.social.addToFavorites()
         })
 
         socialRateButton.addEventListener('click', () => {
-            instantGamesBridge.social.rate()
+            bridge.social.rate()
         })
 
         leaderboardGetScoreButton.addEventListener('click', () => {
-            instantGamesBridge
+            bridge
                 .leaderboard
                 .getScore({ yandex: { leaderboardName: leaderboardIdInput.value } })
                 .then(score => {
@@ -417,7 +424,7 @@
         })
 
         leaderboardSetScoreButton.addEventListener('click', () => {
-            instantGamesBridge
+            bridge
                 .leaderboard
                 .setScore({ yandex: { score: leaderboardScoreInput.value, leaderboardName: leaderboardIdInput.value }})
         })
@@ -427,13 +434,13 @@
             if (!score)
                 score = 1
 
-            instantGamesBridge
+            bridge
                 .leaderboard
                 .showNativePopup({ vk: { userResult: score, global: leaderboardVkGlobalInput.checked } })
         })
 
         leaderboardGetEntriesButton.addEventListener('click', () => {
-            instantGamesBridge
+            bridge
                 .leaderboard
                 .getEntries({
                     yandex: {
@@ -452,5 +459,7 @@
                 })
         })
     </script>
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
 </body>
 </html>
