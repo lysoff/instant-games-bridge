@@ -4,12 +4,16 @@ import { EVENT_NAME } from '../constants'
 
 class GameModule extends ModuleBase {
 
+    get visibilityState() {
+        return this._platformBridge.visibilityState
+    }
+
     constructor(platformBridge) {
         super(platformBridge)
 
         this._platformBridge.on(
-            EVENT_NAME.VISIBILITY_CHANGED,
-            state => this.emit(EVENT_NAME.VISIBILITY_CHANGED, state))
+            EVENT_NAME.VISIBILITY_STATE_CHANGED,
+            state => this.emit(EVENT_NAME.VISIBILITY_STATE_CHANGED, state))
     }
 
 }

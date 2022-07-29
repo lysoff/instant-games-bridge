@@ -30,7 +30,7 @@ Join community: https://t.me/instant_games_bridge.
 ### Setup
 First you need to initialize the SDK:
 ```html
-<script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.5.0/dist/instant-games-bridge.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.5.1/dist/instant-games-bridge.js"></script>
 <script>
     bridge.initialize()
         .then(() => {
@@ -129,9 +129,12 @@ bridge.player.authorize(authorizationOptions)
 
 ### Game
 ```js
+// Current visibility state ('visible', 'hidden')
+bridge.game.visibilityState
+
 // Fired when visibility state changed ('visible', 'hidden')
 // For example: you can play/pause music here 
-bridge.game.on(bridge.EVENT_NAME.VISIBILITY_CHANGED, state => console.log('Visibility state:', state))
+bridge.game.on(bridge.EVENT_NAME.VISIBILITY_STATE_CHANGED, state => console.log('Visibility state:', state))
 ```
 
 ### Storage

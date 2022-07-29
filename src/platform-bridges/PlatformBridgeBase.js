@@ -28,6 +28,12 @@ class PlatformBridgeBase {
     }
 
 
+    // game
+    get visibilityState() {
+        return this._visibilityState
+    }
+
+
     // player
     get isPlayerAuthorizationSupported() {
         return false
@@ -145,6 +151,7 @@ class PlatformBridgeBase {
     _playerId = null
     _playerName = null
     _playerPhotos = []
+    _visibilityState = null
     _localStorage = null
     _defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
     _platformStorageCachedData = null
@@ -157,9 +164,11 @@ class PlatformBridgeBase {
     constructor(options) {
         try { this._localStorage = window.localStorage } catch (e) { }
 
+        this._visibilityState = document.visibilityState === 'visible' ? VISIBILITY_STATE.VISIBLE : VISIBILITY_STATE.HIDDEN
+
         document.addEventListener('visibilitychange', () => {
-            let visibilityState = document.visibilityState === 'visible' ? VISIBILITY_STATE.VISIBLE : VISIBILITY_STATE.HIDDEN
-            this.emit(EVENT_NAME.VISIBILITY_CHANGED, visibilityState)
+            this._visibilityState = document.visibilityState === 'visible' ? VISIBILITY_STATE.VISIBLE : VISIBILITY_STATE.HIDDEN
+            this.emit(EVENT_NAME.VISIBILITY_STATE_CHANGED, this._visibilityState)
         })
 
         if (options) {

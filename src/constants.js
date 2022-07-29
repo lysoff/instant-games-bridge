@@ -19,7 +19,7 @@ export const MODULE_NAME = {
 export const EVENT_NAME = {
     INTERSTITIAL_STATE_CHANGED: 'interstitial_state_changed',
     REWARDED_STATE_CHANGED: 'rewarded_state_changed',
-    VISIBILITY_CHANGED: 'visibility_changed'
+    VISIBILITY_STATE_CHANGED: 'visibility_state_changed'
 }
 
 export const VISIBILITY_STATE = {
