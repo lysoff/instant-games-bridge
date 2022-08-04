@@ -380,7 +380,7 @@ class PlatformBridgeBase {
     _canShowAdvertisement() {
         if (this._interstitialState && this._interstitialState === INTERSTITIAL_STATE.OPENED) {
             return false
-        } else if (this._rewardedState && (this._rewardedState === REWARDED_STATE.OPENED || this._rewardedState !== REWARDED_STATE.REWARDED)) {
+        } else if (this._rewardedState && (this._rewardedState === REWARDED_STATE.OPENED || this._rewardedState === REWARDED_STATE.REWARDED)) {
             return false
         }
 
