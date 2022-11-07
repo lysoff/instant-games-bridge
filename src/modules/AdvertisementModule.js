@@ -100,7 +100,14 @@ class AdvertisementModule extends ModuleBase {
         return this._platformBridge.showRewarded()
     }
 
-    showBanner() {
+    showBanner(options) {
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions) {
+                return this.showBanner(platformDependedOptions)
+            }
+        }
+
         return this._platformBridge.showBanner()
     }
 
