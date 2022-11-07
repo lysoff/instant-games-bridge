@@ -43,6 +43,8 @@ export const REWARDED_STATE = {
 export const ACTION_NAME = {
     INITIALIZE: 'initialize',
     AUTHORIZE_PLAYER: 'authorize_player',
+    SHOW_BANNER: 'show_banner',
+    HIDE_BANNER: 'hide_banner',
     SHOW_INTERSTITIAL: 'show_interstitial',
     SHOW_REWARDED: 'show_rewarded',
     SHARE: 'share',

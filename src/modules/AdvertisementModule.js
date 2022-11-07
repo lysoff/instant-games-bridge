@@ -5,6 +5,14 @@ import { EVENT_NAME } from '../constants'
 
 class AdvertisementModule extends ModuleBase {
 
+    get isBannerSupported() {
+        return this._platformBridge.isBannerSupported
+    }
+
+    get isBannerShowing() {
+        return this._platformBridge.isBannerShowing
+    }
+
     get interstitialState() {
         return this._platformBridge.interstitialState
     }
@@ -90,6 +98,14 @@ class AdvertisementModule extends ModuleBase {
 
     showRewarded() {
         return this._platformBridge.showRewarded()
+    }
+
+    showBanner() {
+        return this._platformBridge.showBanner()
+    }
+
+    hideBanner() {
+        return this._platformBridge.hideBanner()
     }
 
     #startInterstitialTimer() {

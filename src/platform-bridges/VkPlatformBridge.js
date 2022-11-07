@@ -1,7 +1,6 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
 import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, ERROR } from '../constants'
-import PromiseDecorator from '../common/PromiseDecorator'
 
 const VK_BRIDGE_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
 
@@ -50,11 +49,8 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     // device
     get deviceType() {
-        let url = new URL(window.location.href)
-        if (url.searchParams.has('platform')) {
-            let platformType = url.searchParams.get('platform')
-
-            switch (platformType) {
+        if (this.#platform) {
+            switch (this.#platform) {
                 case 'html5_ios':
                 case 'html5_android':
                 case 'html5_mobile': {
@@ -98,15 +94,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
     }
 
     get isAddToHomeScreenSupported() {
-        let url = new URL(window.location.href)
-        if (url.searchParams.has('platform')) {
-            let platformType = url.searchParams.get('platform')
-            if (platformType === 'html5_android') {
-                return true
-            }
-        }
-
-        return false
+        return this.#platform === 'html5_android'
     }
 
     get isAddToFavoritesSupported() {
@@ -123,6 +111,8 @@ class VkPlatformBridge extends PlatformBridgeBase {
         return this.deviceType === 'mobile'
     }
 
+    #platform
+
 
     initialize() {
         if (this._isInitialized) {
@@ -133,11 +123,22 @@ class VkPlatformBridge extends PlatformBridgeBase {
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
+            let url = new URL(window.location.href)
+            if (url.searchParams.has('platform')) {
+                this.#platform = url.searchParams.get('platform')
+            }
+
             addJavaScript(VK_BRIDGE_URL).then(() => {
                 this._platformSdk = window.vkBridge
                 this._platformSdk
                     .send('VKWebAppInit')
                     .then(() => {
+
+                        if (window.bridgeExtensions && window.bridgeExtensions.vk && window.bridgeExtensions.vk.banner) {
+                            if (this.#platform === 'html5_android' || this.#platform === 'html5_ios') {
+                                this._isBannerSupported = true
+                            }
+                        }
 
                         this._platformSdk.send('VKWebAppGetUserInfo')
                             .then(data => {
@@ -308,6 +309,43 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
 
     // advertisement
+    showBanner(options) {
+        if (!this._isBannerSupported) {
+            return Promise.reject()
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_BANNER)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SHOW_BANNER)
+            this._platformSdk
+                .send('VKWebAppGetAds')
+                .then(data => {
+                    let position = 'bottom'
+                    if (options && options.position) {
+                        position = options.position
+                    }
+
+                    window.bridgeExtensions.vk.banner.show(data, position)
+                    this._isBannerShowing = true
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.SHOW_BANNER, error)
+                })
+        }
+
+        return promiseDecorator.promise
+    }
+
+    hideBanner() {
+        if (!this._isBannerSupported) {
+            return Promise.reject()
+        }
+
+        window.bridgeExtensions.vk.banner.hide()
+        this._isBannerShowing = false
+        return Promise.resolve()
+    }
+
     showInterstitial() {
         if (!this._canShowAdvertisement()) {
             return Promise.reject()

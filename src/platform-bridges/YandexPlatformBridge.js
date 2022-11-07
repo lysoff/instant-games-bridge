@@ -103,8 +103,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                     this.#leaderboards = leaderboards
                                 })
 
+                            this._isBannerSupported = true
+                            let getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
+                                .then(data => {
+                                    this._isBannerShowing = data.stickyAdvIsShowing
+                                })
+
                             Promise
-                                .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedPromise, getLeaderboardsPromise])
+                                .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedPromise, getLeaderboardsPromise, getBannerStatePromise])
                                 .finally(() => {
                                     this._isInitialized = true
 
@@ -283,6 +289,56 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
 
     // advertisement
+    showBanner() {
+        if (this._isBannerShowing) {
+            return Promise.resolve()
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_BANNER)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SHOW_BANNER)
+            this._platformSdk.adv.showBannerAdv()
+                .then(data => {
+                    if (data.stickyAdvIsShowing) {
+                        this._isBannerShowing = true
+                        this._resolvePromiseDecorator(ACTION_NAME.SHOW_BANNER)
+                    } else {
+                        this._rejectPromiseDecorator(ACTION_NAME.SHOW_BANNER, data.reason)
+                    }
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.SHOW_BANNER, error)
+                })
+        }
+
+        return promiseDecorator.promise
+    }
+
+    hideBanner() {
+        if (!this._isBannerShowing) {
+            return Promise.resolve()
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.HIDE_BANNER)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.HIDE_BANNER)
+            this._platformSdk.adv.hideBannerAdv()
+                .then(data => {
+                    if (!data.stickyAdvIsShowing) {
+                        this._isBannerShowing = false
+                        this._resolvePromiseDecorator(ACTION_NAME.HIDE_BANNER)
+                    } else {
+                        this._rejectPromiseDecorator(ACTION_NAME.HIDE_BANNER)
+                    }
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.HIDE_BANNER, error)
+                })
+        }
+
+        return promiseDecorator.promise
+    }
+
     showInterstitial() {
         if (!this._canShowAdvertisement()) {
             return Promise.reject()

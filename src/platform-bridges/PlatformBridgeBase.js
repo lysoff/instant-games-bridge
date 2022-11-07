@@ -63,6 +63,14 @@ class PlatformBridgeBase {
 
 
     // advertisement
+    get isBannerSupported() {
+        return this._isBannerSupported
+    }
+
+    get isBannerShowing() {
+        return this._isBannerShowing
+    }
+
     get interstitialState() {
         return this._interstitialState
     }
@@ -155,6 +163,8 @@ class PlatformBridgeBase {
     _localStorage = null
     _defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
     _platformStorageCachedData = null
+    _isBannerSupported = false
+    _isBannerShowing = false
     _interstitialState = null
     _rewardedState = null
 
@@ -276,6 +286,14 @@ class PlatformBridgeBase {
 
 
     // advertisement
+    showBanner() {
+        return Promise.reject()
+    }
+
+    hideBanner() {
+        return Promise.reject()
+    }
+
     showInterstitial() {
         return Promise.reject()
     }
