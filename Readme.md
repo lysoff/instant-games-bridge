@@ -30,7 +30,7 @@ Join community: https://t.me/instant_games_bridge.
 ### Setup
 First you need to initialize the SDK:
 ```html
-<script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.5.2/dist/instant-games-bridge.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.6.0/dist/instant-games-bridge.js"></script>
 <script>
     bridge.initialize()
         .then(() => {
@@ -138,7 +138,6 @@ bridge.game.on(bridge.EVENT_NAME.VISIBILITY_STATE_CHANGED, state => console.log(
 ```
 
 ### Storage
-
 ```js
 // Current platform storage type ('local_storage', 'platform_internal')
 bridge.storage.defaultType
@@ -200,7 +199,20 @@ bridge.storage.delete(['key_1', 'key2'])
 ```
 
 ### Advertisement
+If you want to show banners on VK — add [bridge-vk-banner-extension](https://github.com/instant-games-bridge/instant-games-bridge-vk-banner-extension) (+482kb).
 ```js
+/* -- -- -- Banners -- -- -- */
+bridge.advertisement.isBannerSupported
+bridge.advertisement.isBannerShowing
+
+let bannerOptions = {
+    vk: {
+        position: 'top' // Default = bottom
+    }
+}
+bridge.advertisement.showBanner(bannerOptions)
+bridge.advertisement.hideBanner()
+
 /* -- -- -- Delays Between Interstitials -- -- -- */
 bridge.advertisement.minimumDelayBetweenInterstitial // Default = 60 seconds
 
