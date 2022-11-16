@@ -327,6 +327,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
                     window.bridgeExtensions.vk.banner.show(data, position)
                     this._isBannerShowing = true
+                    this._resolvePromiseDecorator(ACTION_NAME.SHOW_BANNER)
                 })
                 .catch(error => {
                     this._rejectPromiseDecorator(ACTION_NAME.SHOW_BANNER, error)

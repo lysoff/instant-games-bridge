@@ -30,7 +30,7 @@ Join community: https://t.me/instant_games_bridge.
 ### Setup
 First you need to initialize the SDK:
 ```html
-<script src="https://cdn.jsdelivr.net/gh/instant-games-bridge/instant-games-bridge@1.6.0/dist/instant-games-bridge.js"></script>
+<script src="./instant-games-bridge.js"></script>
 <script>
     bridge.initialize()
         .then(() => {
@@ -39,6 +39,9 @@ First you need to initialize the SDK:
         .catch(error => {
             // Error
         })
+    
+    // You can forcibly set needed platform ID and skip the internal detection
+    bridge.initialize({ forciblySetPlatformId: bridge.PLATFORM_ID.MOCK })
 </script>
 ```
 
@@ -211,7 +214,20 @@ let bannerOptions = {
     }
 }
 bridge.advertisement.showBanner(bannerOptions)
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
+
 bridge.advertisement.hideBanner()
+    .then(() => {
+        // Success
+    })
+    .catch(error => {
+        // Error
+    })
 
 /* -- -- -- Delays Between Interstitials -- -- -- */
 bridge.advertisement.minimumDelayBetweenInterstitial // Default = 60 seconds

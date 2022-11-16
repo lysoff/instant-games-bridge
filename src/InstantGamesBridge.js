@@ -16,7 +16,7 @@ import LeaderboardModule from './modules/LeaderboardModule'
 class InstantGamesBridge {
 
     get version() {
-        return '1.6.0'
+        return '1.6.1'
     }
 
     get isInitialized() {
