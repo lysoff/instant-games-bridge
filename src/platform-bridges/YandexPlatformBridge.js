@@ -1,6 +1,6 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, ERROR } from '../constants'
+import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE } from '../constants'
 
 const YANDEX_SDK_URL = 'https://yandex.ru/games/sdk/v2'
 
@@ -341,6 +341,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     showInterstitial() {
         if (!this._canShowAdvertisement()) {
+            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
             return Promise.reject()
         }
 
@@ -371,6 +372,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     showRewarded() {
         if (!this._canShowAdvertisement()) {
+            this._setRewardedState(REWARDED_STATE.FAILED)
             return Promise.reject()
         }
 

@@ -295,10 +295,12 @@ class PlatformBridgeBase {
     }
 
     showInterstitial() {
+        this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
         return Promise.reject()
     }
 
     showRewarded() {
+        this._setRewardedState(REWARDED_STATE.FAILED)
         return Promise.reject()
     }
 

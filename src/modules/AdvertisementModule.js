@@ -1,7 +1,7 @@
 import EventLite from 'event-lite'
 import Timer, { STATE as TIMER_STATE } from '../common/Timer'
 import ModuleBase from './ModuleBase'
-import { EVENT_NAME } from '../constants'
+import { EVENT_NAME, INTERSTITIAL_STATE } from '../constants'
 
 class AdvertisementModule extends ModuleBase {
 
@@ -86,6 +86,7 @@ class AdvertisementModule extends ModuleBase {
         }
 
         if (this.#interstitialTimer && this.#interstitialTimer.state !== TIMER_STATE.COMPLETED && !ignoreDelay) {
+            this.emit(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, INTERSTITIAL_STATE.FAILED)
             return Promise.reject()
         }
 

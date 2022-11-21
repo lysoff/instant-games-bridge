@@ -1,6 +1,6 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, ERROR } from '../constants'
+import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE } from '../constants'
 
 const VK_BRIDGE_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
 
@@ -349,6 +349,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     showInterstitial() {
         if (!this._canShowAdvertisement()) {
+            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
             return Promise.reject()
         }
 
@@ -369,6 +370,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     showRewarded() {
         if (!this._canShowAdvertisement()) {
+            this._setRewardedState(REWARDED_STATE.FAILED)
             return Promise.reject()
         }
 
