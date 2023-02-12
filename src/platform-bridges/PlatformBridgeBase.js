@@ -1,5 +1,14 @@
 import EventLite from 'event-lite'
-import { PLATFORM_ID, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, ERROR, VISIBILITY_STATE } from '../constants'
+import {
+    PLATFORM_ID,
+    EVENT_NAME,
+    INTERSTITIAL_STATE,
+    REWARDED_STATE,
+    STORAGE_TYPE,
+    ERROR,
+    VISIBILITY_STATE,
+    DEVICE_TYPE
+} from '../constants'
 import PromiseDecorator from '../common/PromiseDecorator'
 
 class PlatformBridgeBase {
@@ -16,7 +25,7 @@ class PlatformBridgeBase {
     get platformLanguage() {
         let value = navigator.language
         if (typeof value === 'string') {
-            return value.substring(0, 2)
+            return value.substring(0, 2).toLowerCase()
         }
 
         return 'en'
@@ -115,15 +124,15 @@ class PlatformBridgeBase {
         if (navigator && navigator.userAgent) {
             let userAgent = navigator.userAgent.toLowerCase()
             if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
-                return 'mobile'
+                return DEVICE_TYPE.MOBILE
             }
 
             if (/ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP)))/.test(userAgent)) {
-                return 'tablet'
+                return DEVICE_TYPE.TABLET
             }
         }
 
-        return 'desktop'
+        return DEVICE_TYPE.DESKTOP
     }
 
 
@@ -187,7 +196,13 @@ class PlatformBridgeBase {
     }
 
     initialize() {
-        return Promise.resolve()
+        return Promise.reject()
+    }
+
+
+    // platform
+    sendMessage(message) {
+        return Promise.reject()
     }
 
 

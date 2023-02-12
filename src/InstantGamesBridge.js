@@ -1,4 +1,13 @@
-import { PLATFORM_ID, MODULE_NAME, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, VISIBILITY_STATE } from './constants'
+import {
+    PLATFORM_ID,
+    MODULE_NAME,
+    EVENT_NAME,
+    INTERSTITIAL_STATE,
+    REWARDED_STATE,
+    STORAGE_TYPE,
+    VISIBILITY_STATE,
+    DEVICE_TYPE, ERROR
+} from './constants'
 import PromiseDecorator from './common/PromiseDecorator'
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
 import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
@@ -12,11 +21,12 @@ import AdvertisementModule from './modules/AdvertisementModule'
 import SocialModule from './modules/SocialModule'
 import DeviceModule from './modules/DeviceModule'
 import LeaderboardModule from './modules/LeaderboardModule'
+import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
 
 class InstantGamesBridge {
 
     get version() {
-        return '1.6.2'
+        return '1.7.0'
     }
 
     get isInitialized() {
@@ -83,6 +93,10 @@ class InstantGamesBridge {
         return VISIBILITY_STATE
     }
 
+    get DEVICE_TYPE() {
+        return DEVICE_TYPE
+    }
+
     #isInitialized = false
     #initializationPromiseDecorator = null
 
@@ -125,17 +139,13 @@ class InstantGamesBridge {
     }
 
     overrideModule(id, value) {
-        if (!this.#isInitialized) {
+        if (typeof value !== 'object') {
             return
         }
 
-        let module = this.#modules[id]
-        if (module) {
-            this.#overriddenModules[id] = value
-
-            if (typeof value.initialize === 'function') {
-                value.initialize(module)
-            }
+        this.#overriddenModules[id] = value
+        if (typeof value.initialize === 'function') {
+            value.initialize(module)
         }
     }
 
@@ -152,6 +162,10 @@ class InstantGamesBridge {
                     platformId = PLATFORM_ID.YANDEX
                     break
                 }
+                case PLATFORM_ID.CRAZY_GAMES: {
+                    platformId = PLATFORM_ID.CRAZY_GAMES
+                    break
+                }
                 case PLATFORM_ID.TGG: {
                     platformId = PLATFORM_ID.TGG
                     break
@@ -162,6 +176,8 @@ class InstantGamesBridge {
             let yandexUrl = ['y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
             if (url.hostname.includes(yandexUrl) || url.hash.includes('yandex')) {
                 platformId = PLATFORM_ID.YANDEX
+            } else if (url.hostname.includes('crazygames.') || url.hostname.includes('1001juegos.com')) {
+                platformId = PLATFORM_ID.CRAZY_GAMES
             } else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('platform')) {
@@ -183,6 +199,10 @@ class InstantGamesBridge {
                 this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms.yandex)
                 break
             }
+            case PLATFORM_ID.CRAZY_GAMES: {
+                this.#platformBridge = new CrazyGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms.crazyGames)
+                break
+            }
             case PLATFORM_ID.TGG: {
                 this.#platformBridge = new TggPlatformBridge(this._options && this._options.platforms && this._options.platforms.tgg)
                 break
@@ -195,6 +215,10 @@ class InstantGamesBridge {
     }
 
     #getModule(id) {
+        if (!this.#isInitialized) {
+            console.error(ERROR.SDK_NOT_INITIALIZED)
+        }
+
         if (this.#overriddenModules[id]) {
             return this.#overriddenModules[id]
         }

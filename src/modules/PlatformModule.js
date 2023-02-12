@@ -18,6 +18,10 @@ class PlatformModule extends ModuleBase {
         return this._platformBridge.platformPayload
     }
 
+    sendMessage(message) {
+        return this._platformBridge.sendMessage(message)
+    }
+
 }
 
 export default PlatformModule

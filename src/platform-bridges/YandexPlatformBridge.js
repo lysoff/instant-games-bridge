@@ -1,8 +1,8 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE } from '../constants'
+import {PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, DEVICE_TYPE} from '../constants'
 
-const YANDEX_SDK_URL = 'https://yandex.ru/games/sdk/v2'
+const SDK_URL = 'https://yandex.ru/games/sdk/v2'
 
 class YandexPlatformBridge extends PlatformBridgeBase {
 
@@ -13,15 +13,30 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     get platformLanguage() {
         if (this._platformSdk) {
-            return this._platformSdk.environment.i18n.lang
+            return this._platformSdk.environment.i18n.lang.toLowerCase()
         }
 
         return super.platformLanguage
     }
 
+
+    // device
     get deviceType() {
         if (this._platformSdk) {
-            return this._platformSdk.deviceInfo.type
+            switch (this._platformSdk.deviceInfo.type) {
+                case DEVICE_TYPE.DESKTOP: {
+                    return DEVICE_TYPE.DESKTOP
+                }
+                case DEVICE_TYPE.MOBILE: {
+                    return DEVICE_TYPE.MOBILE
+                }
+                case DEVICE_TYPE.TABLET: {
+                    return DEVICE_TYPE.TABLET
+                }
+                case DEVICE_TYPE.TV: {
+                    return DEVICE_TYPE.TV
+                }
+            }
         }
 
         return super.deviceType
@@ -80,7 +95,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
-            addJavaScript(YANDEX_SDK_URL)
+            addJavaScript(SDK_URL)
                 .then(() => {
                     window.YaGames
                         .init()

@@ -1,8 +1,8 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import { PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE } from '../constants'
+import {PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, DEVICE_TYPE } from '../constants'
 
-const VK_BRIDGE_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
+const SDK_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
 
 class VkPlatformBridge extends PlatformBridgeBase {
 
@@ -54,10 +54,10 @@ class VkPlatformBridge extends PlatformBridgeBase {
                 case 'html5_ios':
                 case 'html5_android':
                 case 'html5_mobile': {
-                    return 'mobile'
+                    return DEVICE_TYPE.MOBILE
                 }
                 case 'web': {
-                    return 'desktop'
+                    return DEVICE_TYPE.DESKTOP
                 }
             }
         }
@@ -108,7 +108,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
     }
 
     get isLeaderboardNativePopupSupported() {
-        return this.deviceType === 'mobile'
+        return this.deviceType === DEVICE_TYPE.MOBILE
     }
 
     #platform
@@ -128,7 +128,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
                 this.#platform = url.searchParams.get('platform')
             }
 
-            addJavaScript(VK_BRIDGE_URL).then(() => {
+            addJavaScript(SDK_URL).then(() => {
                 this._platformSdk = window.vkBridge
                 this._platformSdk
                     .send('VKWebAppInit')

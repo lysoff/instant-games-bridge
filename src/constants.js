@@ -2,6 +2,7 @@ export const PLATFORM_ID = {
     VK: 'vk',
     YANDEX: 'yandex',
     TGG: 'tgg',
+    CRAZY_GAMES: 'crazy_games',
     MOCK: 'mock'
 }
 
@@ -40,6 +41,26 @@ export const REWARDED_STATE = {
     REWARDED: 'rewarded'
 }
 
+export const STORAGE_TYPE = {
+    LOCAL_STORAGE: 'local_storage',
+    PLATFORM_INTERNAL: 'platform_internal'
+}
+
+export const DEVICE_TYPE = {
+    DESKTOP: 'desktop',
+    MOBILE: 'mobile',
+    TABLET: 'tablet',
+    TV: 'tv',
+}
+
+export const PLATFORM_MESSAGE = {
+    GAME_LOADING_STARTED: 'game_loading_started',
+    GAME_LOADING_STOPPED: 'game_loading_stopped',
+    GAMEPLAY_STARTED: 'gameplay_started',
+    GAMEPLAY_STOPPED: 'gameplay_stopped',
+    PLAYER_GOT_ACHIEVEMENT: 'player_got_achievement',
+}
+
 export const ACTION_NAME = {
     INITIALIZE: 'initialize',
     AUTHORIZE_PLAYER: 'authorize_player',
@@ -60,11 +81,7 @@ export const ACTION_NAME = {
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup'
 }
 
-export const STORAGE_TYPE = {
-    LOCAL_STORAGE: 'local_storage',
-    PLATFORM_INTERNAL: 'platform_internal'
-}
-
 export const ERROR = {
+    SDK_NOT_INITIALIZED: { message: 'Before using the SDK you must initialize it' },
     STORAGE_NOT_SUPPORTED: { message: 'Storage not supported' }
 }
