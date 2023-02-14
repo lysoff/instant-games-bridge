@@ -185,7 +185,7 @@ If you want to show banners on VK — add [bridge-vk-banner-extension](https://g
 /* -- -- -- Banners -- -- -- */
 bridge.advertisement.isBannerSupported
 
-// Fired when banner state changed ('opened', 'closed', 'failed')
+// Fired when banner state changed ('shown', 'hidden', 'failed')
 bridge.advertisement.on(bridge.EVENT_NAME.BANNER_STATE_CHANGED, state => console.log('Banner state:', state))
 
 let bannerOptions = {
