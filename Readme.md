@@ -3,7 +3,8 @@ One SDK for cross-platform publishing HTML5 games.
 
 Supported platforms:
 + [VK.COM](https://vk.com)
-+ [Yandex Games](https://yandex.com/games/)
++ [Yandex Games](https://yandex.com/games)
++ [Crazy Games](https://crazygames.com)
 
 Plugins for game engines:
 + [Construct 3](https://github.com/mewtongames/instant-games-bridge-construct)
@@ -46,7 +47,7 @@ First you need to initialize the SDK:
 
 ### Platform
 ```js
-// ID of current platform ('vk', 'yandex', 'mock')
+// ID of current platform ('vk', 'yandex', 'crazy_games', 'mock')
 bridge.platform.id
 
 // Platform native SDK
@@ -59,22 +60,29 @@ bridge.platform.language
 // The value of the payload parameter from the url. Examples:
 // VK: vk.com/app8056947#your-info
 // Yandex: yandex.com/games/play/183100?payload=your-info
+// CrazyGames: crazygames.com/game/example?payload=your-info
 // Mock: site.com/game?payload=your-info
 bridge.platform.payload
+
+// Message to the platform. Supported only on CrazyGames.
+// Possible values: 'game_loading_started', 'game_loading_stopped', 'gameplay_started', 'gameplay_stopped', 'player_got_achievement'
+bridge.platform.sendMessage('player_got_achievement')
 ```
 
 ### Device
 ```js
-// 'mobile', 'tablet', 'desktop', 'tv'
+// Possible values: 'mobile', 'tablet', 'desktop', 'tv'
 bridge.device.type
 ```
 
 ### Player
 ```js
 // VK, Yandex: true
+// CrazyGames: false
 bridge.player.isAuthorizationSupported
 
 // VK: true, Yandex: true/false
+// CrazyGames: false
 bridge.player.isAuthorized
 
 // If player is authorized
@@ -86,7 +94,7 @@ bridge.player.photos // Array of player photos, sorted in order of increasing ph
 
 // If authorization is supported and player is not authorized
 let authorizationOptions = {
-    yandex: {
+    'yandex': {
         scopes: true // Request access to name and photo
     }
 }
@@ -150,8 +158,9 @@ bridge.storage.delete('key')
 /* -- -- -- Different Storage Types -- -- -- */
 // You can choose storage type for each platform separately:
 let options = {
-    vk: bridge.STORAGE_TYPE.PLATFORM_INTERNAL,
-    yandex: bridge.STORAGE_TYPE.LOCAL_STORAGE
+    'vk': bridge.STORAGE_TYPE.PLATFORM_INTERNAL,
+    'yandex': bridge.STORAGE_TYPE.LOCAL_STORAGE,
+    'crazy_games': bridge.STORAGE_TYPE.LOCAL_STORAGE
 }
 bridge.storage.get('key', options)
 bridge.storage.set('key', 'value', options)
@@ -175,49 +184,45 @@ If you want to show banners on VK — add [bridge-vk-banner-extension](https://g
 ```js
 /* -- -- -- Banners -- -- -- */
 bridge.advertisement.isBannerSupported
-bridge.advertisement.isBannerShowing
+
+// Fired when banner state changed ('opened', 'closed', 'failed')
+bridge.advertisement.on(bridge.EVENT_NAME.BANNER_STATE_CHANGED, state => console.log('Banner state:', state))
 
 let bannerOptions = {
-    vk: {
+    'vk': {
         position: 'top' // Default = bottom
     }
 }
 bridge.advertisement.showBanner(bannerOptions)
-    .then(() => {
-        // Success
-    })
-    .catch(error => {
-        // Error
-    })
-
 bridge.advertisement.hideBanner()
-    .then(() => {
-        // Success
-    })
-    .catch(error => {
-        // Error
-    })
 
 /* -- -- -- Delays Between Interstitials -- -- -- */
 bridge.advertisement.minimumDelayBetweenInterstitial // Default = 60 seconds
 
 // You can override minimum delay. You can use platform specific delays:
 let delayOptions = {
-    vk: 30,
-    yandex: 60,
-    mock: 0
+    'vk': 30,
+    'yandex': 60,
+    'crazy_games': 60,
+    'mock': 0
 }
 // Or common to all platforms:
 let delayOptions = 60
 bridge.advertisement.setMinimumDelayBetweenInterstitial(delayOptions)
 
 /* -- -- -- Interstitial -- -- -- */
-//  You can use platform specific ignoring:
+// Fired when interstitial state changed ('opened', 'closed', 'failed')
+bridge.advertisement.on(bridge.EVENT_NAME.INTERSTITIAL_STATE_CHANGED, state => console.log('Interstitial state:', state))
+
+// Optional parameter. You can use platform specific ignoring:
 let interstitialOptions = {
-    vk: {
+    'vk': {
         ignoreDelay: true
     },
-    yandex: {
+    'yandex': {
+        ignoreDelay: false
+    },
+    'crazy_games': {
         ignoreDelay: false
     }
 }
@@ -227,36 +232,20 @@ let interstitialOptions = {
 }
 // Request to show interstitial ads
 bridge.advertisement.showInterstitial(interstitialOptions)
-    .then(() => {
-        // Success
-    })
-    .catch(error => {
-        // Error
-    })
 
 /* -- -- -- Rewarded Video -- -- -- */
-// Request to show rewarded video ads
-bridge.advertisement.showRewarded()
-    .then(() => {
-        // Success
-    })
-    .catch(error => {
-        // Error
-    })
-
-/* -- -- -- Advertisement States -- -- -- */
-// Fired when interstitial state changed ('opened', 'closed', 'failed')
-bridge.advertisement.on(bridge.EVENT_NAME.INTERSTITIAL_STATE_CHANGED, state => console.log('Interstitial state:', state))
-
 // Fired when rewarded video state changed ('opened', 'rewarded', 'closed', 'failed')
 // It is recommended to give a reward when the state is 'rewarded'
 bridge.advertisement.on(bridge.EVENT_NAME.REWARDED_STATE_CHANGED, state => console.log('Rewarded state:', state))
+
+// Request to show rewarded video ads
+bridge.advertisement.showRewarded()
 ```
 
 ### Social
 ```js
 // VK: true
-// Yandex: false
+// Yandex, CrazyGames: false
 bridge.social.isShareSupported
 bridge.social.isJoinCommunitySupported
 bridge.social.isInviteFriendsSupported
@@ -264,14 +253,15 @@ bridge.social.isCreatePostSupported
 bridge.social.isAddToFavoritesSupported
 
 // VK, Yandex: partial supported
+// CrazyGames: false
 bridge.social.isAddToHomeScreenSupported
 
-// VK: false
+// VK, CrazyGames: false
 // Yandex: true
 bridge.social.isRateSupported
 
 let shareOptions = {
-    vk: {
+    'vk': {
         link: 'https://vk.com/wordle.game'
     }
 }
@@ -284,7 +274,7 @@ bridge.social.share(shareOptions)
     })
 
 let joinCommunityOptions = {
-    vk: {
+    'vk': {
         groupId: '199747461'
     }
 }
@@ -305,7 +295,7 @@ bridge.social.inviteFriends()
     })
 
 let createPostOptions = {
-    vk: {
+    'vk': {
         message: 'Hello world!',
         attachments: 'photo-199747461_457239629'
     }
@@ -346,19 +336,22 @@ bridge.social.rate()
 ### Leaderboard
 ```js
 // VK, Yandex: true
+// CrazyGames: false
 bridge.leaderboard.isSupported
 
-// VK: true, Yandex: false
+// VK: true
+// Yandex, CrazyGames: false
 bridge.leaderboard.isNativePopupSupported
 
-// VK: false, Yandex: true
+// VK, CrazyGames: false
+// Yandex: true
 bridge.leaderboard.isMultipleBoardsSupported
 bridge.leaderboard.isSetScoreSupported
 bridge.leaderboard.isGetScoreSupported
 bridge.leaderboard.isGetEntriesSupported
 
 let setScoreOptions = {
-    yandex: {
+    'yandex': {
         leaderboardName: 'YOU_LEADERBOARD_NAME',
         score: 42
     }
@@ -372,7 +365,7 @@ bridge.leaderboard.setScore(setScoreOptions)
     })
 
 let getScoreOptions = {
-    yandex: {
+    'yandex': {
         leaderboardName: 'YOU_LEADERBOARD_NAME',
     }
 }
@@ -386,7 +379,7 @@ bridge.leaderboard.getScore(getScoreOptions)
     })
 
 let getEntriesOptions = {
-    yandex: {
+    'yandex': {
         leaderboardName: 'YOU_LEADERBOARD_NAME',
         includeUser: true, // Default = false
         quantityAround: 10, // Default = 5
@@ -405,7 +398,7 @@ bridge.leaderboard.getEntries(getEntriesOptions)
     })
 
 let showNativePopupOptions = {
-    vk: {
+    'vk': {
         userResult: 42,
         global: true // Default = false
     }

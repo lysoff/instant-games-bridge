@@ -1,6 +1,14 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import {PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, DEVICE_TYPE } from '../constants'
+import {
+    PLATFORM_ID,
+    ACTION_NAME,
+    INTERSTITIAL_STATE,
+    REWARDED_STATE,
+    STORAGE_TYPE,
+    DEVICE_TYPE,
+    BANNER_STATE
+} from '../constants'
 
 const SDK_URL = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js'
 
@@ -310,53 +318,36 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     // advertisement
     showBanner(options) {
-        if (!this._isBannerSupported) {
-            return Promise.reject()
-        }
+        this._platformSdk
+            .send('VKWebAppGetAds')
+            .then(data => {
+                let position = 'bottom'
+                if (options && options.position) {
+                    position = options.position
+                }
 
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_BANNER)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SHOW_BANNER)
-            this._platformSdk
-                .send('VKWebAppGetAds')
-                .then(data => {
-                    let position = 'bottom'
-                    if (options && options.position) {
-                        position = options.position
-                    }
-
-                    window.bridgeExtensions.vk.banner.show(data, position)
-                    this._isBannerShowing = true
-                    this._resolvePromiseDecorator(ACTION_NAME.SHOW_BANNER)
-                })
-                .catch(error => {
-                    this._rejectPromiseDecorator(ACTION_NAME.SHOW_BANNER, error)
-                })
-        }
-
-        return promiseDecorator.promise
+                window.bridgeExtensions.vk.banner.show(data, position)
+                this._setBannerState(BANNER_STATE.SHOWN)
+            })
+            .catch(error => {
+                this._setBannerState(BANNER_STATE.FAILED)
+            })
     }
 
     hideBanner() {
-        if (!this._isBannerSupported) {
-            return Promise.reject()
-        }
-
         window.bridgeExtensions.vk.banner.hide()
-        this._isBannerShowing = false
-        return Promise.resolve()
+        this._setBannerState(BANNER_STATE.HIDDEN)
     }
 
     showInterstitial() {
-        if (!this._canShowAdvertisement()) {
-            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-            return Promise.reject()
-        }
-
-        return this.#sendRequestToVKBridge(ACTION_NAME.SHOW_INTERSTITIAL, 'VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
-            .then(() => {
-                this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-
+        this._platformSdk
+            .send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
+            .then(data => {
+                if (data.result) {
+                    this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                }
+            })
+            .finally(() => {
                 this._platformSdk
                     .send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
                     .then(data => {
@@ -369,15 +360,14 @@ class VkPlatformBridge extends PlatformBridgeBase {
     }
 
     showRewarded() {
-        if (!this._canShowAdvertisement()) {
-            this._setRewardedState(REWARDED_STATE.FAILED)
-            return Promise.reject()
-        }
-
-        return this.#sendRequestToVKBridge(ACTION_NAME.SHOW_REWARDED, 'VKWebAppCheckNativeAds', { ad_format: 'reward', use_waterfall: true })
-            .then(() => {
-                this._setRewardedState(REWARDED_STATE.OPENED)
-
+        this._platformSdk
+            .send('VKWebAppCheckNativeAds', { ad_format: 'reward', use_waterfall: true })
+            .then(data => {
+                if (data.result) {
+                    this._setRewardedState(REWARDED_STATE.OPENED)
+                }
+            })
+            .finally(() => {
                 this._platformSdk
                     .send('VKWebAppShowNativeAds', { ad_format: 'reward', use_waterfall: true })
                     .then(data => {

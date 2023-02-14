@@ -33,6 +33,13 @@
             padding: 20px;
             margin: 10px;
         }
+
+        #crazy-games-banner-container {
+            position: absolute;
+            bottom: 0px;
+            width: 100%;
+            height: 100px;
+        }
     </style>
 </head>
 <body>
@@ -95,9 +102,9 @@
         <button id="advertisement-set-minimum-delay-between-interstitial-button">Set Minimum Delay Between Interstitial</button>
         <br><br>
         <p>Is Banner Supported: <span id="advertisement-is-banner-supported-text"></span></p>
-        <p>Is Banner Showing: <span id="advertisement-is-banner-showing-text"></span></p>
-        <p>Interstitial State: <span id="advertisement-interstitial-state-text"></span></p>
-        <p>Rewarded State: <span id="advertisement-rewarded-state-text"></span></p>
+        <p>Last Banner States: <span id="advertisement-banner-state-text"></span></p>
+        <p>Last Interstitial States: <span id="advertisement-interstitial-state-text"></span></p>
+        <p>Last Rewarded States: <span id="advertisement-rewarded-state-text"></span></p>
         <br>
         <button id="advertisement-show-banner-button">Show Banner</button>
         <button id="advertisement-hide-banner-button">Hide Banner</button>
@@ -173,7 +180,9 @@
         <button id="leaderboard-get-entries-button">Get Entries</button>
         <p id="leaderboard-entries-container"></p>
     </div>
+
 </div>
+<div id="crazy-games-banner-container"></div>
 
 <script src="./instant-games-bridge.js"></script>
 <script>
@@ -222,7 +231,7 @@
     const advertisementInterstitialStateText = document.getElementById('advertisement-interstitial-state-text')
     const advertisementRewardedStateText = document.getElementById('advertisement-rewarded-state-text')
     const advertisementIsBannerSupportedText = document.getElementById('advertisement-is-banner-supported-text')
-    const advertisementIsBannerShowingText = document.getElementById('advertisement-is-banner-showing-text')
+    const advertisementBannerStateText = document.getElementById('advertisement-banner-state-text')
     const advertisementShowBannerButton = document.getElementById('advertisement-show-banner-button')
     const advertisementHideBannerButton = document.getElementById('advertisement-hide-banner-button')
     const advertisementShowInterstitialButton = document.getElementById('advertisement-show-interstitial-button')
@@ -266,6 +275,10 @@
     const leaderboardGetEntriesButton = document.getElementById('leaderboard-get-entries-button')
     const leaderboardEntriesContainer = document.getElementById('leaderboard-entries-container')
 
+    var lastInterstitialStates = []
+    var lastRewardedStates = []
+    var lastBannerStates = []
+
     bridge
         .initialize()
         .then(() => {
@@ -298,15 +311,37 @@
             socialIsRateSupportedText.innerText = bridge.social.isRateSupported
 
             advertisementIsBannerSupportedText.innerText = bridge.advertisement.isBannerSupported
-            advertisementIsBannerShowingText.innerText = bridge.advertisement.isBannerShowing
+            advertisementBannerStateText.innerText = bridge.advertisement.bannerState
             advertisementMinimumDelayBetweenInterstitialInput.value = bridge.advertisement.minimumDelayBetweenInterstitial
 
             bridge.advertisement.on('interstitial_state_changed', state => {
-                advertisementInterstitialStateText.innerText = state
+                lastInterstitialStates.push(state)
+
+                if (lastInterstitialStates.length > 3) {
+                    lastInterstitialStates = lastInterstitialStates.slice(lastInterstitialStates.length - 3)
+                }
+
+                advertisementInterstitialStateText.innerText = lastInterstitialStates.join(' → ')
             })
 
             bridge.advertisement.on('rewarded_state_changed', state => {
-                advertisementRewardedStateText.innerText = state
+                lastRewardedStates.push(state)
+
+                if (lastRewardedStates.length > 3) {
+                    lastRewardedStates = lastRewardedStates.slice(lastRewardedStates.length - 3)
+                }
+
+                advertisementRewardedStateText.innerText = lastRewardedStates.join(' → ')
+            })
+
+            bridge.advertisement.on('banner_state_changed', state => {
+                lastBannerStates.push(state)
+
+                if (lastBannerStates.length > 3) {
+                    lastBannerStates = lastBannerStates.slice(lastBannerStates.length - 3)
+                }
+
+                advertisementBannerStateText.innerText = lastBannerStates.join(' → ')
             })
 
             leaderboardIsSupportedText.innerText = bridge.leaderboard.isSupported
@@ -372,15 +407,16 @@
     })
 
     advertisementShowBannerButton.addEventListener('click', () => {
-        bridge.advertisement.showBanner().finally(() => {
-            advertisementIsBannerShowingText.innerText = bridge.advertisement.isBannerShowing
-        })
+        let options = {
+            'crazy_games': {
+                containerId: 'crazy-games-banner-container'
+            }
+        }
+        bridge.advertisement.showBanner(options)
     })
 
     advertisementHideBannerButton.addEventListener('click', () => {
-        bridge.advertisement.hideBanner().finally(() => {
-            advertisementIsBannerShowingText.innerText = bridge.advertisement.isBannerShowing
-        })
+        bridge.advertisement.hideBanner()
     })
 
     advertisementShowInterstitialButton.addEventListener('click', () => {

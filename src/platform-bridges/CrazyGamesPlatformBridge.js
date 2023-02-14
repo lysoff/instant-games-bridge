@@ -7,7 +7,7 @@ import {
     REWARDED_STATE,
     STORAGE_TYPE,
     DEVICE_TYPE,
-    PLATFORM_MESSAGE
+    PLATFORM_MESSAGE, BANNER_STATE
 } from '../constants'
 
 const SDK_URL = 'https://sdk.crazygames.com/crazygames-sdk-v1.js'
@@ -50,6 +50,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
 
     #userInfo = null
     #currentAdvertisementIsRewarded = false
+
 
     initialize() {
         if (this._isInitialized) {
@@ -95,6 +96,15 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     }
                 })
 
+                this._platformSdk.addEventListener('bannerRendered', event => {
+                    this._setBannerState(BANNER_STATE.SHOWN)
+                })
+
+                this._platformSdk.addEventListener('bannerError', event => {
+                    this._setBannerState(BANNER_STATE.FAILED)
+                })
+
+                this._isBannerSupported = true
                 this._platformSdk.init()
             })
         }
@@ -133,36 +143,28 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
 
 
     // advertisement
-    /*showInterstitial() {
-        if (!this._canShowAdvertisement()) {
-            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-            return Promise.reject()
+    showBanner(options) {
+        if (options && options.containerId && typeof options.containerId === 'string') {
+            this._platformSdk.requestResponsiveBanner([options.containerId]);
+        } else {
+            this._setBannerState(BANNER_STATE.FAILED)
         }
+    }
 
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
+    hideBanner() {
+        this._platformSdk.clearAllBanners()
+        this._setBannerState(BANNER_STATE.HIDDEN)
+    }
 
-            this._platformSdk.adv.showFullscreenAdv({
-                callbacks: {
-                    onOpen: () => {
-                        this._resolvePromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
-                        this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                    },
-                    onClose: wasShown => {
-                        if (wasShown) {
-                            this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                        } else {
-                            this._rejectPromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
-                            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-                        }
-                    }
-                }
-            })
-        }
+    showInterstitial() {
+        this.#currentAdvertisementIsRewarded = false
+        this._platformSdk.requestAd('midgame')
+    }
 
-        return promiseDecorator.promise
-    }*/
+    showRewarded() {
+        this.#currentAdvertisementIsRewarded = true
+        this._platformSdk.requestAd('rewarded')
+    }
 }
 
 export default CrazyGamesPlatformBridge

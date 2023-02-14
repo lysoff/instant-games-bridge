@@ -1,7 +1,6 @@
 export const PLATFORM_ID = {
     VK: 'vk',
     YANDEX: 'yandex',
-    TGG: 'tgg',
     CRAZY_GAMES: 'crazy_games',
     MOCK: 'mock'
 }
@@ -20,6 +19,7 @@ export const MODULE_NAME = {
 export const EVENT_NAME = {
     INTERSTITIAL_STATE_CHANGED: 'interstitial_state_changed',
     REWARDED_STATE_CHANGED: 'rewarded_state_changed',
+    BANNER_STATE_CHANGED: 'banner_state_changed',
     VISIBILITY_STATE_CHANGED: 'visibility_state_changed'
 }
 
@@ -29,16 +29,25 @@ export const VISIBILITY_STATE = {
 }
 
 export const INTERSTITIAL_STATE = {
+    LOADING: 'loading',
     OPENED: 'opened',
     CLOSED: 'closed',
     FAILED: 'failed'
 }
 
 export const REWARDED_STATE = {
+    LOADING: 'loading',
     OPENED: 'opened',
     CLOSED: 'closed',
     FAILED: 'failed',
     REWARDED: 'rewarded'
+}
+
+export const BANNER_STATE = {
+    LOADING: 'loading',
+    SHOWN: 'shown',
+    HIDDEN: 'hidden',
+    FAILED: 'failed'
 }
 
 export const STORAGE_TYPE = {
@@ -64,10 +73,6 @@ export const PLATFORM_MESSAGE = {
 export const ACTION_NAME = {
     INITIALIZE: 'initialize',
     AUTHORIZE_PLAYER: 'authorize_player',
-    SHOW_BANNER: 'show_banner',
-    HIDE_BANNER: 'hide_banner',
-    SHOW_INTERSTITIAL: 'show_interstitial',
-    SHOW_REWARDED: 'show_rewarded',
     SHARE: 'share',
     INVITE_FRIENDS: 'invite_friends',
     JOIN_COMMUNITY: 'join_community',

@@ -6,13 +6,14 @@ import {
     REWARDED_STATE,
     STORAGE_TYPE,
     VISIBILITY_STATE,
-    DEVICE_TYPE, ERROR
+    DEVICE_TYPE,
+    ERROR,
+    BANNER_STATE, PLATFORM_MESSAGE
 } from './constants'
 import PromiseDecorator from './common/PromiseDecorator'
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
 import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
 import YandexPlatformBridge from './platform-bridges/YandexPlatformBridge'
-import TggPlatformBridge from './platform-bridges/TggPlatformBridge'
 import PlatformModule from './modules/PlatformModule'
 import PlayerModule from './modules/PlayerModule'
 import GameModule from './modules/GameModule'
@@ -69,6 +70,10 @@ class InstantGamesBridge {
         return PLATFORM_ID
     }
 
+    get PLATFORM_MESSAGE() {
+        return PLATFORM_MESSAGE
+    }
+
     get MODULE_NAME() {
         return MODULE_NAME
     }
@@ -83,6 +88,10 @@ class InstantGamesBridge {
 
     get REWARDED_STATE() {
         return REWARDED_STATE
+    }
+
+    get BANNER_STATE() {
+        return BANNER_STATE
     }
 
     get STORAGE_TYPE() {
@@ -166,10 +175,6 @@ class InstantGamesBridge {
                     platformId = PLATFORM_ID.CRAZY_GAMES
                     break
                 }
-                case PLATFORM_ID.TGG: {
-                    platformId = PLATFORM_ID.TGG
-                    break
-                }
             }
         } else {
             let url = new URL(window.location.href)
@@ -180,31 +185,20 @@ class InstantGamesBridge {
                 platformId = PLATFORM_ID.CRAZY_GAMES
             } else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.VK
-            } else if (url.searchParams.has('platform')) {
-                switch (url.searchParams.get('platform')) {
-                    case PLATFORM_ID.TGG: {
-                        platformId = PLATFORM_ID.TGG
-                        break
-                    }
-                }
             }
         }
 
         switch (platformId) {
             case PLATFORM_ID.VK: {
-                this.#platformBridge = new VkPlatformBridge(this._options && this._options.platforms && this._options.platforms.vk)
+                this.#platformBridge = new VkPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.VK])
                 break
             }
             case PLATFORM_ID.YANDEX: {
-                this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms.yandex)
+                this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.YANDEX])
                 break
             }
             case PLATFORM_ID.CRAZY_GAMES: {
-                this.#platformBridge = new CrazyGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms.crazyGames)
-                break
-            }
-            case PLATFORM_ID.TGG: {
-                this.#platformBridge = new TggPlatformBridge(this._options && this._options.platforms && this._options.platforms.tgg)
+                this.#platformBridge = new CrazyGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.CRAZY_GAMES])
                 break
             }
             case PLATFORM_ID.MOCK: {

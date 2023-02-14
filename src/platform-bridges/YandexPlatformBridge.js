@@ -1,6 +1,14 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript } from '../common/utils'
-import {PLATFORM_ID, ACTION_NAME, INTERSTITIAL_STATE, REWARDED_STATE, STORAGE_TYPE, DEVICE_TYPE} from '../constants'
+import {
+    PLATFORM_ID,
+    ACTION_NAME,
+    INTERSTITIAL_STATE,
+    REWARDED_STATE,
+    STORAGE_TYPE,
+    DEVICE_TYPE,
+    BANNER_STATE
+} from '../constants'
 
 const SDK_URL = 'https://yandex.ru/games/sdk/v2'
 
@@ -304,118 +312,63 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
 
     // advertisement
-    showBanner() {
-        if (this._isBannerShowing) {
-            return Promise.resolve()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_BANNER)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SHOW_BANNER)
-            this._platformSdk.adv.showBannerAdv()
-                .then(data => {
-                    if (data.stickyAdvIsShowing) {
-                        this._isBannerShowing = true
-                        this._resolvePromiseDecorator(ACTION_NAME.SHOW_BANNER)
-                    } else {
-                        this._rejectPromiseDecorator(ACTION_NAME.SHOW_BANNER, data.reason)
-                    }
-                })
-                .catch(error => {
-                    this._rejectPromiseDecorator(ACTION_NAME.SHOW_BANNER, error)
-                })
-        }
-
-        return promiseDecorator.promise
+    showBanner(options) {
+        this._platformSdk.adv.showBannerAdv()
+            .then(data => {
+                if (data.stickyAdvIsShowing) {
+                    this._setBannerState(BANNER_STATE.SHOWN)
+                } else {
+                    this._setBannerState(BANNER_STATE.FAILED)
+                }
+            })
+            .catch(error => {
+                this._setBannerState(BANNER_STATE.FAILED)
+            })
     }
 
     hideBanner() {
-        if (!this._isBannerShowing) {
-            return Promise.resolve()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.HIDE_BANNER)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.HIDE_BANNER)
-            this._platformSdk.adv.hideBannerAdv()
-                .then(data => {
-                    if (!data.stickyAdvIsShowing) {
-                        this._isBannerShowing = false
-                        this._resolvePromiseDecorator(ACTION_NAME.HIDE_BANNER)
-                    } else {
-                        this._rejectPromiseDecorator(ACTION_NAME.HIDE_BANNER)
-                    }
-                })
-                .catch(error => {
-                    this._rejectPromiseDecorator(ACTION_NAME.HIDE_BANNER, error)
-                })
-        }
-
-        return promiseDecorator.promise
+        this._platformSdk.adv.hideBannerAdv()
+            .then(data => {
+                if (!data.stickyAdvIsShowing) {
+                    this._setBannerState(BANNER_STATE.HIDDEN)
+                }
+            })
     }
 
     showInterstitial() {
-        if (!this._canShowAdvertisement()) {
-            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-            return Promise.reject()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
-
-            this._platformSdk.adv.showFullscreenAdv({
-                callbacks: {
-                    onOpen: () => {
-                        this._resolvePromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
-                        this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                    },
-                    onClose: wasShown => {
-                        if (wasShown) {
-                            this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                        } else {
-                            this._rejectPromiseDecorator(ACTION_NAME.SHOW_INTERSTITIAL)
-                            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-                        }
+        this._platformSdk.adv.showFullscreenAdv({
+            callbacks: {
+                onOpen: () => {
+                    this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                },
+                onClose: wasShown => {
+                    if (wasShown) {
+                        this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                    } else {
+                        this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
                     }
                 }
-            })
-        }
-
-        return promiseDecorator.promise
+            }
+        })
     }
 
     showRewarded() {
-        if (!this._canShowAdvertisement()) {
-            this._setRewardedState(REWARDED_STATE.FAILED)
-            return Promise.reject()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.SHOW_REWARDED)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SHOW_REWARDED)
-
-            this._platformSdk.adv.showRewardedVideo({
-                callbacks: {
-                    onOpen: () => {
-                        this._resolvePromiseDecorator(ACTION_NAME.SHOW_REWARDED)
-                        this._setRewardedState(REWARDED_STATE.OPENED)
-                    },
-                    onRewarded:  () => {
-                        this._setRewardedState(REWARDED_STATE.REWARDED)
-                    },
-                    onClose: () => {
-                        this._setRewardedState(REWARDED_STATE.CLOSED)
-                    },
-                    onError: error => {
-                        this._rejectPromiseDecorator(ACTION_NAME.SHOW_REWARDED, error)
-                        this._setRewardedState(REWARDED_STATE.FAILED)
-                    }
+        this._platformSdk.adv.showRewardedVideo({
+            callbacks: {
+                onOpen: () => {
+                    this._setRewardedState(REWARDED_STATE.OPENED)
+                },
+                onRewarded:  () => {
+                    this._setRewardedState(REWARDED_STATE.REWARDED)
+                },
+                onClose: () => {
+                    this._setRewardedState(REWARDED_STATE.CLOSED)
+                },
+                onError: error => {
+                    this._setRewardedState(REWARDED_STATE.FAILED)
                 }
-            })
-        }
-
-        return promiseDecorator.promise
+            }
+        })
     }
 
 

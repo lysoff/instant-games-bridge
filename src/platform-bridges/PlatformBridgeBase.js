@@ -7,7 +7,7 @@ import {
     STORAGE_TYPE,
     ERROR,
     VISIBILITY_STATE,
-    DEVICE_TYPE
+    DEVICE_TYPE, BANNER_STATE
 } from '../constants'
 import PromiseDecorator from '../common/PromiseDecorator'
 
@@ -76,8 +76,8 @@ class PlatformBridgeBase {
         return this._isBannerSupported
     }
 
-    get isBannerShowing() {
-        return this._isBannerShowing
+    get bannerState() {
+        return this._bannerState
     }
 
     get interstitialState() {
@@ -173,9 +173,9 @@ class PlatformBridgeBase {
     _defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
     _platformStorageCachedData = null
     _isBannerSupported = false
-    _isBannerShowing = false
     _interstitialState = null
     _rewardedState = null
+    _bannerState = null
 
     #promiseDecorators = { }
 
@@ -301,22 +301,20 @@ class PlatformBridgeBase {
 
 
     // advertisement
-    showBanner() {
-        return Promise.reject()
+    showBanner(options) {
+        this._setBannerState(BANNER_STATE.FAILED)
     }
 
     hideBanner() {
-        return Promise.reject()
+        this._setBannerState(BANNER_STATE.HIDDEN)
     }
 
     showInterstitial() {
         this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-        return Promise.reject()
     }
 
     showRewarded() {
         this._setRewardedState(REWARDED_STATE.FAILED)
-        return Promise.reject()
     }
 
 
@@ -412,15 +410,15 @@ class PlatformBridgeBase {
         this.emit(EVENT_NAME.REWARDED_STATE_CHANGED, this._rewardedState)
     }
 
-    _canShowAdvertisement() {
-        if (this._interstitialState && this._interstitialState === INTERSTITIAL_STATE.OPENED) {
-            return false
-        } else if (this._rewardedState && (this._rewardedState === REWARDED_STATE.OPENED || this._rewardedState === REWARDED_STATE.REWARDED)) {
-            return false
+    _setBannerState(state) {
+        if (this._bannerState === state && state !== BANNER_STATE.FAILED) {
+            return
         }
 
-        return true
+        this._bannerState = state
+        this.emit(EVENT_NAME.BANNER_STATE_CHANGED, this._bannerState)
     }
+
 
     _createPromiseDecorator(actionName) {
         let promiseDecorator = new PromiseDecorator()
