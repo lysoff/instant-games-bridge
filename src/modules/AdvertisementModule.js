@@ -34,7 +34,15 @@ class AdvertisementModule extends ModuleBase {
 
         this._platformBridge.on(
             EVENT_NAME.INTERSTITIAL_STATE_CHANGED,
-            state => this.emit(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, state))
+            state => {
+                if (state === INTERSTITIAL_STATE.CLOSED) {
+                    if (this.#minimumDelayBetweenInterstitial > 0) {
+                        this.#startInterstitialTimer()
+                    }
+                }
+
+                this.emit(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, state)
+            })
 
         this._platformBridge.on(
             EVENT_NAME.REWARDED_STATE_CHANGED,
@@ -142,10 +150,6 @@ class AdvertisementModule extends ModuleBase {
         if (this.#interstitialTimer && this.#interstitialTimer.state !== TIMER_STATE.COMPLETED && !ignoreDelay) {
             this._platformBridge._setInterstitialState(INTERSTITIAL_STATE.FAILED)
             return
-        }
-
-        if (this.#minimumDelayBetweenInterstitial > 0) {
-            this.#startInterstitialTimer()
         }
 
         this._platformBridge._setInterstitialState(INTERSTITIAL_STATE.LOADING)

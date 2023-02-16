@@ -191,6 +191,9 @@ bridge.advertisement.on(bridge.EVENT_NAME.BANNER_STATE_CHANGED, state => console
 let bannerOptions = {
     'vk': {
         position: 'top' // Default = bottom
+    },
+    'crazy_games': {
+        containerId: 'div-container-id'
     }
 }
 bridge.advertisement.showBanner(bannerOptions)
