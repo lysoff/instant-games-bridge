@@ -27,7 +27,7 @@ import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridg
 class InstantGamesBridge {
 
     get version() {
-        return '1.7.0'
+        return '1.7.1'
     }
 
     get isInitialized() {
