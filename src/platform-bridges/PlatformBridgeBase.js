@@ -196,7 +196,7 @@ class PlatformBridgeBase {
     }
 
     initialize() {
-        return Promise.reject()
+        return Promise.resolve()
     }
 
 
