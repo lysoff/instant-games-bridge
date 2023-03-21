@@ -57,7 +57,7 @@ class AdvertisementModule extends ModuleBase {
     setMinimumDelayBetweenInterstitial(options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
-            if (platformDependedOptions) {
+            if (typeof platformDependedOptions !== 'undefined') {
                 return this.setMinimumDelayBetweenInterstitial(platformDependedOptions)
             }
         }
