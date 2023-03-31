@@ -19,6 +19,17 @@ class StorageModule extends ModuleBase {
         return this._platformBridge.isStorageSupported(options)
     }
 
+    isAvailable(options) {
+        if (options) {
+            let platformDependedOptions = options[this._platformBridge.platformId]
+            if (platformDependedOptions) {
+                return this.isSupported(platformDependedOptions)
+            }
+        }
+
+        return this._platformBridge.isStorageAvailable(options)
+    }
+
     get(key, options) {
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]

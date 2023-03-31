@@ -118,6 +118,10 @@ class PlatformBridgeBase {
         return false
     }
 
+    get isExternalLinksAllowed() {
+        return false
+    }
+
 
     // device
     get deviceType() {
@@ -214,6 +218,20 @@ class PlatformBridgeBase {
 
     // storage
     isStorageSupported(storageType) {
+        switch (storageType) {
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                return this._localStorage !== null
+            }
+            case STORAGE_TYPE.PLATFORM_INTERNAL: {
+                return false
+            }
+            default: {
+                return false
+            }
+        }
+    }
+
+    isStorageAvailable(storageType) {
         switch (storageType) {
             case STORAGE_TYPE.LOCAL_STORAGE: {
                 return this._localStorage !== null

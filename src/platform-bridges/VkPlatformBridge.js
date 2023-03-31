@@ -109,6 +109,10 @@ class VkPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    get isExternalLinksAllowed() {
+        return true
+    }
+
 
     // leaderboard
     get isLeaderboardSupported() {
@@ -142,10 +146,8 @@ class VkPlatformBridge extends PlatformBridgeBase {
                     .send('VKWebAppInit')
                     .then(() => {
 
-                        if (window.bridgeExtensions && window.bridgeExtensions.vk && window.bridgeExtensions.vk.banner) {
-                            if (this.#platform === 'html5_android' || this.#platform === 'html5_ios') {
-                                this._isBannerSupported = true
-                            }
+                        if (this.#platform === 'html5_android' || this.#platform === 'html5_ios') {
+                            this._isBannerSupported = true
                         }
 
                         this._platformSdk.send('VKWebAppGetUserInfo')
@@ -194,6 +196,14 @@ class VkPlatformBridge extends PlatformBridgeBase {
         }
 
         return super.isStorageSupported(storageType)
+    }
+
+    isStorageAvailable(storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return true
+        }
+
+        return super.isStorageAvailable(storageType)
     }
 
     getDataFromStorage(key, storageType) {
@@ -318,25 +328,46 @@ class VkPlatformBridge extends PlatformBridgeBase {
 
     // advertisement
     showBanner(options) {
-        this._platformSdk
-            .send('VKWebAppGetAds')
-            .then(data => {
-                let position = 'bottom'
-                if (options && options.position) {
-                    position = options.position
-                }
+        let position = 'bottom'
+        let layoutType = 'resize'
+        let canClose = false
 
-                window.bridgeExtensions.vk.banner.show(data, position)
-                this._setBannerState(BANNER_STATE.SHOWN)
-            })
-            .catch(error => {
-                this._setBannerState(BANNER_STATE.FAILED)
-            })
+        if (options) {
+            if (typeof options.position === 'string') {
+                position = options.position
+            }
+
+            if (typeof options.layoutType === 'string') {
+                layoutType = options.layoutType
+            }
+
+            if (typeof options.canClose === 'boolean') {
+                canClose = options.canClose
+            }
+        }
+
+        this._platformSdk
+            .send('VKWebAppShowBannerAd', { 'banner_location': position, 'layout_type': layoutType, 'can_close': canClose })
+                .then(data => {
+                    if (data.result) {
+                        this._setBannerState(BANNER_STATE.SHOWN)
+                    } else {
+                        this._setBannerState(BANNER_STATE.FAILED)
+                    }
+                })
+                .catch(error => {
+                    this._setBannerState(BANNER_STATE.FAILED)
+                })
     }
 
     hideBanner() {
-        window.bridgeExtensions.vk.banner.hide()
-        this._setBannerState(BANNER_STATE.HIDDEN)
+        this._platformSdk
+            .send('VKWebAppHideBannerAd')
+            .then(data => {
+                if (data.result) {
+                    this._setBannerState(BANNER_STATE.HIDDEN)
+                }
+            })
     }
 
     showInterstitial() {

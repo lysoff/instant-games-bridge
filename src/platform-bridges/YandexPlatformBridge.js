@@ -129,7 +129,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                             this._isBannerSupported = true
                             let getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
                                 .then(data => {
-                                    this._isBannerShowing = data.stickyAdvIsShowing
+                                    if (data.stickyAdvIsShowing) {
+                                        this._setBannerState(BANNER_STATE.SHOWN)
+                                    }
                                 })
 
                             Promise
@@ -137,9 +139,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 .finally(() => {
                                     this._isInitialized = true
 
-                                    this._defaultStorageType = this.#yandexPlayer === null
-                                        ? STORAGE_TYPE.LOCAL_STORAGE
-                                        : STORAGE_TYPE.PLATFORM_INTERNAL
+                                    this._defaultStorageType = this._isPlayerAuthorized
+                                        ? STORAGE_TYPE.PLATFORM_INTERNAL
+                                        : STORAGE_TYPE.LOCAL_STORAGE
 
                                     this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
                                 })
@@ -181,10 +183,18 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     // storage
     isStorageSupported(storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
-            return this.#yandexPlayer !== null
+            return true
         }
 
         return super.isStorageSupported(storageType)
+    }
+
+    isStorageAvailable(storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return this._isPlayerAuthorized
+        }
+
+        return super.isStorageAvailable(storageType)
     }
 
     getDataFromStorage(key, storageType) {

@@ -23,11 +23,12 @@ import SocialModule from './modules/SocialModule'
 import DeviceModule from './modules/DeviceModule'
 import LeaderboardModule from './modules/LeaderboardModule'
 import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
+import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatformBridge'
 
 class InstantGamesBridge {
 
     get version() {
-        return '1.7.2'
+        return '1.8.0'
     }
 
     get isInitialized() {
@@ -175,6 +176,10 @@ class InstantGamesBridge {
                     platformId = PLATFORM_ID.CRAZY_GAMES
                     break
                 }
+                case PLATFORM_ID.ABSOLUTE_GAMES: {
+                    platformId = PLATFORM_ID.ABSOLUTE_GAMES
+                    break
+                }
             }
         } else {
             let url = new URL(window.location.href)
@@ -185,6 +190,8 @@ class InstantGamesBridge {
                 platformId = PLATFORM_ID.CRAZY_GAMES
             } else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.VK
+            } else if (url.searchParams.has('app_id') && url.searchParams.has('player_id') && url.searchParams.has('game_sid') && url.searchParams.has('auth_key')) {
+                platformId = PLATFORM_ID.ABSOLUTE_GAMES
             }
         }
 
@@ -199,6 +206,10 @@ class InstantGamesBridge {
             }
             case PLATFORM_ID.CRAZY_GAMES: {
                 this.#platformBridge = new CrazyGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.CRAZY_GAMES])
+                break
+            }
+            case PLATFORM_ID.ABSOLUTE_GAMES: {
+                this.#platformBridge = new AbsoluteGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.ABSOLUTE_GAMES])
                 break
             }
             case PLATFORM_ID.MOCK: {

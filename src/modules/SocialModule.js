@@ -30,6 +30,10 @@ class SocialModule extends ModuleBase {
         return this._platformBridge.isRateSupported
     }
 
+    get isExternalLinksAllowed() {
+        return this._platformBridge.isExternalLinksAllowed
+    }
+
     inviteFriends() {
         return this._platformBridge.inviteFriends()
     }

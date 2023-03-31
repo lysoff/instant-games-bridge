@@ -2,6 +2,7 @@ export const PLATFORM_ID = {
     VK: 'vk',
     YANDEX: 'yandex',
     CRAZY_GAMES: 'crazy_games',
+    ABSOLUTE_GAMES: 'absolute_games',
     MOCK: 'mock'
 }
 

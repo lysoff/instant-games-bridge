@@ -48,6 +48,12 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
     }
 
 
+    // social
+    get isExternalLinksAllowed() {
+        return true
+    }
+
+
     #userInfo = null
     #currentAdvertisementIsRewarded = false
 
