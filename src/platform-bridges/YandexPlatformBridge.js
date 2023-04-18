@@ -7,7 +7,8 @@ import {
     REWARDED_STATE,
     STORAGE_TYPE,
     DEVICE_TYPE,
-    BANNER_STATE
+    BANNER_STATE,
+    PLATFORM_MESSAGE
 } from '../constants'
 
 const SDK_URL = 'https://yandex.ru/games/sdk/v2'
@@ -25,6 +26,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         }
 
         return super.platformLanguage
+    }
+
+    get platformTld() {
+        if (this._platformSdk) {
+            return this._platformSdk.environment.i18n.tld.toLowerCase()
+        }
+
+        return super.platformTld
     }
 
 
@@ -150,6 +159,19 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         }
 
         return promiseDecorator.promise
+    }
+
+
+    // platform
+    sendMessage(message) {
+        switch (message) {
+            case PLATFORM_MESSAGE.GAME_READY: {
+                this._platformSdk.features.LoadingAPI?.ready()
+                return Promise.resolve()
+            }
+        }
+
+        return super.sendMessage(message)
     }
 
 

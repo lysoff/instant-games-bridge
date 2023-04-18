@@ -36,6 +36,10 @@ class PlatformBridgeBase {
         return url.searchParams.get('payload')
     }
 
+    get platformTld() {
+        return null
+    }
+
 
     // game
     get visibilityState() {
@@ -206,7 +210,7 @@ class PlatformBridgeBase {
 
     // platform
     sendMessage(message) {
-        return Promise.reject()
+        return Promise.resolve()
     }
 
 

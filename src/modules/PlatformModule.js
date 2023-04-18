@@ -18,6 +18,10 @@ class PlatformModule extends ModuleBase {
         return this._platformBridge.platformPayload
     }
 
+    get tld() {
+        return this._platformBridge.platformTld
+    }
+
     sendMessage(message) {
         return this._platformBridge.sendMessage(message)
     }

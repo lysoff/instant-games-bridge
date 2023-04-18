@@ -122,11 +122,11 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
     // platform
     sendMessage(message) {
         switch (message) {
-            case PLATFORM_MESSAGE.GAME_LOADING_STARTED: {
+            case PLATFORM_MESSAGE.IN_GAME_LOADING_STARTED: {
                 this._platformSdk.sdkGameLoadingStart()
                 return Promise.resolve()
             }
-            case PLATFORM_MESSAGE.GAME_LOADING_STOPPED: {
+            case PLATFORM_MESSAGE.IN_GAME_LOADING_STOPPED: {
                 this._platformSdk.sdkGameLoadingStop()
                 return Promise.resolve()
             }
