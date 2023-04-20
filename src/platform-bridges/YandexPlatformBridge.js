@@ -522,10 +522,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     getLeaderboardEntries(options) {
-        if (!this._isPlayerAuthorized) {
-            return Promise.reject()
-        }
-
         if (!this.#leaderboards || !options || !options.leaderboardName) {
             return Promise.reject()
         }

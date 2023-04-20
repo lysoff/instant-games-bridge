@@ -28,7 +28,7 @@ import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatfor
 class InstantGamesBridge {
 
     get version() {
-        return '1.8.1'
+        return '1.8.2'
     }
 
     get isInitialized() {

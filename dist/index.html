@@ -54,6 +54,7 @@
         <p>ID: <span id="platform-id-text"></span></p>
         <p>Language: <span id="platform-language-text"></span></p>
         <p>Payload: <span id="platform-payload-text"></span></p>
+        <p>TLD: <span id="platform-tld-text"></span></p>
     </div>
 
     <div class="section" id="device-section" style="display: none">
@@ -208,6 +209,7 @@
     const platformIdText = document.getElementById('platform-id-text')
     const platformLanguageText = document.getElementById('platform-language-text')
     const platformPayloadText = document.getElementById('platform-payload-text')
+    const platformTldText = document.getElementById('platform-tld-text')
 
     const deviceTypeText = document.getElementById('device-type-text')
 
@@ -291,6 +293,7 @@
             platformIdText.innerText = bridge.platform.id
             platformLanguageText.innerText = bridge.platform.language
             platformPayloadText.innerText = bridge.platform.payload
+            platformTldText.innerText = bridge.platform.tld
 
             deviceTypeText.innerText = bridge.device.type
 
