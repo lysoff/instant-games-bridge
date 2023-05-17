@@ -1,7 +1,7 @@
 import EventLite from 'event-lite'
 import Timer, { STATE as TIMER_STATE } from '../common/Timer'
 import ModuleBase from './ModuleBase'
-import { BANNER_STATE, EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE } from '../constants'
+import { EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE, BANNER_STATE } from '../constants'
 
 class AdvertisementModule extends ModuleBase {
 
@@ -88,11 +88,6 @@ class AdvertisementModule extends ModuleBase {
 
 
     showBanner(options) {
-        if (!this.isBannerSupported) {
-            this._platformBridge._setBannerState(BANNER_STATE.FAILED)
-            return
-        }
-
         if (options) {
             let platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
@@ -110,14 +105,15 @@ class AdvertisementModule extends ModuleBase {
         }
 
         this._platformBridge._setBannerState(BANNER_STATE.LOADING)
+        if (!this.isBannerSupported) {
+            this._platformBridge._setBannerState(BANNER_STATE.FAILED)
+            return
+        }
+
         this._platformBridge.showBanner(options)
     }
 
     hideBanner() {
-        if (!this.isBannerSupported) {
-            return
-        }
-
         if (this.bannerState) {
             switch (this.bannerState) {
                 case BANNER_STATE.LOADING:
@@ -126,11 +122,15 @@ class AdvertisementModule extends ModuleBase {
             }
         }
 
+        if (!this.isBannerSupported) {
+            return
+        }
+
         this._platformBridge.hideBanner()
     }
 
     showInterstitial(options) {
-        if (!this.#canShowAdvertisement()) {
+        if (this.#hasAdvertisementInProgress()) {
             return
         }
 
@@ -147,17 +147,18 @@ class AdvertisementModule extends ModuleBase {
             ignoreDelay = options.ignoreDelay
         }
 
+        this._platformBridge._setInterstitialState(INTERSTITIAL_STATE.LOADING)
+
         if (this.#interstitialTimer && this.#interstitialTimer.state !== TIMER_STATE.COMPLETED && !ignoreDelay) {
             this._platformBridge._setInterstitialState(INTERSTITIAL_STATE.FAILED)
             return
         }
 
-        this._platformBridge._setInterstitialState(INTERSTITIAL_STATE.LOADING)
         this._platformBridge.showInterstitial()
     }
 
     showRewarded() {
-        if (!this.#canShowAdvertisement()) {
+        if (this.#hasAdvertisementInProgress()) {
             return
         }
 
@@ -171,12 +172,12 @@ class AdvertisementModule extends ModuleBase {
         this.#interstitialTimer.start()
     }
 
-    #canShowAdvertisement() {
+    #hasAdvertisementInProgress() {
         if (this.interstitialState) {
             switch (this.interstitialState) {
                 case INTERSTITIAL_STATE.LOADING:
                 case INTERSTITIAL_STATE.OPENED:
-                    return false
+                    return true
             }
         }
 
@@ -185,11 +186,11 @@ class AdvertisementModule extends ModuleBase {
                 case REWARDED_STATE.LOADING:
                 case REWARDED_STATE.OPENED:
                 case REWARDED_STATE.REWARDED:
-                    return false
+                    return true
             }
         }
 
-        return true
+        return false
     }
 
 }

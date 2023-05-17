@@ -3,6 +3,7 @@ export const PLATFORM_ID = {
     YANDEX: 'yandex',
     CRAZY_GAMES: 'crazy_games',
     ABSOLUTE_GAMES: 'absolute_games',
+    GAME_DISTRIBUTION: 'game_distribution',
     MOCK: 'mock'
 }
 
@@ -90,5 +91,6 @@ export const ACTION_NAME = {
 
 export const ERROR = {
     SDK_NOT_INITIALIZED: { message: 'Before using the SDK you must initialize it' },
-    STORAGE_NOT_SUPPORTED: { message: 'Storage not supported' }
+    STORAGE_NOT_SUPPORTED: { message: 'Storage not supported' },
+    GAME_DISTRIBUTION_GAME_ID_IS_UNDEFINED: { message: 'GameDistribution Game ID is undefined' }
 }

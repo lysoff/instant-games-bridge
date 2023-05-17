@@ -4,11 +4,12 @@ import {
     EVENT_NAME,
     INTERSTITIAL_STATE,
     REWARDED_STATE,
+    BANNER_STATE,
     STORAGE_TYPE,
     VISIBILITY_STATE,
     DEVICE_TYPE,
-    ERROR,
-    BANNER_STATE, PLATFORM_MESSAGE
+    PLATFORM_MESSAGE,
+    ERROR
 } from './constants'
 import PromiseDecorator from './common/PromiseDecorator'
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
@@ -24,11 +25,12 @@ import DeviceModule from './modules/DeviceModule'
 import LeaderboardModule from './modules/LeaderboardModule'
 import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
 import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatformBridge'
+import GameDistributionPlatformBridge from './platform-bridges/GameDistributionPlatformBridge'
 
 class InstantGamesBridge {
 
     get version() {
-        return '1.8.2'
+        return '1.9.0'
     }
 
     get isInitialized() {
@@ -180,6 +182,10 @@ class InstantGamesBridge {
                     platformId = PLATFORM_ID.ABSOLUTE_GAMES
                     break
                 }
+                case PLATFORM_ID.GAME_DISTRIBUTION: {
+                    platformId = PLATFORM_ID.GAME_DISTRIBUTION
+                    break
+                }
             }
         } else {
             let url = new URL(window.location.href)
@@ -188,6 +194,8 @@ class InstantGamesBridge {
                 platformId = PLATFORM_ID.YANDEX
             } else if (url.hostname.includes('crazygames.') || url.hostname.includes('1001juegos.com')) {
                 platformId = PLATFORM_ID.CRAZY_GAMES
+            } else if (url.hostname.includes('gamedistribution.com')) {
+                platformId = PLATFORM_ID.GAME_DISTRIBUTION
             } else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('app_id') && url.searchParams.has('player_id') && url.searchParams.has('game_sid') && url.searchParams.has('auth_key')) {
@@ -210,6 +218,10 @@ class InstantGamesBridge {
             }
             case PLATFORM_ID.ABSOLUTE_GAMES: {
                 this.#platformBridge = new AbsoluteGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.ABSOLUTE_GAMES])
+                break
+            }
+            case PLATFORM_ID.GAME_DISTRIBUTION: {
+                this.#platformBridge = new GameDistributionPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.GAME_DISTRIBUTION])
                 break
             }
             case PLATFORM_ID.MOCK: {

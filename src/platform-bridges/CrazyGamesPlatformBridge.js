@@ -3,11 +3,12 @@ import { addJavaScript } from '../common/utils'
 import {
     PLATFORM_ID,
     ACTION_NAME,
+    BANNER_STATE,
     INTERSTITIAL_STATE,
     REWARDED_STATE,
     STORAGE_TYPE,
     DEVICE_TYPE,
-    PLATFORM_MESSAGE, BANNER_STATE
+    PLATFORM_MESSAGE
 } from '../constants'
 
 const SDK_URL = 'https://sdk.crazygames.com/crazygames-sdk-v1.js'
@@ -73,7 +74,6 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                 this._platformSdk.addEventListener('initialized', data => {
                     this.#userInfo = data.userInfo
                     this._isInitialized = true
-                    this._defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
                     this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
                 })
 
@@ -110,6 +110,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     this._setBannerState(BANNER_STATE.FAILED)
                 })
 
+                this._defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
                 this._isBannerSupported = true
                 this._platformSdk.init()
             })

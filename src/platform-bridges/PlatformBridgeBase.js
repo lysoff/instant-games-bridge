@@ -4,10 +4,11 @@ import {
     EVENT_NAME,
     INTERSTITIAL_STATE,
     REWARDED_STATE,
+    BANNER_STATE,
     STORAGE_TYPE,
     ERROR,
     VISIBILITY_STATE,
-    DEVICE_TYPE, BANNER_STATE
+    DEVICE_TYPE
 } from '../constants'
 import PromiseDecorator from '../common/PromiseDecorator'
 
