@@ -127,6 +127,11 @@ class PlatformBridgeBase {
         return false
     }
 
+    // payments
+    get isPaymentsSupported() {
+        return false;
+    }
+
 
     // device
     get deviceType() {
@@ -182,6 +187,7 @@ class PlatformBridgeBase {
     _defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
     _platformStorageCachedData = null
     _isBannerSupported = false
+    _isPaymentsSupported = false
     _interstitialState = null
     _rewardedState = null
     _bannerState = null
@@ -385,6 +391,11 @@ class PlatformBridgeBase {
     }
 
     showLeaderboardNativePopup(options) {
+        return Promise.reject()
+    }
+
+    // payments
+    paymentsPurchase(id, developerPayload) {
         return Promise.reject()
     }
 

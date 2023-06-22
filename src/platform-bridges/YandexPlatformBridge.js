@@ -97,9 +97,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    // payments
+    get isPaymentsSupported() {
+        return true;
+    }
 
     #isAddToHomeScreenSupported = false
     #yandexPlayer = null
+    #payments = null
     #leaderboards = null
 
 
@@ -143,6 +148,12 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                     }
                                 })
 
+                            this._isPaymentsSupported = true
+                            let getPaymentsPromise = this._platformSdk.getPayments()
+                                .then(_payments => {
+                                    this.#payments = _payments;
+                                })
+                            
                             Promise
                                 .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedPromise, getLeaderboardsPromise, getBannerStatePromise])
                                 .finally(() => {
@@ -599,6 +610,90 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
+    // payments
+    paymentsPurchase(id, developerPayload) {
+        if (!this.#payments) {
+            return Promise.reject();
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.PURCHASE)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
+
+            this.#payments.purchase({ id, developerPayload })
+                .then(purchase => {
+                    this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, purchase)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.PURCHASE, error)
+                })
+
+        }
+        return promiseDecorator.promise
+    }
+
+    paymentsConsume(token) {
+        if (!this.#payments) {
+            return Promise.reject();
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CONSUME)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CONSUME)
+
+            this.#payments.consumePurchase(token)
+                .then(result => {
+                    this._resolvePromiseDecorator(ACTION_NAME.CONSUME, result)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.CONSUME, error)
+                })
+
+        }
+        return promiseDecorator.promise
+    }
+
+    paymentsGetPurchases() {
+        if (!this.#payments) {
+            return Promise.reject();
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_PURCHASES)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_PURCHASES)
+
+            this.#payments.getPurchases()
+                .then(purchases => {
+                    this._resolvePromiseDecorator(ACTION_NAME.GET_PURCHASES, purchases)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.GET_PURCHASES, error)
+                })
+
+        }
+        return promiseDecorator.promise
+    }
+
+    paymentsGetCatalog() {
+        if (!this.#payments) {
+            return Promise.reject();
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_CATALOG)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_CATALOG)
+
+            this.#payments.getCatalog()
+                .then(catalog => {
+                    this._resolvePromiseDecorator(ACTION_NAME.GET_CATALOG, catalog)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.GET_CATALOG, error)
+                })
+
+        }
+        return promiseDecorator.promise
+    }
 
     #getPlayer(options) {
         return new Promise(resolve => {
