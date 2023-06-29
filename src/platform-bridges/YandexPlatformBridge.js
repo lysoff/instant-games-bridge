@@ -615,19 +615,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             return Promise.reject()
         }
 
-        let parameters = {
-            id: options.id,
-            developerPayload: ""
-        }
-        if (options.developerPayload) {
-            parameters.developerPayload = options.developerPayload
-        }
-
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.PURCHASE)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
 
-            this.#payments.purchase({ parameters.id, parameters.developerPayload })
+            this.#payments.purchase(options)
                 .then(purchase => {
                     this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, purchase)
                 })
