@@ -1,6 +1,7 @@
 import ModuleBase from './ModuleBase'
 
 class PaymentsModule extends ModuleBase {
+
     get isSupported() {
         return this._platformBridge.isPaymentsSupported
     }
@@ -20,6 +21,7 @@ class PaymentsModule extends ModuleBase {
     getCatalog() {
         return this._platformBridge.paymentsGetCatalog()
     }
+
 }
 
 export default PaymentsModule

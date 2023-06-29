@@ -99,7 +99,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     // payments
     get isPaymentsSupported() {
-        return true;
+        return true
     }
 
     #isAddToHomeScreenSupported = false
@@ -148,14 +148,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                     }
                                 })
 
-                            this._isPaymentsSupported = true
                             let getPaymentsPromise = this._platformSdk.getPayments()
                                 .then(_payments => {
-                                    this.#payments = _payments;
+                                    this.#payments = _payments
                                 })
                             
                             Promise
-                                .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedPromise, getLeaderboardsPromise, getBannerStatePromise])
+                                .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedPromise, getLeaderboardsPromise, getBannerStatePromise, getPaymentsPromise])
                                 .finally(() => {
                                     this._isInitialized = true
 
@@ -611,16 +610,24 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     // payments
-    paymentsPurchase(id, developerPayload) {
-        if (!this.#payments) {
-            return Promise.reject();
+    paymentsPurchase(options) {
+        if (!this.#payments || !options || !options.id || options.id === "") {
+            return Promise.reject()
+        }
+
+        let parameters = {
+            id: options.id,
+            developerPayload: ""
+        }
+        if (options.developerPayload) {
+            parameters.developerPayload = options.developerPayload
         }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.PURCHASE)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
 
-            this.#payments.purchase({ id, developerPayload })
+            this.#payments.purchase({ parameters.id, parameters.developerPayload })
                 .then(purchase => {
                     this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, purchase)
                 })
@@ -634,7 +641,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     paymentsConsume(token) {
         if (!this.#payments) {
-            return Promise.reject();
+            return Promise.reject()
         }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CONSUME)
@@ -655,7 +662,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     paymentsGetPurchases() {
         if (!this.#payments) {
-            return Promise.reject();
+            return Promise.reject()
         }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_PURCHASES)
@@ -676,7 +683,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     paymentsGetCatalog() {
         if (!this.#payments) {
-            return Promise.reject();
+            return Promise.reject()
         }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_CATALOG)

@@ -129,7 +129,7 @@ class PlatformBridgeBase {
 
     // payments
     get isPaymentsSupported() {
-        return false;
+        return false
     }
 
 
@@ -187,7 +187,6 @@ class PlatformBridgeBase {
     _defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
     _platformStorageCachedData = null
     _isBannerSupported = false
-    _isPaymentsSupported = false
     _interstitialState = null
     _rewardedState = null
     _bannerState = null
@@ -395,7 +394,19 @@ class PlatformBridgeBase {
     }
 
     // payments
-    paymentsPurchase(id, developerPayload) {
+    paymentsPurchase(options) {
+        return Promise.reject()
+    }
+
+    paymentsConsume(token) {
+        return Promise.reject()
+    }
+    
+    paymentsGetPurchases() {
+        return Promise.reject()
+    }
+    
+    paymentsGetCatalog() {
         return Promise.reject()
     }
 

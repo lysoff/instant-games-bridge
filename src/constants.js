@@ -88,10 +88,10 @@ export const ACTION_NAME = {
     GET_LEADERBOARD_SCORE: 'get_leaderboard_score',
     GET_LEADERBOARD_ENTRIES: 'get_leaderboard_entries',
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup',
-    PURCHASE: "purchase",
-    GET_PURCHASES: "get_purchases",
-    GET_CATALOG: "get_catalog",
-    CONSUME: "consume"
+    PURCHASE: 'purchase',
+    GET_PURCHASES: 'get_purchases',
+    GET_CATALOG: 'get_catalog',
+    CONSUME: 'consume',
 }
 
 export const ERROR = {

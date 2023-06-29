@@ -31,7 +31,7 @@ import GameDistributionPlatformBridge from './platform-bridges/GameDistributionP
 class InstantGamesBridge {
 
     get version() {
-        return '1.9.0'
+        return '1.10.0'
     }
 
     get isInitialized() {
