@@ -6,8 +6,8 @@ class PaymentsModule extends ModuleBase {
         return this._platformBridge.isPaymentsSupported
     }
 
-    purchase(id, developerPayload) {
-        return this._platformBridge.paymentsPurchase(id, developerPayload)
+    purchase(options) {
+        return this._platformBridge.paymentsPurchase(options)
     }
 
     consume(token) {

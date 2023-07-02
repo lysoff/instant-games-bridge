@@ -149,8 +149,8 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 })
 
                             let getPaymentsPromise = this._platformSdk.getPayments()
-                                .then(_payments => {
-                                    this.#payments = _payments
+                                .then(payments => {
+                                    this.#payments = payments
                                 })
                             
                             Promise
@@ -611,7 +611,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     // payments
     paymentsPurchase(options) {
-        if (!this.#payments || !options || !options.id || options.id === "") {
+        if (!this.#payments || !options || !options.id) {
             return Promise.reject()
         }
 
@@ -628,6 +628,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 })
 
         }
+
         return promiseDecorator.promise
     }
 
@@ -649,6 +650,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 })
 
         }
+
         return promiseDecorator.promise
     }
 
@@ -670,6 +672,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 })
 
         }
+
         return promiseDecorator.promise
     }
 
@@ -691,6 +694,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 })
 
         }
+        
         return promiseDecorator.promise
     }
 
