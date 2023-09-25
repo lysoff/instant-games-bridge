@@ -23,7 +23,6 @@ import AdvertisementModule from './modules/AdvertisementModule'
 import SocialModule from './modules/SocialModule'
 import DeviceModule from './modules/DeviceModule'
 import LeaderboardModule from './modules/LeaderboardModule'
-import PaymentsModule from './modules/PaymentsModule'
 import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
 import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatformBridge'
 import GameDistributionPlatformBridge from './platform-bridges/GameDistributionPlatformBridge'
@@ -31,7 +30,7 @@ import GameDistributionPlatformBridge from './platform-bridges/GameDistributionP
 class InstantGamesBridge {
 
     get version() {
-        return '1.10.0'
+        return '1.9.1'
     }
 
     get isInitialized() {
@@ -68,10 +67,6 @@ class InstantGamesBridge {
 
     get leaderboard() {
         return this.#getModule(MODULE_NAME.LEADERBOARD)
-    }
-
-    get payments() {
-        return this.#getModule(MODULE_NAME.PAYMENTS)
     }
 
     get PLATFORM_ID() {
@@ -141,7 +136,6 @@ class InstantGamesBridge {
                     this.#modules[MODULE_NAME.SOCIAL] = new SocialModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.DEVICE] = new DeviceModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.LEADERBOARD] = new LeaderboardModule(this.#platformBridge)
-                    this.#modules[MODULE_NAME.PAYMENTS] = new PaymentsModule(this.#platformBridge)
 
                     this.#isInitialized = true
                     console.log('%c InstantGamesBridge v.' + this.version + ' initialized. ', 'background: #01A5DA; color: white')

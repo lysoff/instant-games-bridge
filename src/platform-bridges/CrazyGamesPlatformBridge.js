@@ -1,5 +1,5 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
-import { addJavaScript } from '../common/utils'
+import { addJavaScript, waitFor } from '../common/utils'
 import {
     PLATFORM_ID,
     ACTION_NAME,
@@ -69,50 +69,52 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
             addJavaScript(SDK_URL).then(() => {
-                this._platformSdk = window.CrazyGames.CrazySDK.getInstance()
+                waitFor('CrazyGames', 'CrazySDK', 'getInstance').then(() => {
+                    this._platformSdk = window.CrazyGames.CrazySDK.getInstance()
 
-                this._platformSdk.addEventListener('initialized', data => {
-                    this.#userInfo = data.userInfo
-                    this._isInitialized = true
-                    this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                    this._platformSdk.addEventListener('initialized', data => {
+                        this.#userInfo = data.userInfo
+                        this._isInitialized = true
+                        this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                    })
+
+                    this._platformSdk.addEventListener('adStarted', () => {
+                        if (this.#currentAdvertisementIsRewarded) {
+                            this._setRewardedState(REWARDED_STATE.OPENED)
+                        } else {
+                            this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                        }
+                    })
+
+                    this._platformSdk.addEventListener('adFinished', () => {
+                        if (this.#currentAdvertisementIsRewarded) {
+                            this._setRewardedState(REWARDED_STATE.REWARDED)
+                            this._setRewardedState(REWARDED_STATE.CLOSED)
+                        } else {
+                            this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                        }
+                    })
+
+                    this._platformSdk.addEventListener('adError', () => {
+                        if (this.#currentAdvertisementIsRewarded) {
+                            this._setRewardedState(REWARDED_STATE.FAILED)
+                        } else {
+                            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                        }
+                    })
+
+                    this._platformSdk.addEventListener('bannerRendered', event => {
+                        this._setBannerState(BANNER_STATE.SHOWN)
+                    })
+
+                    this._platformSdk.addEventListener('bannerError', event => {
+                        this._setBannerState(BANNER_STATE.FAILED)
+                    })
+
+                    this._defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
+                    this._isBannerSupported = true
+                    this._platformSdk.init()
                 })
-
-                this._platformSdk.addEventListener('adStarted', () => {
-                    if (this.#currentAdvertisementIsRewarded) {
-                        this._setRewardedState(REWARDED_STATE.OPENED)
-                    } else {
-                        this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                    }
-                })
-
-                this._platformSdk.addEventListener('adFinished', () => {
-                    if (this.#currentAdvertisementIsRewarded) {
-                        this._setRewardedState(REWARDED_STATE.REWARDED)
-                        this._setRewardedState(REWARDED_STATE.CLOSED)
-                    } else {
-                        this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                    }
-                })
-
-                this._platformSdk.addEventListener('adError', () => {
-                    if (this.#currentAdvertisementIsRewarded) {
-                        this._setRewardedState(REWARDED_STATE.FAILED)
-                    } else {
-                        this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-                    }
-                })
-
-                this._platformSdk.addEventListener('bannerRendered', event => {
-                    this._setBannerState(BANNER_STATE.SHOWN)
-                })
-
-                this._platformSdk.addEventListener('bannerError', event => {
-                    this._setBannerState(BANNER_STATE.FAILED)
-                })
-
-                this._defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
-                this._isBannerSupported = true
-                this._platformSdk.init()
             })
         }
 

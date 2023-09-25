@@ -1,5 +1,5 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
-import { addJavaScript } from '../common/utils'
+import { addJavaScript, waitFor } from '../common/utils'
 import {
     PLATFORM_ID,
     ACTION_NAME,
@@ -97,14 +97,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
-    // payments
-    get isPaymentsSupported() {
-        return true
-    }
 
     #isAddToHomeScreenSupported = false
     #yandexPlayer = null
-    #payments = null
     #leaderboards = null
 
 
@@ -117,55 +112,51 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
-            addJavaScript(SDK_URL)
-                .then(() => {
-                    window.YaGames
-                        .init()
-                        .then(sdk => {
-                            this._platformSdk = sdk
+            addJavaScript(SDK_URL).then(() => {
+                waitFor('YaGames', 'init').then(() => {
+                    window.YaGames.init().then(sdk => {
+                        this._platformSdk = sdk
 
-                            let getPlayerPromise = this.#getPlayer()
-                            let getSafeStoragePromise = this._platformSdk.getStorage()
-                                .then(safeStorage => {
-                                    this._localStorage = safeStorage
-                                })
+                        let getPlayerPromise = this.#getPlayer()
+                        let getSafeStoragePromise = this._platformSdk.getStorage()
+                            .then(safeStorage => {
+                                this._localStorage = safeStorage
+                            })
 
-                            let checkAddToHomeScreenSupportedPromise = this._platformSdk.shortcut.canShowPrompt()
-                                .then(prompt => {
-                                    this.#isAddToHomeScreenSupported = prompt.canShow
-                                })
+                        let checkAddToHomeScreenSupportedPromise = this._platformSdk.shortcut.canShowPrompt()
+                            .then(prompt => {
+                                this.#isAddToHomeScreenSupported = prompt.canShow
+                            })
 
-                            let getLeaderboardsPromise = this._platformSdk.getLeaderboards()
-                                .then(leaderboards => {
-                                    this.#leaderboards = leaderboards
-                                })
+                        let checkAddToHomeScreenSupportedTimeoutPromise = new Promise(resolve => { setTimeout(resolve, 1000) })
+                        let checkAddToHomeScreenSupportedRacePromise = Promise.race([checkAddToHomeScreenSupportedPromise, checkAddToHomeScreenSupportedTimeoutPromise])
 
-                            this._isBannerSupported = true
-                            let getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
-                                .then(data => {
-                                    if (data.stickyAdvIsShowing) {
-                                        this._setBannerState(BANNER_STATE.SHOWN)
-                                    }
-                                })
+                        let getLeaderboardsPromise = this._platformSdk.getLeaderboards()
+                            .then(leaderboards => {
+                                this.#leaderboards = leaderboards
+                            })
 
-                            let getPaymentsPromise = this._platformSdk.getPayments()
-                                .then(payments => {
-                                    this.#payments = payments
-                                })
-                            
-                            Promise
-                                .all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedPromise, getLeaderboardsPromise, getBannerStatePromise, getPaymentsPromise])
-                                .finally(() => {
-                                    this._isInitialized = true
+                        this._isBannerSupported = true
+                        let getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
+                            .then(data => {
+                                if (data.stickyAdvIsShowing) {
+                                    this._setBannerState(BANNER_STATE.SHOWN)
+                                }
+                            })
 
-                                    this._defaultStorageType = this._isPlayerAuthorized
-                                        ? STORAGE_TYPE.PLATFORM_INTERNAL
-                                        : STORAGE_TYPE.LOCAL_STORAGE
+                        Promise.all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedRacePromise, getLeaderboardsPromise, getBannerStatePromise])
+                            .finally(() => {
+                                this._isInitialized = true
 
-                                    this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
-                                })
-                        })
+                                this._defaultStorageType = this._isPlayerAuthorized
+                                    ? STORAGE_TYPE.PLATFORM_INTERNAL
+                                    : STORAGE_TYPE.LOCAL_STORAGE
+
+                                this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                            })
+                    })
                 })
+            })
         }
 
         return promiseDecorator.promise
@@ -609,99 +600,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
-    // payments
-    paymentsPurchase(options) {
-        if (!this.#payments || !options || !options.id) {
-            return Promise.reject()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.PURCHASE)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
-
-            this.#payments.purchase(options)
-                .then(purchase => {
-                    this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, purchase)
-                })
-                .catch(error => {
-                    this._rejectPromiseDecorator(ACTION_NAME.PURCHASE, error)
-                })
-
-        }
-
-        return promiseDecorator.promise
-    }
-
-    paymentsConsume(token) {
-        if (!this.#payments) {
-            return Promise.reject()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CONSUME)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CONSUME)
-
-            this.#payments.consumePurchase(token)
-                .then(result => {
-                    this._resolvePromiseDecorator(ACTION_NAME.CONSUME, result)
-                })
-                .catch(error => {
-                    this._rejectPromiseDecorator(ACTION_NAME.CONSUME, error)
-                })
-
-        }
-
-        return promiseDecorator.promise
-    }
-
-    paymentsGetPurchases() {
-        if (!this.#payments) {
-            return Promise.reject()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_PURCHASES)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_PURCHASES)
-
-            this.#payments.getPurchases()
-                .then(purchases => {
-                    this._resolvePromiseDecorator(ACTION_NAME.GET_PURCHASES, purchases)
-                })
-                .catch(error => {
-                    this._rejectPromiseDecorator(ACTION_NAME.GET_PURCHASES, error)
-                })
-
-        }
-
-        return promiseDecorator.promise
-    }
-
-    paymentsGetCatalog() {
-        if (!this.#payments) {
-            return Promise.reject()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_CATALOG)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_CATALOG)
-
-            this.#payments.getCatalog()
-                .then(catalog => {
-                    this._resolvePromiseDecorator(ACTION_NAME.GET_CATALOG, catalog)
-                })
-                .catch(error => {
-                    this._rejectPromiseDecorator(ACTION_NAME.GET_CATALOG, error)
-                })
-
-        }
-        
-        return promiseDecorator.promise
-    }
 
     #getPlayer(options) {
         return new Promise(resolve => {
             let parameters = {
-                scopes: true
+                scopes: false
             }
 
             if (options && typeof options.scopes === 'boolean') {

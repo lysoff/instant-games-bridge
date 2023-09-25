@@ -1,5 +1,5 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
-import { addJavaScript } from '../common/utils'
+import { addJavaScript, waitFor } from '../common/utils'
 import {
     PLATFORM_ID,
     ACTION_NAME,
@@ -141,41 +141,38 @@ class VkPlatformBridge extends PlatformBridgeBase {
             }
 
             addJavaScript(SDK_URL).then(() => {
-                this._platformSdk = window.vkBridge
-                this._platformSdk
-                    .send('VKWebAppInit')
-                    .then(() => {
-
-                        if (this.#platform === 'html5_android' || this.#platform === 'html5_ios') {
+                waitFor('vkBridge').then(() => {
+                    this._platformSdk = window.vkBridge
+                    this._platformSdk
+                        .send('VKWebAppInit')
+                        .then(() => {
                             this._isBannerSupported = true
-                        }
+                            this._platformSdk.send('VKWebAppGetUserInfo')
+                                .then(data => {
+                                    if (data) {
+                                        this._playerId = data['id']
+                                        this._playerName = data['first_name'] + ' ' + data['last_name']
 
-                        this._platformSdk.send('VKWebAppGetUserInfo')
-                            .then(data => {
-                                if (data) {
-                                    this._playerId = data['id']
-                                    this._playerName = data['first_name'] + ' ' + data['last_name']
+                                        if (data['photo_100']) {
+                                            this._playerPhotos.push(data['photo_100'])
+                                        }
 
-                                    if (data['photo_100']) {
-                                        this._playerPhotos.push(data['photo_100'])
+                                        if (data['photo_200']) {
+                                            this._playerPhotos.push(data['photo_200'])
+                                        }
+
+                                        if (data['photo_max_orig']) {
+                                            this._playerPhotos.push(data['photo_max_orig'])
+                                        }
                                     }
-
-                                    if (data['photo_200']) {
-                                        this._playerPhotos.push(data['photo_200'])
-                                    }
-
-                                    if (data['photo_max_orig']) {
-                                        this._playerPhotos.push(data['photo_max_orig'])
-                                    }
-                                }
-                            })
-                            .finally(() => {
-                                this._isInitialized = true
-                                this._defaultStorageType = STORAGE_TYPE.PLATFORM_INTERNAL
-                                this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
-                            })
-
-                    })
+                                })
+                                .finally(() => {
+                                    this._isInitialized = true
+                                    this._defaultStorageType = STORAGE_TYPE.PLATFORM_INTERNAL
+                                    this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                                })
+                        })
+                })
             })
         }
 

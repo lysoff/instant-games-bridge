@@ -127,11 +127,6 @@ class PlatformBridgeBase {
         return false
     }
 
-    // payments
-    get isPaymentsSupported() {
-        return false
-    }
-
 
     // device
     get deviceType() {
@@ -390,23 +385,6 @@ class PlatformBridgeBase {
     }
 
     showLeaderboardNativePopup(options) {
-        return Promise.reject()
-    }
-
-    // payments
-    paymentsPurchase(options) {
-        return Promise.reject()
-    }
-
-    paymentsConsume(token) {
-        return Promise.reject()
-    }
-    
-    paymentsGetPurchases() {
-        return Promise.reject()
-    }
-    
-    paymentsGetCatalog() {
         return Promise.reject()
     }
 
