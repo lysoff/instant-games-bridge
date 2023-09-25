@@ -215,16 +215,22 @@ class VkPlatformBridge extends PlatformBridgeBase {
                             let values = []
 
                             for (let i = 0; i < key.length; i++) {
-                                if (data.keys[i].value === '') {
+                                let valueIndex = data.keys.findIndex(d => d.key === key[i])
+                                if (valueIndex < 0) {
+                                    values.push(null)
+                                    continue
+                                }
+
+                                if (data.keys[valueIndex].value === '') {
                                     values.push(null)
                                     continue
                                 }
 
                                 let value
                                 try {
-                                    value = JSON.parse(data.keys[i].value)
+                                    value = JSON.parse(data.keys[valueIndex].value)
                                 } catch (e) {
-                                    value = data.keys[i].value
+                                    value = data.keys[valueIndex].value
                                 }
 
                                 values.push(value)
