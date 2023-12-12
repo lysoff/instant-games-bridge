@@ -170,6 +170,12 @@ class PlatformBridgeBase {
         return false
     }
 
+    //payments
+
+    get isPaymentsSupported() {
+        return false;
+    }
+
 
     _isInitialized = false
     _platformSdk = null
@@ -386,6 +392,24 @@ class PlatformBridgeBase {
 
     showLeaderboardNativePopup(options) {
         return Promise.reject()
+    }
+
+    //payments
+
+    setPurchase(options) {
+        return Promise.reject();
+    }
+
+    getPaymentsPurchases() {
+        return Promise.reject();
+    }
+
+    getPaymentsCatalog() {
+        return Promise.reject();
+    }
+
+    consumePaymentsPurchases(options) {
+        return Promise.reject();
     }
 
 

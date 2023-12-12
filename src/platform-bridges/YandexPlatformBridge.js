@@ -97,10 +97,16 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    //payments
+    get isPaymentsSupported() {
+        return true
+    }
+
 
     #isAddToHomeScreenSupported = false
     #yandexPlayer = null
     #leaderboards = null
+    #payments = null
 
 
     initialize() {
@@ -136,6 +142,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 this.#leaderboards = leaderboards
                             })
 
+                        let getPaymentsPromise = this._platformSdk.getPayments()
+                            .then(payments => {
+                                this.#payments = payments
+                            })
+
                         this._isBannerSupported = true
                         let getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
                             .then(data => {
@@ -144,7 +155,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 }
                             })
 
-                        Promise.all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedRacePromise, getLeaderboardsPromise, getBannerStatePromise])
+                        Promise.all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedRacePromise, getLeaderboardsPromise, getBannerStatePromise, getPaymentsPromise])
                             .finally(() => {
                                 this._isInitialized = true
 
@@ -601,6 +612,38 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
 
+    //payments
+
+    setPurchase(options) {
+        if (!this.#payments || !options) {
+            return Promise.reject()
+        }
+        return this.#payments.purchase(options);
+    }
+
+    getPaymentsPurchases() {
+        if (!this.#payments) {
+            return Promise.reject()
+        }
+        return this.#payments.getPurchases();
+    }
+
+    getPaymentsCatalog() {
+        if (!this.#payments) {
+            return Promise.reject()
+        }
+        return this.#payments.getCatalog();
+    }
+
+    consumePaymentsPurchases(options) {
+        if (!this.#payments || !this.#yandexPlayer || !options) {
+            return Promise.reject()
+        }
+        return this.setPurchase(options).then(purchase => {
+            this.#yandexPlayer.incrementStats({ gold: 500 }).then(() => this.#payments.consumePurchase(purchase.purchaseToken));
+        });
+    }
+
     #getPlayer(options) {
         return new Promise(resolve => {
             let parameters = {
@@ -649,3 +692,4 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 }
 
 export default YandexPlatformBridge
+ß
