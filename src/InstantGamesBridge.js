@@ -70,6 +70,10 @@ class InstantGamesBridge {
         return this.#getModule(MODULE_NAME.LEADERBOARD)
     }
 
+    get payments() {
+        return this.#getModule(MODULE_NAME.PAYMENTS)
+    }
+
     get PLATFORM_ID() {
         return PLATFORM_ID
     }
