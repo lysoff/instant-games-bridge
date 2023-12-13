@@ -396,20 +396,20 @@ class PlatformBridgeBase {
 
     //payments
 
-    setPurchase(options) {
-        return Promise.reject();
+    purchase(options) {
+        return Promise.reject()
     }
 
     getPaymentsPurchases() {
-        return Promise.reject();
+        return Promise.reject()
     }
 
     getPaymentsCatalog() {
-        return Promise.reject();
+        return Promise.reject()
     }
 
-    consumePaymentsPurchases(options) {
-        return Promise.reject();
+    consumePurchase(options) {
+        return Promise.reject()
     }
 
 
