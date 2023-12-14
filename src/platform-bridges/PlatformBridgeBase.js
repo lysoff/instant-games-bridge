@@ -173,7 +173,7 @@ class PlatformBridgeBase {
     //payments
 
     get isPaymentsSupported() {
-        return false;
+        return false
     }
 
 

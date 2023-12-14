@@ -630,7 +630,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.PURCHASE, error)
                 })
         }
-        return promiseDecorator.resolve
+        return promiseDecorator.promise
     }
 
     getPaymentsPurchases() {
@@ -649,7 +649,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_PURCHASES, error)
                 })
         }
-        return promiseDecorator.resolve
+        return promiseDecorator.promise
     }
 
     getPaymentsCatalog() {
@@ -668,7 +668,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_CATALOG, error)
                 })
         }
-        return promiseDecorator.resolve
+        return promiseDecorator.promise
     }
 
     consumePurchase(options) {
@@ -687,7 +687,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, error)
                 })
         }
-        return promiseDecorator.resolve
+        return promiseDecorator.promise
     }
 
     #getPlayer(options) {
