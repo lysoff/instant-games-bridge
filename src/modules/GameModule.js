@@ -3,7 +3,6 @@ import ModuleBase from './ModuleBase'
 import { EVENT_NAME } from '../constants'
 
 class GameModule extends ModuleBase {
-
     get visibilityState() {
         return this._platformBridge.visibilityState
     }
@@ -13,9 +12,9 @@ class GameModule extends ModuleBase {
 
         this._platformBridge.on(
             EVENT_NAME.VISIBILITY_STATE_CHANGED,
-            state => this.emit(EVENT_NAME.VISIBILITY_STATE_CHANGED, state))
+            (state) => this.emit(EVENT_NAME.VISIBILITY_STATE_CHANGED, state),
+        )
     }
-
 }
 
 EventLite.mixin(GameModule.prototype)

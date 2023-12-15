@@ -9,7 +9,7 @@ import {
     VISIBILITY_STATE,
     DEVICE_TYPE,
     PLATFORM_MESSAGE,
-    ERROR
+    ERROR,
 } from './constants'
 import PromiseDecorator from './common/PromiseDecorator'
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
@@ -29,7 +29,6 @@ import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatfor
 import GameDistributionPlatformBridge from './platform-bridges/GameDistributionPlatformBridge'
 
 class InstantGamesBridge {
-
     get version() {
         return '1.9.2'
     }
@@ -115,10 +114,13 @@ class InstantGamesBridge {
     }
 
     #isInitialized = false
+
     #initializationPromiseDecorator = null
 
     #platformBridge = null
+
     #modules = { }
+
     #overriddenModules = { }
 
     initialize(options) {
@@ -144,7 +146,7 @@ class InstantGamesBridge {
                     this.#modules[MODULE_NAME.PAYMENTS] = new PaymentsModule(this.#platformBridge)
 
                     this.#isInitialized = true
-                    console.log('%c InstantGamesBridge v.' + this.version + ' initialized. ', 'background: #01A5DA; color: white')
+                    console.info(`%c InstantGamesBridge v.${this.version} initialized. `, 'background: #01A5DA; color: white')
 
                     if (this.#initializationPromiseDecorator) {
                         this.#initializationPromiseDecorator.resolve()
@@ -172,30 +174,34 @@ class InstantGamesBridge {
 
         if (this._options && this._options.forciblySetPlatformId) {
             switch (this._options.forciblySetPlatformId) {
-                case PLATFORM_ID.VK: {
-                    platformId = PLATFORM_ID.VK
-                    break
-                }
-                case PLATFORM_ID.YANDEX: {
-                    platformId = PLATFORM_ID.YANDEX
-                    break
-                }
-                case PLATFORM_ID.CRAZY_GAMES: {
-                    platformId = PLATFORM_ID.CRAZY_GAMES
-                    break
-                }
-                case PLATFORM_ID.ABSOLUTE_GAMES: {
-                    platformId = PLATFORM_ID.ABSOLUTE_GAMES
-                    break
-                }
-                case PLATFORM_ID.GAME_DISTRIBUTION: {
-                    platformId = PLATFORM_ID.GAME_DISTRIBUTION
-                    break
-                }
+            case PLATFORM_ID.VK: {
+                platformId = PLATFORM_ID.VK
+                break
+            }
+            case PLATFORM_ID.YANDEX: {
+                platformId = PLATFORM_ID.YANDEX
+                break
+            }
+            case PLATFORM_ID.CRAZY_GAMES: {
+                platformId = PLATFORM_ID.CRAZY_GAMES
+                break
+            }
+            case PLATFORM_ID.ABSOLUTE_GAMES: {
+                platformId = PLATFORM_ID.ABSOLUTE_GAMES
+                break
+            }
+            case PLATFORM_ID.GAME_DISTRIBUTION: {
+                platformId = PLATFORM_ID.GAME_DISTRIBUTION
+                break
+            }
+            default: {
+                platformId = PLATFORM_ID.MOCK
+                break
+            }
             }
         } else {
-            let url = new URL(window.location.href)
-            let yandexUrl = ['y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
+            const url = new URL(window.location.href)
+            const yandexUrl = ['y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
             if (url.hostname.includes(yandexUrl) || url.hash.includes('yandex')) {
                 platformId = PLATFORM_ID.YANDEX
             } else if (url.hostname.includes('crazygames.') || url.hostname.includes('1001juegos.com')) {
@@ -210,30 +216,40 @@ class InstantGamesBridge {
         }
 
         switch (platformId) {
-            case PLATFORM_ID.VK: {
-                this.#platformBridge = new VkPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.VK])
-                break
-            }
-            case PLATFORM_ID.YANDEX: {
-                this.#platformBridge = new YandexPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.YANDEX])
-                break
-            }
-            case PLATFORM_ID.CRAZY_GAMES: {
-                this.#platformBridge = new CrazyGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.CRAZY_GAMES])
-                break
-            }
-            case PLATFORM_ID.ABSOLUTE_GAMES: {
-                this.#platformBridge = new AbsoluteGamesPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.ABSOLUTE_GAMES])
-                break
-            }
-            case PLATFORM_ID.GAME_DISTRIBUTION: {
-                this.#platformBridge = new GameDistributionPlatformBridge(this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.GAME_DISTRIBUTION])
-                break
-            }
-            case PLATFORM_ID.MOCK: {
-                this.#platformBridge = new PlatformBridgeBase()
-                break
-            }
+        case PLATFORM_ID.VK: {
+            this.#platformBridge = new VkPlatformBridge(
+                this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.VK],
+            )
+            break
+        }
+        case PLATFORM_ID.YANDEX: {
+            this.#platformBridge = new YandexPlatformBridge(
+                this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.YANDEX],
+            )
+            break
+        }
+        case PLATFORM_ID.CRAZY_GAMES: {
+            this.#platformBridge = new CrazyGamesPlatformBridge(
+                this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.CRAZY_GAMES],
+            )
+            break
+        }
+        case PLATFORM_ID.ABSOLUTE_GAMES: {
+            this.#platformBridge = new AbsoluteGamesPlatformBridge(
+                this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.ABSOLUTE_GAMES],
+            )
+            break
+        }
+        case PLATFORM_ID.GAME_DISTRIBUTION: {
+            this.#platformBridge = new GameDistributionPlatformBridge(
+                this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.GAME_DISTRIBUTION],
+            )
+            break
+        }
+        default: {
+            this.#platformBridge = new PlatformBridgeBase()
+            break
+        }
         }
     }
 
@@ -248,7 +264,6 @@ class InstantGamesBridge {
 
         return this.#modules[id]
     }
-
 }
 
 export default InstantGamesBridge

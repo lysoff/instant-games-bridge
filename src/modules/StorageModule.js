@@ -1,7 +1,6 @@
 import ModuleBase from './ModuleBase'
 
 class StorageModule extends ModuleBase {
-
     #cachedData = []
 
     get defaultType() {
@@ -10,7 +9,7 @@ class StorageModule extends ModuleBase {
 
     isSupported(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.isSupported(platformDependedOptions)
             }
@@ -21,7 +20,7 @@ class StorageModule extends ModuleBase {
 
     isAvailable(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.isSupported(platformDependedOptions)
             }
@@ -32,7 +31,7 @@ class StorageModule extends ModuleBase {
 
     get(key, options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.get(key, platformDependedOptions)
             }
@@ -43,7 +42,7 @@ class StorageModule extends ModuleBase {
             storageType = this.defaultType
         }
 
-        let cachedData = this.#cachedData[storageType]
+        const cachedData = this.#cachedData[storageType]
         if (cachedData) {
             if (typeof cachedData[key] !== 'undefined') {
                 return Promise.resolve(cachedData[key])
@@ -52,7 +51,7 @@ class StorageModule extends ModuleBase {
 
         return this._platformBridge
             .getDataFromStorage(key, storageType)
-            .then(data => {
+            .then((data) => {
                 this._addToCache(storageType, key, data)
                 return data
             })
@@ -60,7 +59,7 @@ class StorageModule extends ModuleBase {
 
     set(key, value, options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.set(key, value, platformDependedOptions)
             }
@@ -78,7 +77,7 @@ class StorageModule extends ModuleBase {
 
     delete(key, options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.delete(key, platformDependedOptions)
             }
@@ -121,7 +120,6 @@ class StorageModule extends ModuleBase {
             delete this.#cachedData[storageType][key]
         }
     }
-
 }
 
 export default StorageModule

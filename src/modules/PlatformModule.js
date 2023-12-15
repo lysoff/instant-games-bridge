@@ -1,7 +1,6 @@
 import ModuleBase from './ModuleBase'
 
 class PlatformModule extends ModuleBase {
-
     get id() {
         return this._platformBridge.platformId
     }
@@ -25,7 +24,6 @@ class PlatformModule extends ModuleBase {
     sendMessage(message) {
         return this._platformBridge.sendMessage(message)
     }
-
 }
 
 export default PlatformModule

@@ -4,7 +4,7 @@ export const PLATFORM_ID = {
     CRAZY_GAMES: 'crazy_games',
     ABSOLUTE_GAMES: 'absolute_games',
     GAME_DISTRIBUTION: 'game_distribution',
-    MOCK: 'mock'
+    MOCK: 'mock',
 }
 
 export const MODULE_NAME = {
@@ -23,19 +23,19 @@ export const EVENT_NAME = {
     INTERSTITIAL_STATE_CHANGED: 'interstitial_state_changed',
     REWARDED_STATE_CHANGED: 'rewarded_state_changed',
     BANNER_STATE_CHANGED: 'banner_state_changed',
-    VISIBILITY_STATE_CHANGED: 'visibility_state_changed'
+    VISIBILITY_STATE_CHANGED: 'visibility_state_changed',
 }
 
 export const VISIBILITY_STATE = {
     VISIBLE: 'visible',
-    HIDDEN: 'hidden'
+    HIDDEN: 'hidden',
 }
 
 export const INTERSTITIAL_STATE = {
     LOADING: 'loading',
     OPENED: 'opened',
     CLOSED: 'closed',
-    FAILED: 'failed'
+    FAILED: 'failed',
 }
 
 export const REWARDED_STATE = {
@@ -43,19 +43,19 @@ export const REWARDED_STATE = {
     OPENED: 'opened',
     CLOSED: 'closed',
     FAILED: 'failed',
-    REWARDED: 'rewarded'
+    REWARDED: 'rewarded',
 }
 
 export const BANNER_STATE = {
     LOADING: 'loading',
     SHOWN: 'shown',
     HIDDEN: 'hidden',
-    FAILED: 'failed'
+    FAILED: 'failed',
 }
 
 export const STORAGE_TYPE = {
     LOCAL_STORAGE: 'local_storage',
-    PLATFORM_INTERNAL: 'platform_internal'
+    PLATFORM_INTERNAL: 'platform_internal',
 }
 
 export const DEVICE_TYPE = {
@@ -90,11 +90,12 @@ export const ACTION_NAME = {
     GET_PURCHASES: 'get_purchases',
     GET_CATALOG: 'get_catalog',
     PURCHASE: 'purchase',
-    CONSUME_PURCHASE: 'consume_purchase'
+    CONSUME_PURCHASE: 'consume_purchase',
+    SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup',
 }
 
 export const ERROR = {
     SDK_NOT_INITIALIZED: { message: 'Before using the SDK you must initialize it' },
     STORAGE_NOT_SUPPORTED: { message: 'Storage not supported' },
-    GAME_DISTRIBUTION_GAME_ID_IS_UNDEFINED: { message: 'GameDistribution Game ID is undefined' }
+    GAME_DISTRIBUTION_GAME_ID_IS_UNDEFINED: { message: 'GameDistribution Game ID is undefined' },
 }

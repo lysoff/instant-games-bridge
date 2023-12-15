@@ -1,2 +1,4 @@
 import InstantGamesBridge from './InstantGamesBridge'
-window.instantGamesBridge = window.bridge = new InstantGamesBridge()
+
+window.bridge = new InstantGamesBridge()
+window.instantGamesBridge = window.bridge
