@@ -38,21 +38,21 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     // device
     get deviceType() {
         switch (this._platformSdk && this._platformSdk.deviceInfo.type) {
-        case DEVICE_TYPE.DESKTOP: {
-            return DEVICE_TYPE.DESKTOP
-        }
-        case DEVICE_TYPE.MOBILE: {
-            return DEVICE_TYPE.MOBILE
-        }
-        case DEVICE_TYPE.TABLET: {
-            return DEVICE_TYPE.TABLET
-        }
-        case DEVICE_TYPE.TV: {
-            return DEVICE_TYPE.TV
-        }
-        default: {
-            return super.deviceType
-        }
+            case DEVICE_TYPE.DESKTOP: {
+                return DEVICE_TYPE.DESKTOP
+            }
+            case DEVICE_TYPE.MOBILE: {
+                return DEVICE_TYPE.MOBILE
+            }
+            case DEVICE_TYPE.TABLET: {
+                return DEVICE_TYPE.TABLET
+            }
+            case DEVICE_TYPE.TV: {
+                return DEVICE_TYPE.TV
+            }
+            default: {
+                return super.deviceType
+            }
         }
     }
 
@@ -183,13 +183,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     // platform
     sendMessage(message) {
         switch (message) {
-        case PLATFORM_MESSAGE.GAME_READY: {
-            this._platformSdk.features.LoadingAPI?.ready()
-            return Promise.resolve()
-        }
-        default: {
-            return super.sendMessage(message)
-        }
+            case PLATFORM_MESSAGE.GAME_READY: {
+                this._platformSdk.features.LoadingAPI?.ready()
+                return Promise.resolve()
+            }
+            default: {
+                return super.sendMessage(message)
+            }
         }
     }
 

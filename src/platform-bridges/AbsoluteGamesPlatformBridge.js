@@ -35,35 +35,35 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
 
                 this._platformSdk.on(window.AgRuSdkMethods.ShowCampaign, (data, error) => {
                     switch (data.type) {
-                    case 'rewarded': {
-                        if (error === null) {
-                            if (data.status) {
-                                this._setRewardedState(REWARDED_STATE.OPENED)
-                            } else {
-                                if (data.reward) {
-                                    this._setRewardedState(REWARDED_STATE.REWARDED)
-                                }
+                        case 'rewarded': {
+                            if (error === null) {
+                                if (data.status) {
+                                    this._setRewardedState(REWARDED_STATE.OPENED)
+                                } else {
+                                    if (data.reward) {
+                                        this._setRewardedState(REWARDED_STATE.REWARDED)
+                                    }
 
-                                this._setRewardedState(REWARDED_STATE.CLOSED)
-                            }
-                        } else {
-                            this._setRewardedState(REWARDED_STATE.FAILED)
-                        }
-                        break
-                    }
-                    case 'default': // A valid value for the property, just to denote it
-                    default: {
-                        if (error === null) {
-                            if (data.status) {
-                                this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                                    this._setRewardedState(REWARDED_STATE.CLOSED)
+                                }
                             } else {
-                                this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                                this._setRewardedState(REWARDED_STATE.FAILED)
                             }
-                        } else {
-                            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                            break
                         }
-                        break
-                    }
+                        case 'default': // A valid value for the property, just to denote it
+                        default: {
+                            if (error === null) {
+                                if (data.status) {
+                                    this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                                } else {
+                                    this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                                }
+                            } else {
+                                this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                            }
+                            break
+                        }
                     }
                 })
 

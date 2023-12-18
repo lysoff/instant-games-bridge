@@ -28,21 +28,21 @@ class VkPlatformBridge extends PlatformBridgeBase {
             }
 
             switch (languageCode) {
-            case 0: {
-                return 'ru'
-            }
-            case 1: {
-                return 'uk'
-            }
-            case 2: {
-                return 'be'
-            }
-            case 3: {
-                return 'en'
-            }
-            default: {
-                return 'ru'
-            }
+                case 0: {
+                    return 'ru'
+                }
+                case 1: {
+                    return 'uk'
+                }
+                case 2: {
+                    return 'be'
+                }
+                case 3: {
+                    return 'en'
+                }
+                default: {
+                    return 'ru'
+                }
             }
         }
 
@@ -61,17 +61,17 @@ class VkPlatformBridge extends PlatformBridgeBase {
     // device
     get deviceType() {
         switch (this.#platform) {
-        case 'html5_ios':
-        case 'html5_android':
-        case 'html5_mobile': {
-            return DEVICE_TYPE.MOBILE
-        }
-        case 'web': {
-            return DEVICE_TYPE.DESKTOP
-        }
-        default: {
-            return super.deviceType
-        }
+            case 'html5_ios':
+            case 'html5_android':
+            case 'html5_mobile': {
+                return DEVICE_TYPE.MOBILE
+            }
+            case 'web': {
+                return DEVICE_TYPE.DESKTOP
+            }
+            default: {
+                return super.deviceType
+            }
         }
     }
 

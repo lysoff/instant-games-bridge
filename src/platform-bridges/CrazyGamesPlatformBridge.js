@@ -118,29 +118,29 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
     // platform
     sendMessage(message) {
         switch (message) {
-        case PLATFORM_MESSAGE.IN_GAME_LOADING_STARTED: {
-            this._platformSdk.sdkGameLoadingStart()
-            return Promise.resolve()
-        }
-        case PLATFORM_MESSAGE.IN_GAME_LOADING_STOPPED: {
-            this._platformSdk.sdkGameLoadingStop()
-            return Promise.resolve()
-        }
-        case PLATFORM_MESSAGE.GAMEPLAY_STARTED: {
-            this._platformSdk.gameplayStart()
-            return Promise.resolve()
-        }
-        case PLATFORM_MESSAGE.GAMEPLAY_STOPPED: {
-            this._platformSdk.gameplayStop()
-            return Promise.resolve()
-        }
-        case PLATFORM_MESSAGE.PLAYER_GOT_ACHIEVEMENT: {
-            this._platformSdk.happytime()
-            return Promise.resolve()
-        }
-        default: {
-            return super.sendMessage(message)
-        }
+            case PLATFORM_MESSAGE.IN_GAME_LOADING_STARTED: {
+                this._platformSdk.sdkGameLoadingStart()
+                return Promise.resolve()
+            }
+            case PLATFORM_MESSAGE.IN_GAME_LOADING_STOPPED: {
+                this._platformSdk.sdkGameLoadingStop()
+                return Promise.resolve()
+            }
+            case PLATFORM_MESSAGE.GAMEPLAY_STARTED: {
+                this._platformSdk.gameplayStart()
+                return Promise.resolve()
+            }
+            case PLATFORM_MESSAGE.GAMEPLAY_STOPPED: {
+                this._platformSdk.gameplayStop()
+                return Promise.resolve()
+            }
+            case PLATFORM_MESSAGE.PLAYER_GOT_ACHIEVEMENT: {
+                this._platformSdk.happytime()
+                return Promise.resolve()
+            }
+            default: {
+                return super.sendMessage(message)
+            }
         }
     }
 

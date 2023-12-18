@@ -232,98 +232,98 @@ class PlatformBridgeBase {
     // storage
     isStorageSupported(storageType) {
         switch (storageType) {
-        case STORAGE_TYPE.LOCAL_STORAGE: {
-            return this._localStorage !== null
-        }
-        case STORAGE_TYPE.PLATFORM_INTERNAL: {
-            return false
-        }
-        default: {
-            return false
-        }
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                return this._localStorage !== null
+            }
+            case STORAGE_TYPE.PLATFORM_INTERNAL: {
+                return false
+            }
+            default: {
+                return false
+            }
         }
     }
 
     isStorageAvailable(storageType) {
         switch (storageType) {
-        case STORAGE_TYPE.LOCAL_STORAGE: {
-            return this._localStorage !== null
-        }
-        case STORAGE_TYPE.PLATFORM_INTERNAL: {
-            return false
-        }
-        default: {
-            return false
-        }
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                return this._localStorage !== null
+            }
+            case STORAGE_TYPE.PLATFORM_INTERNAL: {
+                return false
+            }
+            default: {
+                return false
+            }
         }
     }
 
     getDataFromStorage(key, storageType) {
         switch (storageType) {
-        case STORAGE_TYPE.LOCAL_STORAGE: {
-            if (this._localStorage) {
-                if (Array.isArray(key)) {
-                    const values = []
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                if (this._localStorage) {
+                    if (Array.isArray(key)) {
+                        const values = []
 
-                    for (let i = 0; i < key.length; i++) {
-                        values.push(this._getDataFromLocalStorage(key[i]))
+                        for (let i = 0; i < key.length; i++) {
+                            values.push(this._getDataFromLocalStorage(key[i]))
+                        }
+
+                        return Promise.resolve(values)
                     }
 
-                    return Promise.resolve(values)
+                    const value = this._getDataFromLocalStorage(key)
+                    return Promise.resolve(value)
                 }
-
-                const value = this._getDataFromLocalStorage(key)
-                return Promise.resolve(value)
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
             }
-            return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
-        }
-        default: {
-            return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
-        }
+            default: {
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+            }
         }
     }
 
     setDataToStorage(key, value, storageType) {
         switch (storageType) {
-        case STORAGE_TYPE.LOCAL_STORAGE: {
-            if (this._localStorage) {
-                if (Array.isArray(key)) {
-                    for (let i = 0; i < key.length; i++) {
-                        this._setDataToLocalStorage(key[i], value[i])
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                if (this._localStorage) {
+                    if (Array.isArray(key)) {
+                        for (let i = 0; i < key.length; i++) {
+                            this._setDataToLocalStorage(key[i], value[i])
+                        }
+                        return Promise.resolve()
                     }
+
+                    this._setDataToLocalStorage(key, value)
                     return Promise.resolve()
                 }
-
-                this._setDataToLocalStorage(key, value)
-                return Promise.resolve()
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
             }
-            return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
-        }
-        default: {
-            return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
-        }
+            default: {
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+            }
         }
     }
 
     deleteDataFromStorage(key, storageType) {
         switch (storageType) {
-        case STORAGE_TYPE.LOCAL_STORAGE: {
-            if (this._localStorage) {
-                if (Array.isArray(key)) {
-                    for (let i = 0; i < key.length; i++) {
-                        this._deleteDataFromLocalStorage(key[i])
+            case STORAGE_TYPE.LOCAL_STORAGE: {
+                if (this._localStorage) {
+                    if (Array.isArray(key)) {
+                        for (let i = 0; i < key.length; i++) {
+                            this._deleteDataFromLocalStorage(key[i])
+                        }
+                        return Promise.resolve()
                     }
+
+                    this._deleteDataFromLocalStorage(key)
                     return Promise.resolve()
                 }
-
-                this._deleteDataFromLocalStorage(key)
-                return Promise.resolve()
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
             }
-            return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
-        }
-        default: {
-            return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
-        }
+            default: {
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+            }
         }
     }
 

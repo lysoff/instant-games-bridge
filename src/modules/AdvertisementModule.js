@@ -70,20 +70,20 @@ class AdvertisementModule extends ModuleBase {
         let delay = this.#minimumDelayBetweenInterstitial
 
         switch (optionsType) {
-        case 'number': {
-            delay = options
-            break
-        }
-        case 'string': {
-            delay = parseInt(options, 10)
-            if (Number.isNaN(delay)) {
+            case 'number': {
+                delay = options
+                break
+            }
+            case 'string': {
+                delay = parseInt(options, 10)
+                if (Number.isNaN(delay)) {
+                    return
+                }
+                break
+            }
+            default: {
                 return
             }
-            break
-        }
-        default: {
-            return
-        }
         }
 
         this.#minimumDelayBetweenInterstitial = delay

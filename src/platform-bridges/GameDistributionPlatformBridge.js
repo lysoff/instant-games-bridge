@@ -36,33 +36,33 @@ class GameDistributionPlatformBridge extends PlatformBridgeBase {
                     gameId: this._options.gameId,
                     onEvent(event) {
                         switch (event.name) {
-                        case 'SDK_READY':
-                            self._platformSdk = window.gdsdk
-                            self._platformSdk.preloadAd('rewarded')
-                            self._isInitialized = true
-                            self._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
-                            break
-                        case 'SDK_GAME_START':
-                            if (self.#currentAdvertisementIsRewarded) {
-                                self._setRewardedState(REWARDED_STATE.CLOSED)
-                            } else {
-                                self._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                            }
-                            break
-                        case 'SDK_GAME_PAUSE':
-                            if (self.#currentAdvertisementIsRewarded) {
-                                self._setRewardedState(REWARDED_STATE.OPENED)
-                            } else {
-                                self._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                            }
-                            break
-                        case 'SDK_REWARDED_WATCH_COMPLETE':
-                            self._setRewardedState(REWARDED_STATE.REWARDED)
-                            break
-                        case 'SDK_GDPR_TRACKING':
-                        case 'SDK_GDPR_TARGETING':
-                        default:
-                            break
+                            case 'SDK_READY':
+                                self._platformSdk = window.gdsdk
+                                self._platformSdk.preloadAd('rewarded')
+                                self._isInitialized = true
+                                self._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                                break
+                            case 'SDK_GAME_START':
+                                if (self.#currentAdvertisementIsRewarded) {
+                                    self._setRewardedState(REWARDED_STATE.CLOSED)
+                                } else {
+                                    self._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                                }
+                                break
+                            case 'SDK_GAME_PAUSE':
+                                if (self.#currentAdvertisementIsRewarded) {
+                                    self._setRewardedState(REWARDED_STATE.OPENED)
+                                } else {
+                                    self._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                                }
+                                break
+                            case 'SDK_REWARDED_WATCH_COMPLETE':
+                                self._setRewardedState(REWARDED_STATE.REWARDED)
+                                break
+                            case 'SDK_GDPR_TRACKING':
+                            case 'SDK_GDPR_TARGETING':
+                            default:
+                                break
                         }
                     },
                 }
