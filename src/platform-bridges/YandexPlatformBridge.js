@@ -97,10 +97,16 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    //payments
+    get isPaymentsSupported() {
+        return true
+    }
+
 
     #isAddToHomeScreenSupported = false
     #yandexPlayer = null
     #leaderboards = null
+    #payments = null
 
 
     initialize() {
@@ -136,6 +142,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 this.#leaderboards = leaderboards
                             })
 
+                        let getPaymentsPromise = this._platformSdk.getPayments()
+                            .then(payments => {
+                                this.#payments = payments
+                            })
+
                         this._isBannerSupported = true
                         let getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
                             .then(data => {
@@ -144,7 +155,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 }
                             })
 
-                        Promise.all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedRacePromise, getLeaderboardsPromise, getBannerStatePromise])
+                        Promise.all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedRacePromise, getLeaderboardsPromise, getBannerStatePromise, getPaymentsPromise])
                             .finally(() => {
                                 this._isInitialized = true
 
@@ -600,6 +611,84 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
+
+    //payments
+
+    purchase(options) {
+        if (!this.#payments || !options) {
+            return Promise.reject()
+        }
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.PURCHASE)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
+
+            this.#payments.purchase(options)
+                .then(result => {
+                    this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, result)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.PURCHASE, error)
+                })
+        }
+        return promiseDecorator.promise
+    }
+
+    getPaymentsPurchases() {
+        if (!this.#payments) {
+            return Promise.reject()
+        }
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_PURCHASES)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_PURCHASES)
+
+            this.#payments.getPurchases()
+                .then(result => {
+                    this._resolvePromiseDecorator(ACTION_NAME.GET_PURCHASES, result)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.GET_PURCHASES, error)
+                })
+        }
+        return promiseDecorator.promise
+    }
+
+    getPaymentsCatalog() {
+        if (!this.#payments) {
+            return Promise.reject()
+        }
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_CATALOG)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_CATALOG)
+
+            this.#payments.getCatalog()
+                .then(result => {
+                    this._resolvePromiseDecorator(ACTION_NAME.GET_CATALOG, result)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.GET_CATALOG, error)
+                })
+        }
+        return promiseDecorator.promise
+    }
+
+    consumePurchase(options) {
+        if (!this.#payments || !options) {
+            return Promise.reject()
+        }
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
+
+            this.#payments.consumePurchase(options.purchaseToken)
+                .then(result => {
+                    this._resolvePromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, result)
+                })
+                .catch(error => {
+                    this._rejectPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, error)
+                })
+        }
+        return promiseDecorator.promise
+    }
 
     #getPlayer(options) {
         return new Promise(resolve => {

@@ -184,7 +184,22 @@
         <button id="leaderboard-get-entries-button">Get Entries</button>
         <p id="leaderboard-entries-container"></p>
     </div>
-
+     <div class="section" id="payments-section" style="display: none">
+        <h2>Payments</h2>
+        <p>Is Supported: <span id="payments-is-supported-text"></span></p>
+        <hr>
+        <br>
+        <button id="payments-get-purchases-button">Get Purchases</button>
+        <pre id="payments-purchases-container"></pre>
+        <br>
+        <button id="payments-get-catalog-button">Get Catalog</button>
+        <pre id="payments-catalog-container"></pre>
+        <br>
+        <hr>
+        <br>
+        <button id="payments-purchase-button">Purchase 500 Gold</button>
+        <button id="payments-consume-button">Consume 500 Gold</button>
+    </div>
 </div>
 <div id="banner-container"></div>
 
@@ -198,6 +213,7 @@
     const advertisementSection = document.getElementById('advertisement-section')
     const socialSection = document.getElementById('social-section')
     const leaderboardSection = document.getElementById('leaderboard-section')
+    const paymentsSection = document.getElementById('payments-section')
 
     platformSection.style.display = 'none'
     deviceSection.style.display = 'none'
@@ -206,6 +222,7 @@
     advertisementSection.style.display = 'none'
     socialSection.style.display = 'none'
     leaderboardSection.style.display = 'none'
+    paymentsSection.style.display = 'none'
 
     const platformIdText = document.getElementById('platform-id-text')
     const platformLanguageText = document.getElementById('platform-language-text')
@@ -281,6 +298,15 @@
     const leaderboardYandexQuantityTopInput = document.getElementById('leaderboard-yandex-quantity-top-input')
     const leaderboardGetEntriesButton = document.getElementById('leaderboard-get-entries-button')
     const leaderboardEntriesContainer = document.getElementById('leaderboard-entries-container')
+
+    const paymentsIsSupportedText = document.getElementById('payments-is-supported-text')
+    const paymentsGetPurchasesButton = document.getElementById('payments-get-purchases-button')
+    const paymentPurchasesContainer = document.getElementById('payments-purchases-container')
+    const paymentsGetCatalogButton = document.getElementById('payments-get-catalog-button')
+    const paymentCatalogContainer = document.getElementById('payments-catalog-container')
+    const paymentsPurchaseButton = document.getElementById('payments-purchase-button')
+    const paymentsConsumeButton = document.getElementById('payments-consume-button')
+
 
     var lastInterstitialStates = []
     var lastRewardedStates = []
@@ -359,6 +385,8 @@
             leaderboardIsSetScoreSupportedText.innerText = bridge.leaderboard.isSetScoreSupported
             leaderboardIsGetEntriesSupportedText.innerText = bridge.leaderboard.isGetEntriesSupported
 
+            paymentsIsSupportedText.innerText = bridge.payments.isSupported
+
             platformSection.style.display = 'block'
             deviceSection.style.display = 'block'
             playerSection.style.display = 'block'
@@ -366,6 +394,7 @@
             advertisementSection.style.display = 'block'
             socialSection.style.display = 'block'
             leaderboardSection.style.display = 'block'
+            paymentsSection.style.display = 'block'
         })
 
     authorizePlayerButton.addEventListener('click', () => {
@@ -537,6 +566,22 @@
                 leaderboardEntriesContainer.innerText = text
             })
     })
+   paymentsGetPurchasesButton.addEventListener('click', () => {
+       bridge.payments.getPurchases().then((purchases) =>
+          paymentPurchasesContainer.innerText = JSON.stringify(purchases, undefined, 2)
+       )
+   })
+   paymentsGetCatalogButton.addEventListener('click', () => {
+       bridge.payments.getCatalog().then((catalog) =>
+          paymentCatalogContainer.innerText = JSON.stringify(catalog, undefined, 2)
+       )
+   })
+   paymentsPurchaseButton.addEventListener('click', () => {
+       bridge.payments.purchase({'yandex': {id: 'gold500'}}).catch((error) => console.log(error))
+   })
+   paymentsConsumeButton.addEventListener('click', () => {
+       bridge.payments.consumePurchase({'yandex': {purchaseToken: 'purchaseToken'}}).catch((error) => console.log(error))
+   })
 </script>
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>

@@ -16,6 +16,7 @@ export const MODULE_NAME = {
     SOCIAL: 'social',
     DEVICE: 'device',
     LEADERBOARD: 'leaderboard',
+    PAYMENTS: 'payments',
 }
 
 export const EVENT_NAME = {
@@ -86,7 +87,10 @@ export const ACTION_NAME = {
     SET_LEADERBOARD_SCORE: 'set_leaderboard_score',
     GET_LEADERBOARD_SCORE: 'get_leaderboard_score',
     GET_LEADERBOARD_ENTRIES: 'get_leaderboard_entries',
-    SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup'
+    GET_PURCHASES: 'get_purchases',
+    GET_CATALOG: 'get_catalog',
+    PURCHASE: 'purchase',
+    CONSUME_PURCHASE: 'consume_purchase'
 }
 
 export const ERROR = {
