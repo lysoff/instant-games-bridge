@@ -1,7 +1,6 @@
 import ModuleBase from './ModuleBase'
 
 class LeaderboardModule extends ModuleBase {
-
     get isSupported() {
         return this._platformBridge.isLeaderboardSupported
     }
@@ -28,7 +27,7 @@ class LeaderboardModule extends ModuleBase {
 
     setScore(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.setScore(platformDependedOptions)
             }
@@ -39,7 +38,7 @@ class LeaderboardModule extends ModuleBase {
 
     getScore(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.getScore(platformDependedOptions)
             }
@@ -50,7 +49,7 @@ class LeaderboardModule extends ModuleBase {
 
     getEntries(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.getEntries(platformDependedOptions)
             }
@@ -61,7 +60,7 @@ class LeaderboardModule extends ModuleBase {
 
     showNativePopup(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.showNativePopup(platformDependedOptions)
             }
@@ -69,7 +68,6 @@ class LeaderboardModule extends ModuleBase {
 
         return this._platformBridge.showLeaderboardNativePopup(options)
     }
-
 }
 
 export default LeaderboardModule

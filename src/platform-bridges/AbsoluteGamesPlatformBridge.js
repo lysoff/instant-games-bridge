@@ -5,24 +5,21 @@ import {
     ACTION_NAME,
     INTERSTITIAL_STATE,
     REWARDED_STATE,
-    STORAGE_TYPE
+    STORAGE_TYPE,
 } from '../constants'
 
 const SDK_URL = 'https://unpkg.com/@agru/sdk/dist/umd/index.min.js'
 
 class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
-
     // platform
     get platformId() {
         return PLATFORM_ID.ABSOLUTE_GAMES
     }
 
-
     // player
     get isPlayerAuthorizationSupported() {
         return true
     }
-
 
     initialize() {
         if (this._isInitialized) {
@@ -34,22 +31,10 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
             addJavaScript(SDK_URL).then(() => {
-                this._platformSdk = new AgRuSdk()
+                this._platformSdk = new window.AgRuSdk()
 
-                this._platformSdk.on(AgRuSdkMethods.ShowCampaign, (data, error) => {
+                this._platformSdk.on(window.AgRuSdkMethods.ShowCampaign, (data, error) => {
                     switch (data.type) {
-                        case 'default': {
-                            if (error === null) {
-                                if (data.status) {
-                                    this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                                } else {
-                                    this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                                }
-                            } else {
-                                this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-                            }
-                            break
-                        }
                         case 'rewarded': {
                             if (error === null) {
                                 if (data.status) {
@@ -66,10 +51,23 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
                             }
                             break
                         }
+                        case 'default': // A valid value for the property, just to denote it
+                        default: {
+                            if (error === null) {
+                                if (data.status) {
+                                    this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                                } else {
+                                    this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                                }
+                            } else {
+                                this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                            }
+                            break
+                        }
                     }
                 })
 
-                let getPlayerInfoPromise = this.#getPlayerInfo()
+                const getPlayerInfoPromise = this.#getPlayerInfo()
 
                 Promise
                     .all([getPlayerInfoPromise])
@@ -88,9 +86,8 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
-
     // player
-    authorizePlayer(options) {
+    authorizePlayer() {
         if (this._isPlayerAuthorized) {
             return Promise.resolve()
         }
@@ -133,10 +130,10 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
             return new Promise((resolve, reject) => {
                 if (this._platformStorageCachedData) {
                     if (Array.isArray(key)) {
-                        let values = []
+                        const values = []
 
                         for (let i = 0; i < key.length; i++) {
-                            let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                            const value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
                                 ? null
                                 : this._platformStorageCachedData[key[i]]
 
@@ -154,17 +151,13 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
                 if (this._isPlayerAuthorized) {
                     this._platformSdk.getSaveData((data, error) => {
                         if (error === null) {
-                            if (data === null) {
-                                data = { }
-                            }
-
-                            this._platformStorageCachedData = data
+                            this._platformStorageCachedData = data || {}
 
                             if (Array.isArray(key)) {
-                                let values = []
+                                const values = []
 
                                 for (let i = 0; i < key.length; i++) {
-                                    let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                                    const value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
                                         ? null
                                         : this._platformStorageCachedData[key[i]]
 
@@ -193,7 +186,7 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (this._isPlayerAuthorized) {
-                    let data = this._platformStorageCachedData !== null
+                    const data = this._platformStorageCachedData !== null
                         ? { ...this._platformStorageCachedData }
                         : { }
 
@@ -210,9 +203,8 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
                             this._platformStorageCachedData = data
                             resolve()
                         }
-                            reject(error)
-                        }
-                    )
+                        reject(error)
+                    })
                 } else {
                     reject()
                 }
@@ -226,7 +218,7 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (this._isPlayerAuthorized) {
-                    let data = this._platformStorageCachedData !== null
+                    const data = this._platformStorageCachedData !== null
                         ? { ...this._platformStorageCachedData }
                         : { }
 
@@ -239,13 +231,12 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
                     }
 
                     this._platformSdk.setSaveData(data, (result, error) => {
-                            if (error === null) {
-                                this._platformStorageCachedData = data
-                                resolve()
-                            }
-                            reject(error)
+                        if (error === null) {
+                            this._platformStorageCachedData = data
+                            resolve()
                         }
-                    )
+                        reject(error)
+                    })
                 } else {
                     reject()
                 }
@@ -254,7 +245,6 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
 
         return super.deleteDataFromStorage(key, storageType)
     }
-
 
     // advertisement
     showInterstitial() {
@@ -265,19 +255,18 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
         this._platformSdk.showCampaign('rewarded')
     }
 
-
     #getPlayerInfo() {
-        this._playerId = this._platformSdk.options['player_id']
-        this._isPlayerAuthorized = this._platformSdk.options['guest'] === 'false'
+        this._playerId = this._platformSdk.options.player_id
+        this._isPlayerAuthorized = this._platformSdk.options.guest === 'false'
 
-        return new Promise(resolve => {
-            this._platformSdk.getUsers([this._playerId], (data, error) => {
+        return new Promise((resolve) => {
+            this._platformSdk.getUsers([this._playerId], (data) => {
                 if (data && data.length === 1) {
-                    let playerData = data[0]
-                    this._playerName = playerData['full_name']
+                    const playerData = data[0]
+                    this._playerName = playerData.full_name
 
-                    if (playerData['avatar'] !== '') {
-                        this._playerPhotos = [playerData['avatar']]
+                    if (playerData.avatar !== '') {
+                        this._playerPhotos = [playerData.avatar]
                     }
                 }
 

@@ -6,21 +6,18 @@ import {
     BANNER_STATE,
     INTERSTITIAL_STATE,
     REWARDED_STATE,
-    STORAGE_TYPE, ERROR
+    STORAGE_TYPE, ERROR,
 } from '../constants'
 
 const SDK_URL = 'https://html5.api.gamedistribution.com/main.min.js'
 
 class GameDistributionPlatformBridge extends PlatformBridgeBase {
-
     // platform
     get platformId() {
         return PLATFORM_ID.GAME_DISTRIBUTION
     }
 
-
     #currentAdvertisementIsRewarded = false
-
 
     initialize() {
         if (this._isInitialized) {
@@ -34,10 +31,10 @@ class GameDistributionPlatformBridge extends PlatformBridgeBase {
             if (!this._options || typeof this._options.gameId !== 'string') {
                 this._rejectPromiseDecorator(ACTION_NAME.INITIALIZE, ERROR.GAME_DISTRIBUTION_GAME_ID_IS_UNDEFINED)
             } else {
-                let self = this
-                window['GD_OPTIONS'] = {
-                    'gameId': this._options.gameId,
-                    'onEvent': function(event) {
+                const self = this
+                window.GD_OPTIONS = {
+                    gameId: this._options.gameId,
+                    onEvent(event) {
                         switch (event.name) {
                             case 'SDK_READY':
                                 self._platformSdk = window.gdsdk
@@ -59,11 +56,12 @@ class GameDistributionPlatformBridge extends PlatformBridgeBase {
                                     self._setInterstitialState(INTERSTITIAL_STATE.OPENED)
                                 }
                                 break
-                            case 'SDK_GDPR_TRACKING':
-                            case 'SDK_GDPR_TARGETING':
-                                break
                             case 'SDK_REWARDED_WATCH_COMPLETE':
                                 self._setRewardedState(REWARDED_STATE.REWARDED)
+                                break
+                            case 'SDK_GDPR_TRACKING':
+                            case 'SDK_GDPR_TARGETING':
+                            default:
                                 break
                         }
                     },
@@ -85,7 +83,7 @@ class GameDistributionPlatformBridge extends PlatformBridgeBase {
                 .then(() => {
                     this._setBannerState(BANNER_STATE.SHOWN)
                 })
-                .catch(error => {
+                .catch(() => {
                     this._setBannerState(BANNER_STATE.FAILED)
                 })
         } else {
@@ -103,7 +101,7 @@ class GameDistributionPlatformBridge extends PlatformBridgeBase {
         if (this._platformSdk) {
             this._platformSdk
                 .showAd()
-                .catch(error => {
+                .catch(() => {
                     this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
                 })
         } else {
@@ -117,7 +115,7 @@ class GameDistributionPlatformBridge extends PlatformBridgeBase {
         if (this._platformSdk) {
             this._platformSdk
                 .showAd('rewarded')
-                .catch(error => {
+                .catch(() => {
                     this._setRewardedState(REWARDED_STATE.FAILED)
                 })
         } else {

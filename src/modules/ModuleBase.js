@@ -1,5 +1,4 @@
 class ModuleBase {
-
     _platformBridge
 
     constructor(platformBridge) {
@@ -9,7 +8,6 @@ class ModuleBase {
     initialize() {
         return Promise.resolve()
     }
-
 }
 
 export default ModuleBase

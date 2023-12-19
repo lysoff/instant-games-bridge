@@ -1,7 +1,6 @@
 import ModuleBase from './ModuleBase'
 
 class SocialModule extends ModuleBase {
-
     get isInviteFriendsSupported() {
         return this._platformBridge.isInviteFriendsSupported
     }
@@ -40,7 +39,7 @@ class SocialModule extends ModuleBase {
 
     joinCommunity(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.joinCommunity(platformDependedOptions)
             }
@@ -51,7 +50,7 @@ class SocialModule extends ModuleBase {
 
     share(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.share(platformDependedOptions)
             }
@@ -62,7 +61,7 @@ class SocialModule extends ModuleBase {
 
     createPost(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.createPost(platformDependedOptions)
             }
@@ -82,7 +81,6 @@ class SocialModule extends ModuleBase {
     rate() {
         return this._platformBridge.rate()
     }
-
 }
 
 export default SocialModule

@@ -1,7 +1,6 @@
 import ModuleBase from './ModuleBase'
 
 class PlayerModule extends ModuleBase {
-
     get isAuthorizationSupported() {
         return this._platformBridge.isPlayerAuthorizationSupported
     }
@@ -24,7 +23,7 @@ class PlayerModule extends ModuleBase {
 
     authorize(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.authorize(platformDependedOptions)
             }
@@ -32,7 +31,6 @@ class PlayerModule extends ModuleBase {
 
         return this._platformBridge.authorizePlayer(options)
     }
-
 }
 
 export default PlayerModule

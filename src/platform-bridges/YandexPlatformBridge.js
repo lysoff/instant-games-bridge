@@ -8,13 +8,12 @@ import {
     STORAGE_TYPE,
     DEVICE_TYPE,
     BANNER_STATE,
-    PLATFORM_MESSAGE
+    PLATFORM_MESSAGE,
 } from '../constants'
 
 const SDK_URL = 'https://yandex.ru/games/sdk/v2'
 
 class YandexPlatformBridge extends PlatformBridgeBase {
-
     // platform
     get platformId() {
         return PLATFORM_ID.YANDEX
@@ -36,35 +35,31 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return super.platformTld
     }
 
-
     // device
     get deviceType() {
-        if (this._platformSdk) {
-            switch (this._platformSdk.deviceInfo.type) {
-                case DEVICE_TYPE.DESKTOP: {
-                    return DEVICE_TYPE.DESKTOP
-                }
-                case DEVICE_TYPE.MOBILE: {
-                    return DEVICE_TYPE.MOBILE
-                }
-                case DEVICE_TYPE.TABLET: {
-                    return DEVICE_TYPE.TABLET
-                }
-                case DEVICE_TYPE.TV: {
-                    return DEVICE_TYPE.TV
-                }
+        switch (this._platformSdk && this._platformSdk.deviceInfo.type) {
+            case DEVICE_TYPE.DESKTOP: {
+                return DEVICE_TYPE.DESKTOP
+            }
+            case DEVICE_TYPE.MOBILE: {
+                return DEVICE_TYPE.MOBILE
+            }
+            case DEVICE_TYPE.TABLET: {
+                return DEVICE_TYPE.TABLET
+            }
+            case DEVICE_TYPE.TV: {
+                return DEVICE_TYPE.TV
+            }
+            default: {
+                return super.deviceType
             }
         }
-
-        return super.deviceType
     }
-
 
     // player
     get isPlayerAuthorizationSupported() {
         return true
     }
-
 
     // social
     get isAddToHomeScreenSupported() {
@@ -74,7 +69,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     get isRateSupported() {
         return true
     }
-
 
     // leaderboard
     get isLeaderboardSupported() {
@@ -97,17 +91,18 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
-    //payments
+    // payments
     get isPaymentsSupported() {
         return true
     }
 
-
     #isAddToHomeScreenSupported = false
-    #yandexPlayer = null
-    #leaderboards = null
-    #payments = null
 
+    #yandexPlayer = null
+
+    #leaderboards = null
+
+    #payments = null
 
     initialize() {
         if (this._isInitialized) {
@@ -120,42 +115,54 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
             addJavaScript(SDK_URL).then(() => {
                 waitFor('YaGames', 'init').then(() => {
-                    window.YaGames.init().then(sdk => {
+                    window.YaGames.init().then((sdk) => {
                         this._platformSdk = sdk
 
-                        let getPlayerPromise = this.#getPlayer()
-                        let getSafeStoragePromise = this._platformSdk.getStorage()
-                            .then(safeStorage => {
+                        const getPlayerPromise = this.#getPlayer()
+                        const getSafeStoragePromise = this._platformSdk.getStorage()
+                            .then((safeStorage) => {
                                 this._localStorage = safeStorage
                             })
 
-                        let checkAddToHomeScreenSupportedPromise = this._platformSdk.shortcut.canShowPrompt()
-                            .then(prompt => {
+                        const checkAddToHomeScreenSupportedPromise = this._platformSdk.shortcut.canShowPrompt()
+                            .then((prompt) => {
                                 this.#isAddToHomeScreenSupported = prompt.canShow
                             })
 
-                        let checkAddToHomeScreenSupportedTimeoutPromise = new Promise(resolve => { setTimeout(resolve, 1000) })
-                        let checkAddToHomeScreenSupportedRacePromise = Promise.race([checkAddToHomeScreenSupportedPromise, checkAddToHomeScreenSupportedTimeoutPromise])
+                        const checkAddToHomeScreenSupportedTimeoutPromise = new Promise((resolve) => {
+                            setTimeout(resolve, 1000)
+                        })
+                        const checkAddToHomeScreenSupportedRacePromise = Promise.race([
+                            checkAddToHomeScreenSupportedPromise,
+                            checkAddToHomeScreenSupportedTimeoutPromise,
+                        ])
 
-                        let getLeaderboardsPromise = this._platformSdk.getLeaderboards()
-                            .then(leaderboards => {
+                        const getLeaderboardsPromise = this._platformSdk.getLeaderboards()
+                            .then((leaderboards) => {
                                 this.#leaderboards = leaderboards
                             })
 
-                        let getPaymentsPromise = this._platformSdk.getPayments()
-                            .then(payments => {
+                        const getPaymentsPromise = this._platformSdk.getPayments()
+                            .then((payments) => {
                                 this.#payments = payments
                             })
 
                         this._isBannerSupported = true
-                        let getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
-                            .then(data => {
+                        const getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
+                            .then((data) => {
                                 if (data.stickyAdvIsShowing) {
                                     this._setBannerState(BANNER_STATE.SHOWN)
                                 }
                             })
 
-                        Promise.all([getPlayerPromise, getSafeStoragePromise, checkAddToHomeScreenSupportedRacePromise, getLeaderboardsPromise, getBannerStatePromise, getPaymentsPromise])
+                        Promise.all([
+                            getPlayerPromise,
+                            getSafeStoragePromise,
+                            checkAddToHomeScreenSupportedRacePromise,
+                            getLeaderboardsPromise,
+                            getBannerStatePromise,
+                            getPaymentsPromise,
+                        ])
                             .finally(() => {
                                 this._isInitialized = true
 
@@ -173,7 +180,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
-
     // platform
     sendMessage(message) {
         switch (message) {
@@ -181,11 +187,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 this._platformSdk.features.LoadingAPI?.ready()
                 return Promise.resolve()
             }
+            default: {
+                return super.sendMessage(message)
+            }
         }
-
-        return super.sendMessage(message)
     }
-
 
     // player
     authorizePlayer(options) {
@@ -204,7 +210,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                             this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
                         })
                     })
-                    .catch(error => {
+                    .catch((error) => {
                         this._rejectPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER, error)
                     })
             }
@@ -212,7 +218,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
         return promiseDecorator.promise
     }
-
 
     // storage
     isStorageSupported(storageType) {
@@ -236,10 +241,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             return new Promise((resolve, reject) => {
                 if (this._platformStorageCachedData) {
                     if (Array.isArray(key)) {
-                        let values = []
+                        const values = []
 
                         for (let i = 0; i < key.length; i++) {
-                            let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                            const value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
                                 ? null
                                 : this._platformStorageCachedData[key[i]]
 
@@ -256,14 +261,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
                 if (this.#yandexPlayer) {
                     this.#yandexPlayer.getData()
-                        .then(data => {
+                        .then((data) => {
                             this._platformStorageCachedData = data
 
                             if (Array.isArray(key)) {
-                                let values = []
+                                const values = []
 
                                 for (let i = 0; i < key.length; i++) {
-                                    let value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
+                                    const value = typeof this._platformStorageCachedData[key[i]] === 'undefined'
                                         ? null
                                         : this._platformStorageCachedData[key[i]]
 
@@ -276,7 +281,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
                             resolve(typeof this._platformStorageCachedData[key] === 'undefined' ? null : this._platformStorageCachedData[key])
                         })
-                        .catch(error => {
+                        .catch((error) => {
                             reject(error)
                         })
                 } else {
@@ -292,7 +297,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (this.#yandexPlayer) {
-                    let data = this._platformStorageCachedData !== null
+                    const data = this._platformStorageCachedData !== null
                         ? { ...this._platformStorageCachedData }
                         : { }
 
@@ -309,7 +314,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                             this._platformStorageCachedData = data
                             resolve()
                         })
-                        .catch(error => {
+                        .catch((error) => {
                             reject(error)
                         })
                 } else {
@@ -325,7 +330,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (this.#yandexPlayer) {
-                    let data = this._platformStorageCachedData !== null
+                    const data = this._platformStorageCachedData !== null
                         ? { ...this._platformStorageCachedData }
                         : { }
 
@@ -342,7 +347,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                             this._platformStorageCachedData = data
                             resolve()
                         })
-                        .catch(error => {
+                        .catch((error) => {
                             reject(error)
                         })
                 } else {
@@ -354,25 +359,24 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return super.deleteDataFromStorage(key, storageType)
     }
 
-
     // advertisement
-    showBanner(options) {
+    showBanner() {
         this._platformSdk.adv.showBannerAdv()
-            .then(data => {
+            .then((data) => {
                 if (data.stickyAdvIsShowing) {
                     this._setBannerState(BANNER_STATE.SHOWN)
                 } else {
                     this._setBannerState(BANNER_STATE.FAILED)
                 }
             })
-            .catch(error => {
+            .catch(() => {
                 this._setBannerState(BANNER_STATE.FAILED)
             })
     }
 
     hideBanner() {
         this._platformSdk.adv.hideBannerAdv()
-            .then(data => {
+            .then((data) => {
                 if (!data.stickyAdvIsShowing) {
                     this._setBannerState(BANNER_STATE.HIDDEN)
                 }
@@ -385,14 +389,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 onOpen: () => {
                     this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
                 },
-                onClose: wasShown => {
+                onClose: (wasShown) => {
                     if (wasShown) {
                         this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
                     } else {
                         this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
                     }
-                }
-            }
+                },
+            },
         })
     }
 
@@ -402,19 +406,18 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 onOpen: () => {
                     this._setRewardedState(REWARDED_STATE.OPENED)
                 },
-                onRewarded:  () => {
+                onRewarded: () => {
                     this._setRewardedState(REWARDED_STATE.REWARDED)
                 },
                 onClose: () => {
                     this._setRewardedState(REWARDED_STATE.CLOSED)
                 },
-                onError: error => {
+                onError: () => {
                     this._setRewardedState(REWARDED_STATE.FAILED)
-                }
-            }
+                },
+            },
         })
     }
-
 
     // social
     addToHomeScreen() {
@@ -427,7 +430,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.ADD_TO_HOME_SCREEN)
 
             this._platformSdk.shortcut.showPrompt()
-                .then(result => {
+                .then((result) => {
                     if (result.outcome === 'accepted') {
                         this._resolvePromiseDecorator(ACTION_NAME.ADD_TO_HOME_SCREEN)
                         return
@@ -435,7 +438,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
                     this._rejectPromiseDecorator(ACTION_NAME.ADD_TO_HOME_SCREEN)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.ADD_TO_HOME_SCREEN, error)
                 })
         }
@@ -449,7 +452,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.RATE)
 
             this._platformSdk.feedback.canReview()
-                .then(result => {
+                .then((result) => {
                     if (result.value) {
                         this._platformSdk.feedback.requestReview()
                             .then(({ feedbackSent }) => {
@@ -460,7 +463,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
                                 this._rejectPromiseDecorator(ACTION_NAME.RATE)
                             })
-                            .catch(error => {
+                            .catch((error) => {
                                 this._rejectPromiseDecorator(ACTION_NAME.RATE, error)
                             })
 
@@ -469,14 +472,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
                     this._rejectPromiseDecorator(ACTION_NAME.RATE, result.reason)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.RATE, error)
                 })
         }
 
         return promiseDecorator.promise
     }
-
 
     // leaderboard
     setLeaderboardScore(options) {
@@ -493,14 +495,15 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.SET_LEADERBOARD_SCORE)
 
             if (typeof options.score === 'string') {
-                options.score = parseInt(options.score)
+                // eslint-disable-next-line no-param-reassign
+                options.score = parseInt(options.score, 10)
             }
 
             this.#leaderboards.setLeaderboardScore(options.leaderboardName, options.score)
                 .then(() => {
                     this._resolvePromiseDecorator(ACTION_NAME.SET_LEADERBOARD_SCORE)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.SET_LEADERBOARD_SCORE, error)
                 })
         }
@@ -522,10 +525,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_LEADERBOARD_SCORE)
 
             this.#leaderboards.getLeaderboardPlayerEntry(options.leaderboardName)
-                .then(result => {
+                .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.GET_LEADERBOARD_SCORE, result.score)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_LEADERBOARD_SCORE, error)
                 })
         }
@@ -542,10 +545,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_LEADERBOARD_ENTRIES)
 
-            let parameters = {
+            const parameters = {
                 includeUser: false,
                 quantityAround: 5,
-                quantityTop: 5
+                quantityTop: 5,
             }
 
             if (typeof options.includeUser === 'boolean') {
@@ -553,7 +556,8 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             }
 
             if (typeof options.quantityAround === 'string') {
-                options.quantityAround = parseInt(options.quantityAround)
+                // eslint-disable-next-line no-param-reassign
+                options.quantityAround = parseInt(options.quantityAround, 10)
             }
 
             if (typeof options.quantityAround === 'number') {
@@ -561,7 +565,8 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             }
 
             if (typeof options.quantityTop === 'string') {
-                options.quantityTop = parseInt(options.quantityTop)
+                // eslint-disable-next-line no-param-reassign
+                options.quantityTop = parseInt(options.quantityTop, 10)
             }
 
             if (typeof options.quantityTop === 'number') {
@@ -569,15 +574,15 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             }
 
             this.#leaderboards.getLeaderboardEntries(options.leaderboardName, parameters)
-                .then(result => {
+                .then((result) => {
                     let entries = null
 
                     if (result && result.entries.length > 0) {
-                        entries = result.entries.map(e => {
-                            let photos = []
-                            let photoSmall = e.player.getAvatarSrc('small')
-                            let photoMedium = e.player.getAvatarSrc('medium')
-                            let photoLarge = e.player.getAvatarSrc('large')
+                        entries = result.entries.map((e) => {
+                            const photos = []
+                            const photoSmall = e.player.getAvatarSrc('small')
+                            const photoMedium = e.player.getAvatarSrc('medium')
+                            const photoLarge = e.player.getAvatarSrc('large')
 
                             if (photoSmall) {
                                 photos.push(photoSmall)
@@ -596,14 +601,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                 score: e.score,
                                 rank: e.rank,
                                 name: e.player.publicName,
-                                photos
+                                photos,
                             }
                         })
                     }
 
                     this._resolvePromiseDecorator(ACTION_NAME.GET_LEADERBOARD_ENTRIES, entries)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_LEADERBOARD_ENTRIES, error)
                 })
         }
@@ -611,8 +616,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
-
-    //payments
+    // payments
 
     purchase(options) {
         if (!this.#payments || !options) {
@@ -623,10 +627,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
 
             this.#payments.purchase(options)
-                .then(result => {
+                .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, result)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.PURCHASE, error)
                 })
         }
@@ -642,10 +646,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_PURCHASES)
 
             this.#payments.getPurchases()
-                .then(result => {
+                .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.GET_PURCHASES, result)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_PURCHASES, error)
                 })
         }
@@ -661,10 +665,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_CATALOG)
 
             this.#payments.getCatalog()
-                .then(result => {
+                .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.GET_CATALOG, result)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_CATALOG, error)
                 })
         }
@@ -680,10 +684,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
 
             this.#payments.consumePurchase(options.purchaseToken)
-                .then(result => {
+                .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, result)
                 })
-                .catch(error => {
+                .catch((error) => {
                     this._rejectPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, error)
                 })
         }
@@ -691,9 +695,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     #getPlayer(options) {
-        return new Promise(resolve => {
-            let parameters = {
-                scopes: false
+        return new Promise((resolve) => {
+            const parameters = {
+                scopes: false,
             }
 
             if (options && typeof options.scopes === 'boolean') {
@@ -701,19 +705,19 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             }
 
             this._platformSdk.getPlayer(parameters)
-                .then(player => {
+                .then((player) => {
                     this._playerId = player.getUniqueID()
                     this._isPlayerAuthorized = player.getMode() !== 'lite'
 
-                    let name = player.getName()
+                    const name = player.getName()
                     if (name !== '') {
                         this._playerName = name
                     }
 
                     this._playerPhotos = []
-                    let photoSmall = player.getPhoto('small')
-                    let photoMedium = player.getPhoto('medium')
-                    let photoLarge = player.getPhoto('large')
+                    const photoSmall = player.getPhoto('small')
+                    const photoMedium = player.getPhoto('medium')
+                    const photoLarge = player.getPhoto('large')
 
                     if (photoSmall) {
                         this._playerPhotos.push(photoSmall)
@@ -734,7 +738,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 })
         })
     }
-
 }
 
 export default YandexPlatformBridge

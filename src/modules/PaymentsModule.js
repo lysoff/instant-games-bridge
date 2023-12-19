@@ -1,14 +1,13 @@
 import ModuleBase from './ModuleBase'
 
 class PaymentsModule extends ModuleBase {
-
     get isSupported() {
         return this._platformBridge.isPaymentsSupported
     }
 
     purchase(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.purchase(platformDependedOptions)
             }
@@ -27,7 +26,7 @@ class PaymentsModule extends ModuleBase {
 
     consumePurchase(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 return this.consumePurchase(platformDependedOptions)
             }
@@ -35,7 +34,6 @@ class PaymentsModule extends ModuleBase {
 
         return this._platformBridge.consumePurchase(options)
     }
-
 }
 
 export default PaymentsModule

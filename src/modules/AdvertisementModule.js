@@ -1,10 +1,11 @@
 import EventLite from 'event-lite'
 import Timer, { STATE as TIMER_STATE } from '../common/Timer'
 import ModuleBase from './ModuleBase'
-import { EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE, BANNER_STATE } from '../constants'
+import {
+    EVENT_NAME, INTERSTITIAL_STATE, REWARDED_STATE, BANNER_STATE,
+} from '../constants'
 
 class AdvertisementModule extends ModuleBase {
-
     get isBannerSupported() {
         return this._platformBridge.isBannerSupported
     }
@@ -26,15 +27,15 @@ class AdvertisementModule extends ModuleBase {
     }
 
     #interstitialTimer
-    #minimumDelayBetweenInterstitial = 60
 
+    #minimumDelayBetweenInterstitial = 60
 
     constructor(platformBridge) {
         super(platformBridge)
 
         this._platformBridge.on(
             EVENT_NAME.INTERSTITIAL_STATE_CHANGED,
-            state => {
+            (state) => {
                 if (state === INTERSTITIAL_STATE.CLOSED) {
                     if (this.#minimumDelayBetweenInterstitial > 0) {
                         this.#startInterstitialTimer()
@@ -42,27 +43,30 @@ class AdvertisementModule extends ModuleBase {
                 }
 
                 this.emit(EVENT_NAME.INTERSTITIAL_STATE_CHANGED, state)
-            })
+            },
+        )
 
         this._platformBridge.on(
             EVENT_NAME.REWARDED_STATE_CHANGED,
-            state => this.emit(EVENT_NAME.REWARDED_STATE_CHANGED, state))
+            (state) => this.emit(EVENT_NAME.REWARDED_STATE_CHANGED, state),
+        )
 
         this._platformBridge.on(
             EVENT_NAME.BANNER_STATE_CHANGED,
-            state => this.emit(EVENT_NAME.BANNER_STATE_CHANGED, state))
+            (state) => this.emit(EVENT_NAME.BANNER_STATE_CHANGED, state),
+        )
     }
-
 
     setMinimumDelayBetweenInterstitial(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (typeof platformDependedOptions !== 'undefined') {
-                return this.setMinimumDelayBetweenInterstitial(platformDependedOptions)
+                this.setMinimumDelayBetweenInterstitial(platformDependedOptions)
+                return
             }
         }
 
-        let optionsType = typeof options
+        const optionsType = typeof options
         let delay = this.#minimumDelayBetweenInterstitial
 
         switch (optionsType) {
@@ -71,10 +75,14 @@ class AdvertisementModule extends ModuleBase {
                 break
             }
             case 'string': {
-                delay = parseInt(options)
-                if (isNaN(delay)) {
+                delay = parseInt(options, 10)
+                if (Number.isNaN(delay)) {
                     return
                 }
+                break
+            }
+            default: {
+                return
             }
         }
 
@@ -86,22 +94,17 @@ class AdvertisementModule extends ModuleBase {
         }
     }
 
-
     showBanner(options) {
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 this.showBanner(platformDependedOptions)
                 return
             }
         }
 
-        if (this.bannerState) {
-            switch (this.bannerState) {
-                case BANNER_STATE.LOADING:
-                case BANNER_STATE.SHOWN:
-                    return
-            }
+        if (this.bannerState === BANNER_STATE.LOADING || this.bannerState === BANNER_STATE.SHOWN) {
+            return
         }
 
         this._platformBridge._setBannerState(BANNER_STATE.LOADING)
@@ -114,12 +117,8 @@ class AdvertisementModule extends ModuleBase {
     }
 
     hideBanner() {
-        if (this.bannerState) {
-            switch (this.bannerState) {
-                case BANNER_STATE.LOADING:
-                case BANNER_STATE.HIDDEN:
-                    return
-            }
+        if (this.bannerState === BANNER_STATE.LOADING || this.bannerState === BANNER_STATE.HIDDEN) {
+            return
         }
 
         if (!this.isBannerSupported) {
@@ -135,7 +134,7 @@ class AdvertisementModule extends ModuleBase {
         }
 
         if (options) {
-            let platformDependedOptions = options[this._platformBridge.platformId]
+            const platformDependedOptions = options[this._platformBridge.platformId]
             if (platformDependedOptions) {
                 this.showInterstitial(platformDependedOptions)
                 return
@@ -166,33 +165,29 @@ class AdvertisementModule extends ModuleBase {
         this._platformBridge.showRewarded()
     }
 
-
     #startInterstitialTimer() {
         this.#interstitialTimer = new Timer(this.#minimumDelayBetweenInterstitial)
         this.#interstitialTimer.start()
     }
 
     #hasAdvertisementInProgress() {
-        if (this.interstitialState) {
-            switch (this.interstitialState) {
-                case INTERSTITIAL_STATE.LOADING:
-                case INTERSTITIAL_STATE.OPENED:
-                    return true
-            }
+        if (
+            this.interstitialState === INTERSTITIAL_STATE.LOADING
+            || this.interstitialState === INTERSTITIAL_STATE.OPENED
+        ) {
+            return true
         }
 
-        if (this.rewardedState) {
-            switch (this.rewardedState) {
-                case REWARDED_STATE.LOADING:
-                case REWARDED_STATE.OPENED:
-                case REWARDED_STATE.REWARDED:
-                    return true
-            }
+        if ([
+            REWARDED_STATE.LOADING,
+            REWARDED_STATE.OPENED,
+            REWARDED_STATE.REWARDED,
+        ].includes(this.rewardedState)) {
+            return true
         }
 
         return false
     }
-
 }
 
 EventLite.mixin(AdvertisementModule.prototype)

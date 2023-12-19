@@ -1,7 +1,8 @@
 class PromiseDecorator {
-
     #promise
+
     #resolve
+
     #reject
 
     get promise() {
@@ -22,7 +23,6 @@ class PromiseDecorator {
     reject(error) {
         this.#reject(error)
     }
-
 }
 
 export default PromiseDecorator

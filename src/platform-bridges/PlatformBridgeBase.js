@@ -8,12 +8,11 @@ import {
     STORAGE_TYPE,
     ERROR,
     VISIBILITY_STATE,
-    DEVICE_TYPE
+    DEVICE_TYPE,
 } from '../constants'
 import PromiseDecorator from '../common/PromiseDecorator'
 
 class PlatformBridgeBase {
-
     // platform
     get platformId() {
         return PLATFORM_ID.MOCK
@@ -24,7 +23,7 @@ class PlatformBridgeBase {
     }
 
     get platformLanguage() {
-        let value = navigator.language
+        const value = navigator.language
         if (typeof value === 'string') {
             return value.substring(0, 2).toLowerCase()
         }
@@ -33,7 +32,7 @@ class PlatformBridgeBase {
     }
 
     get platformPayload() {
-        let url = new URL(window.location.href)
+        const url = new URL(window.location.href)
         return url.searchParams.get('payload')
     }
 
@@ -41,12 +40,10 @@ class PlatformBridgeBase {
         return null
     }
 
-
     // game
     get visibilityState() {
         return this._visibilityState
     }
-
 
     // player
     get isPlayerAuthorizationSupported() {
@@ -69,12 +66,10 @@ class PlatformBridgeBase {
         return this._playerPhotos
     }
 
-
     // storage
     get defaultStorageType() {
         return this._defaultStorageType
     }
-
 
     // advertisement
     get isBannerSupported() {
@@ -92,7 +87,6 @@ class PlatformBridgeBase {
     get rewardedState() {
         return this._rewardedState
     }
-
 
     // social
     get isInviteFriendsSupported() {
@@ -127,11 +121,10 @@ class PlatformBridgeBase {
         return false
     }
 
-
     // device
     get deviceType() {
         if (navigator && navigator.userAgent) {
-            let userAgent = navigator.userAgent.toLowerCase()
+            const userAgent = navigator.userAgent.toLowerCase()
             if (/android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
                 return DEVICE_TYPE.MOBILE
             }
@@ -143,7 +136,6 @@ class PlatformBridgeBase {
 
         return DEVICE_TYPE.DESKTOP
     }
-
 
     // leaderboard
     get isLeaderboardSupported() {
@@ -170,33 +162,46 @@ class PlatformBridgeBase {
         return false
     }
 
-    //payments
+    // payments
 
     get isPaymentsSupported() {
         return false
     }
 
-
     _isInitialized = false
+
     _platformSdk = null
+
     _isPlayerAuthorized = false
+
     _playerId = null
+
     _playerName = null
+
     _playerPhotos = []
+
     _visibilityState = null
+
     _localStorage = null
+
     _defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
+
     _platformStorageCachedData = null
+
     _isBannerSupported = false
+
     _interstitialState = null
+
     _rewardedState = null
+
     _bannerState = null
 
     #promiseDecorators = { }
 
-
     constructor(options) {
-        try { this._localStorage = window.localStorage } catch (e) { }
+        try { this._localStorage = window.localStorage } catch (e) {
+            // Nothing we can do with it
+        }
 
         this._visibilityState = document.visibilityState === 'visible' ? VISIBILITY_STATE.VISIBLE : VISIBILITY_STATE.HIDDEN
 
@@ -214,18 +219,15 @@ class PlatformBridgeBase {
         return Promise.resolve()
     }
 
-
     // platform
-    sendMessage(message) {
+    sendMessage() {
         return Promise.resolve()
     }
 
-
     // player
-    authorizePlayer(options) {
+    authorizePlayer() {
         return Promise.reject()
     }
-
 
     // storage
     isStorageSupported(storageType) {
@@ -261,7 +263,7 @@ class PlatformBridgeBase {
             case STORAGE_TYPE.LOCAL_STORAGE: {
                 if (this._localStorage) {
                     if (Array.isArray(key)) {
-                        let values = []
+                        const values = []
 
                         for (let i = 0; i < key.length; i++) {
                             values.push(this._getDataFromLocalStorage(key[i]))
@@ -270,11 +272,10 @@ class PlatformBridgeBase {
                         return Promise.resolve(values)
                     }
 
-                    let value = this._getDataFromLocalStorage(key)
+                    const value = this._getDataFromLocalStorage(key)
                     return Promise.resolve(value)
-                } else {
-                    return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
                 }
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
             }
             default: {
                 return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
@@ -295,9 +296,8 @@ class PlatformBridgeBase {
 
                     this._setDataToLocalStorage(key, value)
                     return Promise.resolve()
-                } else {
-                    return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
                 }
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
             }
             default: {
                 return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
@@ -318,9 +318,8 @@ class PlatformBridgeBase {
 
                     this._deleteDataFromLocalStorage(key)
                     return Promise.resolve()
-                } else {
-                    return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
                 }
+                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
             }
             default: {
                 return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
@@ -328,9 +327,8 @@ class PlatformBridgeBase {
         }
     }
 
-
     // advertisement
-    showBanner(options) {
+    showBanner() {
         this._setBannerState(BANNER_STATE.FAILED)
     }
 
@@ -346,7 +344,6 @@ class PlatformBridgeBase {
         this._setRewardedState(REWARDED_STATE.FAILED)
     }
 
-
     // social
     inviteFriends() {
         return Promise.reject()
@@ -360,7 +357,7 @@ class PlatformBridgeBase {
         return Promise.reject()
     }
 
-    createPost(message) {
+    createPost() {
         return Promise.reject()
     }
 
@@ -376,27 +373,26 @@ class PlatformBridgeBase {
         return Promise.reject()
     }
 
-
     // leaderboard
-    setLeaderboardScore(options) {
+    setLeaderboardScore() {
         return Promise.reject()
     }
 
-    getLeaderboardScore(options) {
+    getLeaderboardScore() {
         return Promise.reject()
     }
 
-    getLeaderboardEntries(options) {
+    getLeaderboardEntries() {
         return Promise.reject()
     }
 
-    showLeaderboardNativePopup(options) {
+    showLeaderboardNativePopup() {
         return Promise.reject()
     }
 
-    //payments
+    // payments
 
-    purchase(options) {
+    purchase() {
         return Promise.reject()
     }
 
@@ -408,10 +404,9 @@ class PlatformBridgeBase {
         return Promise.reject()
     }
 
-    consumePurchase(options) {
+    consumePurchase() {
         return Promise.reject()
     }
-
 
     _getDataFromLocalStorage(key) {
         let value = this._localStorage.getItem(key)
@@ -419,25 +414,21 @@ class PlatformBridgeBase {
         if (typeof value === 'string') {
             try {
                 value = JSON.parse(value)
+            } catch (e) {
+                // Nothing we can do with it
             }
-            catch (e) { }
         }
 
         return value
     }
 
     _setDataToLocalStorage(key, value) {
-        if (typeof value === 'object') {
-            value = JSON.stringify(value)
-        }
-
-        this._localStorage.setItem(key, value)
+        this._localStorage.setItem(key, typeof value === 'object' ? JSON.stringify(value) : value)
     }
 
     _deleteDataFromLocalStorage(key) {
         this._localStorage.removeItem(key)
     }
-
 
     _setInterstitialState(state) {
         if (this._interstitialState === state && state !== INTERSTITIAL_STATE.FAILED) {
@@ -466,9 +457,8 @@ class PlatformBridgeBase {
         this.emit(EVENT_NAME.BANNER_STATE_CHANGED, this._bannerState)
     }
 
-
     _createPromiseDecorator(actionName) {
-        let promiseDecorator = new PromiseDecorator()
+        const promiseDecorator = new PromiseDecorator()
         this.#promiseDecorators[actionName] = promiseDecorator
         return promiseDecorator
     }
