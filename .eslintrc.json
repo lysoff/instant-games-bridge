@@ -2,6 +2,10 @@
     "extends": [
         "airbnb"
     ],
+    "globals": {
+        "PLUGIN_VERSION": true,
+        "PLUGIN_NAME": true
+    },
     "env": {
         "browser": true
     },

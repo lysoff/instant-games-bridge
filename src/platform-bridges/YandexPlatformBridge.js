@@ -1,5 +1,7 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
-import { addJavaScript, waitFor } from '../common/utils'
+import {
+    addJavaScript, waitFor,
+} from '../common/utils'
 import {
     PLATFORM_ID,
     ACTION_NAME,
@@ -119,6 +121,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                         this._platformSdk = sdk
 
                         const getPlayerPromise = this.#getPlayer()
+
+                        const reportPluginEnginePromise = this._platformSdk.features.PluginEngineDataReporterAPI?.report({
+                            engineName: '',
+                            engineVersion: '',
+                            pluginName: PLUGIN_NAME,
+                            pluginVersion: PLUGIN_VERSION,
+                        })
+
                         const getSafeStoragePromise = this._platformSdk.getStorage()
                             .then((safeStorage) => {
                                 this._localStorage = safeStorage
@@ -162,6 +172,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                             getLeaderboardsPromise,
                             getBannerStatePromise,
                             getPaymentsPromise,
+                            reportPluginEnginePromise,
                         ])
                             .finally(() => {
                                 this._isInitialized = true
