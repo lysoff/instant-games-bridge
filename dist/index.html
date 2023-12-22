@@ -188,17 +188,17 @@
         <h2>Payments</h2>
         <p>Is Supported: <span id="payments-is-supported-text"></span></p>
         <hr>
-        <br>
         <button id="payments-get-purchases-button">Get Purchases</button>
         <pre id="payments-purchases-container"></pre>
-        <br>
         <button id="payments-get-catalog-button">Get Catalog</button>
         <pre id="payments-catalog-container"></pre>
-        <br>
         <hr>
+        <input type="text" id="payments-id-input" placeholder="Yandex ID">
+        <button id="payments-purchase-button">Purchase</button>
         <br>
-        <button id="payments-purchase-button">Purchase 500 Gold</button>
-        <button id="payments-consume-button">Consume 500 Gold</button>
+        <br>
+        <input type="text" id="payments-token-input" placeholder="Yandex Token">
+        <button id="payments-consume-button">Consume</button>
     </div>
 </div>
 <div id="banner-container"></div>
@@ -566,21 +566,25 @@
                 leaderboardEntriesContainer.innerText = text
             })
     })
+
    paymentsGetPurchasesButton.addEventListener('click', () => {
        bridge.payments.getPurchases().then((purchases) =>
           paymentPurchasesContainer.innerText = JSON.stringify(purchases, undefined, 2)
        )
    })
+
    paymentsGetCatalogButton.addEventListener('click', () => {
        bridge.payments.getCatalog().then((catalog) =>
           paymentCatalogContainer.innerText = JSON.stringify(catalog, undefined, 2)
        )
    })
+
    paymentsPurchaseButton.addEventListener('click', () => {
-       bridge.payments.purchase({'yandex': {id: 'gold500'}}).catch((error) => console.log(error))
+       bridge.payments.purchase({'yandex': document.getElementById('payments-id-input').value }).catch((error) => console.log(error))
    })
+
    paymentsConsumeButton.addEventListener('click', () => {
-       bridge.payments.consumePurchase({'yandex': {purchaseToken: 'purchaseToken'}}).catch((error) => console.log(error))
+       bridge.payments.consumePurchase({'yandex': document.getElementById('payments-token-input').value }).catch((error) => console.log(error))
    })
 </script>
 <script src="//cdn.jsdelivr.net/npm/eruda"></script>

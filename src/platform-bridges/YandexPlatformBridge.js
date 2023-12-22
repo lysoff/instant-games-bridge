@@ -628,16 +628,16 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     // payments
-
-    purchase(options) {
-        if (!this.#payments || !options) {
+    purchase(id) {
+        if (!this.#payments || !id) {
             return Promise.reject()
         }
+
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.PURCHASE)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
 
-            this.#payments.purchase(options)
+            this.#payments.purchase({ id })
                 .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, result)
                 })
@@ -645,6 +645,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.PURCHASE, error)
                 })
         }
+
         return promiseDecorator.promise
     }
 
@@ -652,6 +653,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!this.#payments) {
             return Promise.reject()
         }
+
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_PURCHASES)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_PURCHASES)
@@ -664,6 +666,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_PURCHASES, error)
                 })
         }
+
         return promiseDecorator.promise
     }
 
@@ -671,6 +674,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!this.#payments) {
             return Promise.reject()
         }
+
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_CATALOG)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_CATALOG)
@@ -683,18 +687,20 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.GET_CATALOG, error)
                 })
         }
+
         return promiseDecorator.promise
     }
 
-    consumePurchase(options) {
-        if (!this.#payments || !options) {
+    consumePurchase(token) {
+        if (!this.#payments || !token) {
             return Promise.reject()
         }
+
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
 
-            this.#payments.consumePurchase(options.purchaseToken)
+            this.#payments.consumePurchase(token)
                 .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, result)
                 })
@@ -702,6 +708,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, error)
                 })
         }
+
         return promiseDecorator.promise
     }
 

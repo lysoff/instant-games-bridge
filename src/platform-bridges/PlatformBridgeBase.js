@@ -163,7 +163,6 @@ class PlatformBridgeBase {
     }
 
     // payments
-
     get isPaymentsSupported() {
         return false
     }
@@ -391,7 +390,6 @@ class PlatformBridgeBase {
     }
 
     // payments
-
     purchase() {
         return Promise.reject()
     }
