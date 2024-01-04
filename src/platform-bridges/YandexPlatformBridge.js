@@ -176,11 +176,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                         ])
                             .finally(() => {
                                 this._isInitialized = true
-
-                                this._defaultStorageType = this._isPlayerAuthorized
-                                    ? STORAGE_TYPE.PLATFORM_INTERNAL
-                                    : STORAGE_TYPE.LOCAL_STORAGE
-
                                 this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
                             })
                     })
@@ -726,6 +721,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 .then((player) => {
                     this._playerId = player.getUniqueID()
                     this._isPlayerAuthorized = player.getMode() !== 'lite'
+
+                    this._defaultStorageType = this._isPlayerAuthorized
+                        ? STORAGE_TYPE.PLATFORM_INTERNAL
+                        : STORAGE_TYPE.LOCAL_STORAGE
 
                     const name = player.getName()
                     if (name !== '') {
