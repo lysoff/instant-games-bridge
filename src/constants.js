@@ -17,6 +17,7 @@ export const MODULE_NAME = {
     DEVICE: 'device',
     LEADERBOARD: 'leaderboard',
     PAYMENTS: 'payments',
+    REMOTE_CONFIG: 'remote_config',
 }
 
 export const EVENT_NAME = {
@@ -91,6 +92,7 @@ export const ACTION_NAME = {
     GET_CATALOG: 'get_catalog',
     PURCHASE: 'purchase',
     CONSUME_PURCHASE: 'consume_purchase',
+    GET_REMOTE_CONFIG: 'get_remote_config',
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup',
 }
 

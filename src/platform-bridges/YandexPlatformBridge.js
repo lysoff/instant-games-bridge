@@ -1,7 +1,5 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
-import {
-    addJavaScript, waitFor,
-} from '../common/utils'
+import { addJavaScript, waitFor } from '../common/utils'
 import {
     PLATFORM_ID,
     ACTION_NAME,
@@ -98,6 +96,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    // config
+    get isRemoteConfigSupported() {
+        return true
+    }
+
     #isAddToHomeScreenSupported = false
 
     #yandexPlayer = null
@@ -115,72 +118,75 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
-            addJavaScript(SDK_URL).then(() => {
-                waitFor('YaGames', 'init').then(() => {
-                    window.YaGames.init().then((sdk) => {
-                        this._platformSdk = sdk
+            addJavaScript(SDK_URL)
+                .then(() => {
+                    waitFor('YaGames', 'init')
+                        .then(() => {
+                            window.YaGames.init()
+                                .then((sdk) => {
+                                    this._platformSdk = sdk
 
-                        const getPlayerPromise = this.#getPlayer()
+                                    const getPlayerPromise = this.#getPlayer()
 
-                        const reportPluginEnginePromise = this._platformSdk.features.PluginEngineDataReporterAPI?.report({
-                            engineName: '',
-                            engineVersion: '',
-                            pluginName: PLUGIN_NAME,
-                            pluginVersion: PLUGIN_VERSION,
+                                    const reportPluginEnginePromise = this._platformSdk.features.PluginEngineDataReporterAPI?.report({
+                                        engineName: '',
+                                        engineVersion: '',
+                                        pluginName: PLUGIN_NAME,
+                                        pluginVersion: PLUGIN_VERSION,
+                                    })
+
+                                    const getSafeStoragePromise = this._platformSdk.getStorage()
+                                        .then((safeStorage) => {
+                                            this._localStorage = safeStorage
+                                        })
+
+                                    const checkAddToHomeScreenSupportedPromise = this._platformSdk.shortcut.canShowPrompt()
+                                        .then((prompt) => {
+                                            this.#isAddToHomeScreenSupported = prompt.canShow
+                                        })
+
+                                    const checkAddToHomeScreenSupportedTimeoutPromise = new Promise((resolve) => {
+                                        setTimeout(resolve, 1000)
+                                    })
+                                    const checkAddToHomeScreenSupportedRacePromise = Promise.race([
+                                        checkAddToHomeScreenSupportedPromise,
+                                        checkAddToHomeScreenSupportedTimeoutPromise,
+                                    ])
+
+                                    const getLeaderboardsPromise = this._platformSdk.getLeaderboards()
+                                        .then((leaderboards) => {
+                                            this.#leaderboards = leaderboards
+                                        })
+
+                                    const getPaymentsPromise = this._platformSdk.getPayments()
+                                        .then((payments) => {
+                                            this.#payments = payments
+                                        })
+
+                                    this._isBannerSupported = true
+                                    const getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
+                                        .then((data) => {
+                                            if (data.stickyAdvIsShowing) {
+                                                this._setBannerState(BANNER_STATE.SHOWN)
+                                            }
+                                        })
+
+                                    Promise.all([
+                                        getPlayerPromise,
+                                        getSafeStoragePromise,
+                                        checkAddToHomeScreenSupportedRacePromise,
+                                        getLeaderboardsPromise,
+                                        getBannerStatePromise,
+                                        getPaymentsPromise,
+                                        reportPluginEnginePromise,
+                                    ])
+                                        .finally(() => {
+                                            this._isInitialized = true
+                                            this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                                        })
+                                })
                         })
-
-                        const getSafeStoragePromise = this._platformSdk.getStorage()
-                            .then((safeStorage) => {
-                                this._localStorage = safeStorage
-                            })
-
-                        const checkAddToHomeScreenSupportedPromise = this._platformSdk.shortcut.canShowPrompt()
-                            .then((prompt) => {
-                                this.#isAddToHomeScreenSupported = prompt.canShow
-                            })
-
-                        const checkAddToHomeScreenSupportedTimeoutPromise = new Promise((resolve) => {
-                            setTimeout(resolve, 1000)
-                        })
-                        const checkAddToHomeScreenSupportedRacePromise = Promise.race([
-                            checkAddToHomeScreenSupportedPromise,
-                            checkAddToHomeScreenSupportedTimeoutPromise,
-                        ])
-
-                        const getLeaderboardsPromise = this._platformSdk.getLeaderboards()
-                            .then((leaderboards) => {
-                                this.#leaderboards = leaderboards
-                            })
-
-                        const getPaymentsPromise = this._platformSdk.getPayments()
-                            .then((payments) => {
-                                this.#payments = payments
-                            })
-
-                        this._isBannerSupported = true
-                        const getBannerStatePromise = this._platformSdk.adv.getBannerAdvStatus()
-                            .then((data) => {
-                                if (data.stickyAdvIsShowing) {
-                                    this._setBannerState(BANNER_STATE.SHOWN)
-                                }
-                            })
-
-                        Promise.all([
-                            getPlayerPromise,
-                            getSafeStoragePromise,
-                            checkAddToHomeScreenSupportedRacePromise,
-                            getLeaderboardsPromise,
-                            getBannerStatePromise,
-                            getPaymentsPromise,
-                            reportPluginEnginePromise,
-                        ])
-                            .finally(() => {
-                                this._isInitialized = true
-                                this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
-                            })
-                    })
                 })
-            })
         }
 
         return promiseDecorator.promise
@@ -206,15 +212,17 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
 
             if (this._isPlayerAuthorized) {
-                this.#getPlayer(options).then(() => {
-                    this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
-                })
+                this.#getPlayer(options)
+                    .then(() => {
+                        this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
+                    })
             } else {
                 this._platformSdk.auth.openAuthDialog()
                     .then(() => {
-                        this.#getPlayer(options).then(() => {
-                            this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
-                        })
+                        this.#getPlayer(options)
+                            .then(() => {
+                                this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
+                            })
                     })
                     .catch((error) => {
                         this._rejectPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER, error)
@@ -305,7 +313,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 if (this.#yandexPlayer) {
                     const data = this._platformStorageCachedData !== null
                         ? { ...this._platformStorageCachedData }
-                        : { }
+                        : {}
 
                     if (Array.isArray(key)) {
                         for (let i = 0; i < key.length; i++) {
@@ -338,7 +346,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                 if (this.#yandexPlayer) {
                     const data = this._platformStorageCachedData !== null
                         ? { ...this._platformStorageCachedData }
-                        : { }
+                        : {}
 
                     if (Array.isArray(key)) {
                         for (let i = 0; i < key.length; i++) {
@@ -703,7 +711,31 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._rejectPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, error)
                 })
         }
+        return promiseDecorator.promise
+    }
 
+    // config
+    getRemoteConfig(options) {
+        if (!this._platformSdk) {
+            return Promise.reject()
+        }
+        if (options && (!options?.defaultFlags && !options?.clientFeatures)) {
+            return Promise.reject()
+        }
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG)
+
+            const getFlags = options ? this._platformSdk.getFlags(options) : this._platformSdk.getFlags()
+
+            getFlags
+                .then((result) => {
+                    this._resolvePromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG, result)
+                })
+                .catch((error) => {
+                    this._rejectPromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG, error)
+                })
+        }
         return promiseDecorator.promise
     }
 

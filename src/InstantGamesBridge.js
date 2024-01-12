@@ -21,6 +21,7 @@ import SocialModule from './modules/SocialModule'
 import DeviceModule from './modules/DeviceModule'
 import LeaderboardModule from './modules/LeaderboardModule'
 import PaymentsModule from './modules/PaymentsModule'
+import RemoteConfigModule from './modules/RemoteConfigModule'
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
 import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
 import YandexPlatformBridge from './platform-bridges/YandexPlatformBridge'
@@ -71,6 +72,10 @@ class InstantGamesBridge {
 
     get payments() {
         return this.#getModule(MODULE_NAME.PAYMENTS)
+    }
+
+    get remoteConfig() {
+        return this.#getModule(MODULE_NAME.REMOTE_CONFIG)
     }
 
     get PLATFORM_ID() {
@@ -144,6 +149,7 @@ class InstantGamesBridge {
                     this.#modules[MODULE_NAME.DEVICE] = new DeviceModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.LEADERBOARD] = new LeaderboardModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.PAYMENTS] = new PaymentsModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.REMOTE_CONFIG] = new RemoteConfigModule(this.#platformBridge)
 
                     this.#isInitialized = true
                     console.info(`%c InstantGamesBridge v.${this.version} initialized. `, 'background: #01A5DA; color: white')

@@ -163,7 +163,14 @@ class PlatformBridgeBase {
     }
 
     // payments
+
     get isPaymentsSupported() {
+        return false
+    }
+
+    // config
+
+    get isRemoteConfigSupported() {
         return false
     }
 
@@ -390,6 +397,7 @@ class PlatformBridgeBase {
     }
 
     // payments
+
     purchase() {
         return Promise.reject()
     }
@@ -403,6 +411,11 @@ class PlatformBridgeBase {
     }
 
     consumePurchase() {
+        return Promise.reject()
+    }
+
+    // config
+    getRemoteConfig() {
         return Promise.reject()
     }
 
