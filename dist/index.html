@@ -204,11 +204,11 @@
         <button id="payments-consume-button">Consume</button>
     </div>
     <div class="section" id="remote-config-section" style="display: none">
-        <h2>Payments</h2>
+        <h2>Remote Config</h2>
         <p>Is Supported: <span id="remote-config-is-supported-text"></span></p>
         <hr>
-        <button id="payments-get-remote-config-button">Get Config</button>
-        <pre id="remote-config-purchases-container"></pre>
+        <button id="get-remote-config-button">Get Config</button>
+        <pre id="remote-config-container"></pre>
     </div>
 </div>
 <div id="banner-container"></div>
@@ -320,8 +320,8 @@
     const paymentsConsumeButton = document.getElementById('payments-consume-button')
 
     const remoteConfigIsSupportedText = document.getElementById('remote-config-is-supported-text')
-    const remoteConfigButton = document.getElementById('payments-get-remote-config-button')
-    const remoteConfigContainer = document.getElementById('remote-config-purchases-container')
+    const remoteConfigButton = document.getElementById('get-remote-config-button')
+    const remoteConfigContainer = document.getElementById('remote-config-container')
 
     var lastInterstitialStates = []
     var lastRewardedStates = []
@@ -624,6 +624,9 @@
 
     remoteConfigButton.addEventListener('click', () => {
         bridge.remoteConfig.get()
+            .then(config => {
+                remoteConfigContainer.innerText = JSON.stringify(config, undefined, 2)
+            })
             .catch((error) => console.log(error))
     })
 </script>
