@@ -28,6 +28,7 @@ import YandexPlatformBridge from './platform-bridges/YandexPlatformBridge'
 import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
 import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatformBridge'
 import GameDistributionPlatformBridge from './platform-bridges/GameDistributionPlatformBridge'
+import ClipboardModule from './modules/ClipboardModule'
 
 class InstantGamesBridge {
     get version() {
@@ -76,6 +77,10 @@ class InstantGamesBridge {
 
     get remoteConfig() {
         return this.#getModule(MODULE_NAME.REMOTE_CONFIG)
+    }
+
+    get clipboard() {
+        return this.#getModule(MODULE_NAME.CLIPBOARD)
     }
 
     get PLATFORM_ID() {
@@ -150,6 +155,7 @@ class InstantGamesBridge {
                     this.#modules[MODULE_NAME.LEADERBOARD] = new LeaderboardModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.PAYMENTS] = new PaymentsModule(this.#platformBridge)
                     this.#modules[MODULE_NAME.REMOTE_CONFIG] = new RemoteConfigModule(this.#platformBridge)
+                    this.#modules[MODULE_NAME.CLIPBOARD] = new ClipboardModule(this.#platformBridge)
 
                     this.#isInitialized = true
                     console.info(`%c InstantGamesBridge v.${this.version} initialized. `, 'background: #01A5DA; color: white')

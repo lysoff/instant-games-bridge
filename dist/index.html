@@ -210,6 +210,14 @@
         <button id="get-remote-config-button">Get Config</button>
         <pre id="remote-config-container"></pre>
     </div>
+    <div class="section" id="clipboard-section" style="display: none">
+        <h2>Clipboard</h2>
+        <p>Is Supported: <span id="clipboard-is-supported-text"></span></p>
+        <hr>
+        <input type="text" id="clipboard-input" placeholder="Text">
+        <button id="clipboard-read-button">Read</button>
+        <button id="clipboard-write-button">Write</button>
+    </div>
 </div>
 <div id="banner-container"></div>
 
@@ -225,6 +233,7 @@
     const leaderboardSection = document.getElementById('leaderboard-section')
     const paymentsSection = document.getElementById('payments-section')
     const remoteConfigSection = document.getElementById('remote-config-section')
+    const clipboardSection = document.getElementById('clipboard-section')
 
     platformSection.style.display = 'none'
     deviceSection.style.display = 'none'
@@ -235,6 +244,7 @@
     leaderboardSection.style.display = 'none'
     paymentsSection.style.display = 'none'
     remoteConfigSection.style.display = 'none'
+    clipboardSection.style.display = 'none'
 
     const platformIdText = document.getElementById('platform-id-text')
     const platformLanguageText = document.getElementById('platform-language-text')
@@ -323,6 +333,11 @@
     const remoteConfigButton = document.getElementById('get-remote-config-button')
     const remoteConfigContainer = document.getElementById('remote-config-container')
 
+    const clipboardIsSupportedText = document.getElementById('clipboard-is-supported-text')
+    const clipboardInput = document.getElementById('clipboard-input')
+    const clipboardReadButton = document.getElementById('clipboard-read-button')
+    const clipboardWriteButton = document.getElementById('clipboard-write-button')
+
     var lastInterstitialStates = []
     var lastRewardedStates = []
     var lastBannerStates = []
@@ -401,6 +416,8 @@
             leaderboardIsGetEntriesSupportedText.innerText = bridge.leaderboard.isGetEntriesSupported
 
             paymentsIsSupportedText.innerText = bridge.payments.isSupported
+            remoteConfigIsSupportedText.innerText = bridge.remoteConfig.isSupported
+            clipboardIsSupportedText.innerText = bridge.clipboard.isSupported
 
             platformSection.style.display = 'block'
             deviceSection.style.display = 'block'
@@ -411,6 +428,7 @@
             leaderboardSection.style.display = 'block'
             paymentsSection.style.display = 'block'
             remoteConfigSection.style.display = 'block'
+            clipboardSection.style.display = 'block'
         })
 
     authorizePlayerButton.addEventListener('click', () => {
@@ -627,6 +645,20 @@
             .then(config => {
                 remoteConfigContainer.innerText = JSON.stringify(config, undefined, 2)
             })
+            .catch((error) => console.log(error))
+    })
+
+    clipboardReadButton.addEventListener('click', () => {
+        bridge.clipboard.read()
+            .then(text => {
+                clipboardInput.value = text
+            })
+            .catch((error) => console.log(error))
+    })
+
+    clipboardWriteButton.addEventListener('click', () => {
+        bridge.clipboard.write(clipboardInput.value)
+            .then(() => console.log('success'))
             .catch((error) => console.log(error))
     })
 </script>

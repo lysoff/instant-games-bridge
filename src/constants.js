@@ -18,6 +18,7 @@ export const MODULE_NAME = {
     LEADERBOARD: 'leaderboard',
     PAYMENTS: 'payments',
     REMOTE_CONFIG: 'remote_config',
+    CLIPBOARD: 'clipboard',
 }
 
 export const EVENT_NAME = {
@@ -94,6 +95,7 @@ export const ACTION_NAME = {
     CONSUME_PURCHASE: 'consume_purchase',
     GET_REMOTE_CONFIG: 'get_remote_config',
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup',
+    CLIPBOARD_WRITE: 'clipboard_write',
 }
 
 export const ERROR = {

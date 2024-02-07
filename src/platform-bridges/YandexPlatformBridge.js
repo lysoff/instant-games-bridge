@@ -742,6 +742,25 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
+    // clipboard
+    clipboardWrite(text) {
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CLIPBOARD_WRITE)
+
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CLIPBOARD_WRITE)
+
+            this._platformSdk.clipboard.writeText(text)
+                .then(() => {
+                    this._resolvePromiseDecorator(ACTION_NAME.CLIPBOARD_WRITE, true)
+                })
+                .catch((error) => {
+                    this._rejectPromiseDecorator(ACTION_NAME.CLIPBOARD_WRITE, error)
+                })
+        }
+
+        return promiseDecorator.promise
+    }
+
     #getPlayer(options) {
         return new Promise((resolve) => {
             const parameters = {

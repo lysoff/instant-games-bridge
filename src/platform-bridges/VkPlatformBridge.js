@@ -488,6 +488,11 @@ class VkPlatformBridge extends PlatformBridgeBase {
         return this.#sendRequestToVKBridge(ACTION_NAME.SHOW_LEADERBOARD_NATIVE_POPUP, 'VKWebAppShowLeaderBoardBox', data)
     }
 
+    // clipboard
+    clipboardWrite(text) {
+        return this.#sendRequestToVKBridge(ACTION_NAME.CLIPBOARD_WRITE, 'VKWebAppCopyText', { text })
+    }
+
     #sendRequestToVKBridge(actionName, vkMethodName, parameters = { }, responseSuccessKey = 'result') {
         let promiseDecorator = this._getPromiseDecorator(actionName)
         if (!promiseDecorator) {

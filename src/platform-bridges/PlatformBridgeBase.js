@@ -163,15 +163,18 @@ class PlatformBridgeBase {
     }
 
     // payments
-
     get isPaymentsSupported() {
         return false
     }
 
     // config
-
     get isRemoteConfigSupported() {
         return false
+    }
+
+    // clipboard
+    get isClipboardSupported() {
+        return true
     }
 
     _isInitialized = false
@@ -397,7 +400,6 @@ class PlatformBridgeBase {
     }
 
     // payments
-
     purchase() {
         return Promise.reject()
     }
@@ -416,6 +418,23 @@ class PlatformBridgeBase {
 
     // config
     getRemoteConfig() {
+        return Promise.reject()
+    }
+
+    // clipboard
+    clipboardRead() {
+        if (window.navigator && window.navigator.clipboard) {
+            return window.navigator.clipboard.readText()
+        }
+
+        return Promise.reject()
+    }
+
+    clipboardWrite(text) {
+        if (window.navigator && window.navigator.clipboard) {
+            return window.navigator.clipboard.writeText(text)
+        }
+
         return Promise.reject()
     }
 
