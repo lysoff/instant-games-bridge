@@ -410,6 +410,9 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                         this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
                     }
                 },
+                onError: (err) => {
+                    console.error(err)
+                },
             },
         })
     }
