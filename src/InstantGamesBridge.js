@@ -22,13 +22,14 @@ import DeviceModule from './modules/DeviceModule'
 import LeaderboardModule from './modules/LeaderboardModule'
 import PaymentsModule from './modules/PaymentsModule'
 import RemoteConfigModule from './modules/RemoteConfigModule'
+import ClipboardModule from './modules/ClipboardModule'
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
 import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
 import YandexPlatformBridge from './platform-bridges/YandexPlatformBridge'
 import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
 import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatformBridge'
 import GameDistributionPlatformBridge from './platform-bridges/GameDistributionPlatformBridge'
-import ClipboardModule from './modules/ClipboardModule'
+import VkPlayPlatformBridge from './platform-bridges/VkPlayPlatformBridge'
 
 class InstantGamesBridge {
     get version() {
@@ -224,6 +225,8 @@ class InstantGamesBridge {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('app_id') && url.searchParams.has('player_id') && url.searchParams.has('game_sid') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.ABSOLUTE_GAMES
+            } else if (url.hostname.includes('github.io')) {
+                platformId = PLATFORM_ID.VK_PLAY
             }
         }
 
@@ -255,6 +258,12 @@ class InstantGamesBridge {
             case PLATFORM_ID.GAME_DISTRIBUTION: {
                 this.#platformBridge = new GameDistributionPlatformBridge(
                     this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.GAME_DISTRIBUTION],
+                )
+                break
+            }
+            case PLATFORM_ID.VK_PLAY: {
+                this.#platformBridge = new VkPlayPlatformBridge(
+                    this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.VK_PLAY],
                 )
                 break
             }
