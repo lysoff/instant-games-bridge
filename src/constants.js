@@ -1,5 +1,6 @@
 export const PLATFORM_ID = {
     VK: 'vk',
+    VK_PLAY: 'vk_play',
     YANDEX: 'yandex',
     CRAZY_GAMES: 'crazy_games',
     ABSOLUTE_GAMES: 'absolute_games',
@@ -95,6 +96,9 @@ export const ACTION_NAME = {
     CONSUME_PURCHASE: 'consume_purchase',
     GET_REMOTE_CONFIG: 'get_remote_config',
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup',
+    GET_ADVERTISEMENT: 'get_advertisement',
+    GET_PROFILE: 'get_profile',
+    GET_LOGIN_STATUS: 'get_login_status',
     CLIPBOARD_WRITE: 'clipboard_write',
 }
 
