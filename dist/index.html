@@ -342,8 +342,19 @@
     var lastRewardedStates = []
     var lastBannerStates = []
 
+    let options = {
+        'platforms': {
+            'game_distribution': {
+                gameId: '74473b0d8a42415db75fef0a005b9654'
+            },
+            'vk_play': {
+                gameId: '33134'
+            }
+        }
+    }
+
     bridge
-        .initialize({ platforms: { 'game_distribution': { gameId: '74473b0d8a42415db75fef0a005b9654' } } })
+        .initialize(options)
         .then(() => {
             optionsSection.style.display = 'none'
 
@@ -631,7 +642,18 @@
     })
 
     paymentsPurchaseButton.addEventListener('click', () => {
-        bridge.payments.purchase({ 'yandex': document.getElementById('payments-id-input').value })
+        bridge.payments.purchase({
+            'yandex': document.getElementById('payments-id-input').value,
+            'vk_play': {
+                'merchant_param': {
+                    'amount': 100,                   // цена товара в рублях
+                    'currency': 'RUB',               // валюта, по дефолту 'RUB'
+                    'description': 'Золотой сундук', // описание товара в форме оплаты
+                    'item_id': '776',                // идентификатор заказа товара
+                    'additional_param': 1            // дополнительный параметр
+                }
+            }
+        })
             .catch((error) => console.log(error))
     })
 

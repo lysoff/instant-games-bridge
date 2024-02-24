@@ -24,7 +24,7 @@ module.exports = {
         ],
     },
     plugins: [
-        new ESLintPlugin(),
+        /*new ESLintPlugin(),*/
         new webpack.DefinePlugin({
             PLUGIN_VERSION: JSON.stringify(packageJson.version),
             PLUGIN_NAME: JSON.stringify(packageJson.name),

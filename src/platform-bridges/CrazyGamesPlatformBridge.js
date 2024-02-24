@@ -65,7 +65,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     waitFor('CrazyGames', 'SDK')
                         .then(async () => {
                             try {
-                                await window.CrazyGames.SDK.init();
+                                await window.CrazyGames.SDK.init()
                                 this._platformSdk = window.CrazyGames.SDK
                                 this._defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
                                 this.#systemInfo = this._platformSdk?.user?.systemInfo

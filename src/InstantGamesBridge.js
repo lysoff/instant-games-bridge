@@ -191,6 +191,10 @@ class InstantGamesBridge {
                     platformId = PLATFORM_ID.VK
                     break
                 }
+                case PLATFORM_ID.VK_PLAY: {
+                    platformId = PLATFORM_ID.VK_PLAY
+                    break
+                }
                 case PLATFORM_ID.YANDEX: {
                     platformId = PLATFORM_ID.YANDEX
                     break
@@ -215,7 +219,39 @@ class InstantGamesBridge {
         } else {
             const url = new URL(window.location.href)
             const yandexUrl = ['y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
-            if (url.hostname.includes(yandexUrl) || url.hash.includes('yandex')) {
+
+            if (url.searchParams.has('platform_id')) {
+                switch (url.searchParams.get('platform_id')) {
+                    case PLATFORM_ID.VK: {
+                        platformId = PLATFORM_ID.VK
+                        break
+                    }
+                    case PLATFORM_ID.VK_PLAY: {
+                        platformId = PLATFORM_ID.VK_PLAY
+                        break
+                    }
+                    case PLATFORM_ID.YANDEX: {
+                        platformId = PLATFORM_ID.YANDEX
+                        break
+                    }
+                    case PLATFORM_ID.CRAZY_GAMES: {
+                        platformId = PLATFORM_ID.CRAZY_GAMES
+                        break
+                    }
+                    case PLATFORM_ID.ABSOLUTE_GAMES: {
+                        platformId = PLATFORM_ID.ABSOLUTE_GAMES
+                        break
+                    }
+                    case PLATFORM_ID.GAME_DISTRIBUTION: {
+                        platformId = PLATFORM_ID.GAME_DISTRIBUTION
+                        break
+                    }
+                    default: {
+                        platformId = PLATFORM_ID.MOCK
+                        break
+                    }
+                }
+            } else if (url.hostname.includes(yandexUrl) || url.hash.includes('yandex')) {
                 platformId = PLATFORM_ID.YANDEX
             } else if (url.hostname.includes('crazygames.') || url.hostname.includes('1001juegos.com')) {
                 platformId = PLATFORM_ID.CRAZY_GAMES
@@ -225,8 +261,6 @@ class InstantGamesBridge {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('app_id') && url.searchParams.has('player_id') && url.searchParams.has('game_sid') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.ABSOLUTE_GAMES
-            } else if (url.hostname.includes('github.io')) {
-                platformId = PLATFORM_ID.VK_PLAY
             }
         }
 
@@ -234,6 +268,12 @@ class InstantGamesBridge {
             case PLATFORM_ID.VK: {
                 this.#platformBridge = new VkPlatformBridge(
                     this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.VK],
+                )
+                break
+            }
+            case PLATFORM_ID.VK_PLAY: {
+                this.#platformBridge = new VkPlayPlatformBridge(
+                    this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.VK_PLAY],
                 )
                 break
             }
@@ -258,12 +298,6 @@ class InstantGamesBridge {
             case PLATFORM_ID.GAME_DISTRIBUTION: {
                 this.#platformBridge = new GameDistributionPlatformBridge(
                     this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.GAME_DISTRIBUTION],
-                )
-                break
-            }
-            case PLATFORM_ID.VK_PLAY: {
-                this.#platformBridge = new VkPlayPlatformBridge(
-                    this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.VK_PLAY],
                 )
                 break
             }
