@@ -252,6 +252,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
     getDataFromStorage(key, storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            if (!this._isPlayerAuthorized) {
+                return Promise.reject()
+            }
+
             return new Promise((resolve, reject) => {
                 if (this._platformStorageCachedData) {
                     if (Array.isArray(key)) {
