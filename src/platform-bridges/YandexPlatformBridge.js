@@ -135,11 +135,6 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                                         pluginVersion: PLUGIN_VERSION,
                                     })
 
-                                    const getSafeStoragePromise = this._platformSdk.getStorage()
-                                        .then((safeStorage) => {
-                                            this._localStorage = safeStorage
-                                        })
-
                                     const checkAddToHomeScreenSupportedPromise = this._platformSdk.shortcut.canShowPrompt()
                                         .then((prompt) => {
                                             this.#isAddToHomeScreenSupported = prompt.canShow
@@ -173,12 +168,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
 
                                     Promise.all([
                                         getPlayerPromise,
-                                        getSafeStoragePromise,
+                                        reportPluginEnginePromise,
                                         checkAddToHomeScreenSupportedRacePromise,
                                         getLeaderboardsPromise,
-                                        getBannerStatePromise,
                                         getPaymentsPromise,
-                                        reportPluginEnginePromise,
+                                        getBannerStatePromise,
                                     ])
                                         .finally(() => {
                                             this._isInitialized = true
