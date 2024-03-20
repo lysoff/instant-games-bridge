@@ -68,22 +68,23 @@ class OkPlatformBridge extends PlatformBridgeBase {
                     const params = this._platformSdk.Util.getRequestParameters() || {}
                     if (!params.api_server || !params.apiconnection) {
                         this._rejectPromiseDecorator(ACTION_NAME.INITIALIZE, ERROR.OK_GAME_PARAMS_NOT_FOUND)
+                    } else {
+                        this._platformSdk.init(
+                            params.api_server,
+                            params.apiconnection,
+                            () => {
+                                const savedState = this._platformSdk?.saved_state
+                                this._isPlayerAuthorized = savedState ? savedState === AUTH_STATE : true
+                                if (this._isPlayerAuthorized) {
+                                    this._platformSdk.Client.call(this.#fields.userProfile, this.#callbacks.userProfileCallback)
+                                    this._platformSdk.Client.call(this.#fields.hasAppPermission(PERMISSION_TYPES.VALUABLE_ACCESS), this.#callbacks.hasValueAccessCallback)
+                                } else {
+                                    this._isInitialized = true
+                                    this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                                }
+                            },
+                        )
                     }
-                    this._platformSdk.init(
-                        params.api_server,
-                        params.apiconnection,
-                        () => {
-                            const savedState = this._platformSdk?.saved_state
-                            this._isPlayerAuthorized = savedState ? savedState === AUTH_STATE : true
-                            if (this._isPlayerAuthorized) {
-                                this._platformSdk.Client.call(this.#fields.userProfile, this.#callbacks.userProfileCallback)
-                                this._platformSdk.Client.call(this.#fields.hasAppPermission(PERMISSION_TYPES.VALUABLE_ACCESS), this.#callbacks.hasValueAccessCallback)
-                            } else {
-                                this._isInitialized = true
-                                this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
-                            }
-                        },
-                    )
                 })
         }
 
@@ -102,12 +103,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             this._platformSdk.UI.showLoginSuggestion(AUTH_STATE)
         }
 
-        return promiseDecorator.promise.then(() => {
-            this._isPlayerAuthorized = true
-        })
-            .catch(() => {
-                this._isPlayerAuthorized = false
-            })
+        return promiseDecorator.promise
     }
 
     // storage
@@ -131,7 +127,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
     getDataFromStorage(key, storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             if (!this._hasValuableAccessPermission) {
-                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+                return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
             }
             if (typeof this._platformStorageCachedData[key] === 'undefined') {
                 this._platformSdk.Client.call(this.#fields.getStorageValue(key), this.#callbacks.getStrorageValueCallBack)
@@ -147,7 +143,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
     setDataToStorage(key, value, storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             if (!this._hasValuableAccessPermission) {
-                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+                return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
             }
             return this.#aggregateStorageMethods(key, value)
         }
@@ -158,7 +154,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
     deleteDataFromStorage(key, storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             if (!this._hasValuableAccessPermission) {
-                return Promise.reject(ERROR.STORAGE_NOT_SUPPORTED)
+                return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
             }
 
             return this.#aggregateStorageMethods(key)
@@ -179,7 +175,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
     showRewarded() {
         try {
             this._platformSdk.UI.loadAd()
-            this._setRewardedState(REWARDED_STATE.OPENED)
         } catch {
             this._setRewardedState(REWARDED_STATE.FAILED)
         }
@@ -250,9 +245,9 @@ class OkPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INVITE_FRIENDS)
             if (text.length > 120) {
                 this._rejectPromiseDecorator(ACTION_NAME.INVITE_FRIENDS, ERROR.INVITE_FRIENDS_MESSAGE_LENGTH_ERROR)
+            } else {
+                this._platformSdk.UI.showInvite(text)
             }
-
-            this._platformSdk.UI.showInvite(text)
         }
         return promiseDecorator.promise
     }
@@ -393,9 +388,11 @@ class OkPlatformBridge extends PlatformBridgeBase {
 
     #onLoginCompleted(result, data) {
         if (result === 'error') {
+            this._isPlayerAuthorized = false
             this._rejectPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER, data)
             return
         }
+        this._isPlayerAuthorized = true
         this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
     }
 
@@ -440,6 +437,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
         if (result === 'error') {
             this._setRewardedState(REWARDED_STATE.FAILED)
         } else {
+            this._setRewardedState(REWARDED_STATE.OPENED)
             this._platformSdk.UI.showLoadedAd()
         }
     }
