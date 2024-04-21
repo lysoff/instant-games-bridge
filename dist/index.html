@@ -346,13 +346,14 @@
             var lastBannerStates = []
 
             let options = {
+                forciblySetPlatformId: 'ok',
                 'platforms': {
                     'game_distribution': {
                         gameId: '74473b0d8a42415db75fef0a005b9654'
                     },
                     'vk_play': {
                         gameId: '33134'
-                    }
+                    },
                 }
             }
 
@@ -459,8 +460,9 @@
 
             getStorageDataButton.addEventListener('click', () => {
                 bridge.storage
-                    .get('player_progress', storageTypeInput.value)
-                    .then(playerProgress => {
+            .get(['player_progress', 'test'], storageTypeInput.value)
+            .then(([playerProgress, test]) => {
+                            console.log(playerProgress, test)
                         if (playerProgress) {
                             storageDataCoinsInput.value = playerProgress.coins
                             storageDataLevelInput.value = playerProgress.level
