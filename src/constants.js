@@ -96,6 +96,7 @@ export const ACTION_NAME = {
     PURCHASE: 'purchase',
     CONSUME_PURCHASE: 'consume_purchase',
     GET_REMOTE_CONFIG: 'get_remote_config',
+    GET_STORAGE_DATA: 'get_storage_data',
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup',
     CLIPBOARD_WRITE: 'clipboard_write',
 }
@@ -104,6 +105,7 @@ export const ERROR = {
     SDK_NOT_INITIALIZED: { message: 'Before using the SDK you must initialize it' },
     STORAGE_NOT_SUPPORTED: { message: 'Storage not supported' },
     STORAGE_NOT_AVAILABLE: { message: 'Storage not available' },
+    STORAGE_NOT_FOUND: { message: 'Not found value for these keys' },
     GAME_DISTRIBUTION_GAME_ID_IS_UNDEFINED: { message: 'GameDistribution Game ID is undefined' },
     VK_PLAY_GAME_ID_IS_UNDEFINED: { message: 'VK Play Game ID is undefined' },
     OK_GAME_PARAMS_NOT_FOUND: { message: 'OK Game params are not found' },

@@ -44,13 +44,25 @@ class OkPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    // payments
+    get isPaymentsSupported() {
+        return true
+    }
+
+    // advertisement
+    get isBannerSupported() {
+        return true
+    }
+
     _hasValuableAccessPermission = false
 
-    _platformStorageCachedData = {}
+    _hasValuableAccessPermissionShowed = false
 
     _platformStoragePromises = []
 
     _platformBannerOptions = {}
+
+    _keyStorage
 
     initialize() {
         if (this._isInitialized) {
@@ -77,7 +89,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
                                 this._isPlayerAuthorized = savedState ? savedState === AUTH_STATE : true
                                 if (this._isPlayerAuthorized) {
                                     this._platformSdk.Client.call(this.#fields.userProfile, this.#callbacks.userProfileCallback)
-                                    this._platformSdk.Client.call(this.#fields.hasAppPermission(PERMISSION_TYPES.VALUABLE_ACCESS), this.#callbacks.hasValueAccessCallback)
                                 } else {
                                     this._isInitialized = true
                                     this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
@@ -121,7 +132,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             return this._hasValuableAccessPermission
         }
 
-        return super.isStorageSupported(storageType)
+        return super.isStorageAvailable(storageType)
     }
 
     getDataFromStorage(key, storageType) {
@@ -129,12 +140,32 @@ class OkPlatformBridge extends PlatformBridgeBase {
             if (!this._hasValuableAccessPermission) {
                 return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
             }
-            if (typeof this._platformStorageCachedData[key] === 'undefined') {
-                this._platformSdk.Client.call(this.#fields.getStorageValue(key), this.#callbacks.getStrorageValueCallBack)
+            if (!Array.isArray(key)) {
+                if (!this._platformStorageCachedData || typeof this._platformStorageCachedData[key] === 'undefined') {
+                    let promiseDecorator = this._getPromiseDecorator(key)
+                    if (!promiseDecorator) {
+                        promiseDecorator = this._createPromiseDecorator(key)
+                        this._keyStorage = key
+                        this._platformSdk.Client.call(this.#fields.getStorageValue(key), this.#callbacks.getStrorageValueCallBack)
+                    }
+                    return promiseDecorator.promise
+                }
+                return Promise.resolve(this._platformStorageCachedData[key])
             }
-            return new Promise((resolve) => {
-                resolve(this._platformStorageCachedData[key])
-            })
+            if (Array.isArray(key)) {
+                if (!this._platformStorageCachedData) {
+                    const promises = []
+                    for (let i = 0; i < key.length; i++) {
+                        promises.push(this.getDataFromStorage(key[i], STORAGE_TYPE.PLATFORM_INTERNAL))
+                    }
+                    return Promise.all(promises)
+                }
+                const values = []
+                for (let i = 0; i < key.length; i++) {
+                    values.push(typeof this._platformStorageCachedData[key[i]] === 'undefined' ? null : this._platformStorageCachedData[key[i]])
+                }
+                return Promise.resolve(values)
+            }
         }
 
         return super.getDataFromStorage(key, storageType)
@@ -312,7 +343,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
                 data.value = JSON.stringify(values[i])
             }
             cachedData[data.key] = data.value
-            this._platformSdk.Client.call(this.#fields.setStorageValue(data.key, data.value), this.#callbacks.setValueStorageCalBack)
+            this._platformSdk.Client.call(this.#fields.setStorageValue(data.key, data.value), this.#callbacks.setValueStorageCallBack)
         }
 
         return Promise.all(this._platformStoragePromises)
@@ -351,14 +382,14 @@ class OkPlatformBridge extends PlatformBridgeBase {
         return {
             userProfileCallback: (status, data, error) => this.#onGetUserProfileCompleted(status, data, error),
             hasValueAccessCallback: (_, result, data) => this.#onHasAccessValuePermissionCompleted(result, data),
-            getStrorageValueCallBack: (status, data, error) => this.#onGetValueCompleted(status, data, error),
-            setValueStorageCalBack: (status, _, error) => this.#onSetValueCompleted(status, error),
+            getStrorageValueCallBack: (status, data) => this.#onGetValueCompleted(status, data),
+            setValueStorageCallBack: (status, _, error) => this.#onSetValueCompleted(status, error),
         }
     }
 
     get #apiCallbacks() {
         return {
-            showPermissions: (result, data) => this.#onSetStatusPermissionCompleted(result, data),
+            showPermissions: () => this.#onSetStatusPermissionCompleted(),
             loadAd: (result) => this.#onLoadedRewarded(result),
             showLoadedAd: (_, data) => this.#onRewardedShown(data),
             showAd: (_, data) => this.#onInterstitialShown(data),
@@ -383,7 +414,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             this._playerPhotos = [data.pic50x50, data.pic128x128, data.pic_base]
         }
         this._isInitialized = true
-        this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+        this._platformSdk.Client.call(this.#fields.hasAppPermission(PERMISSION_TYPES.VALUABLE_ACCESS), this.#callbacks.hasValueAccessCallback)
     }
 
     #onLoginCompleted(result, data) {
@@ -398,29 +429,31 @@ class OkPlatformBridge extends PlatformBridgeBase {
 
     #onHasAccessValuePermissionCompleted(result) {
         this._hasValuableAccessPermission = !!result
-        if (!this._hasValuableAccessPermission) {
+        if (!this._hasValuableAccessPermission && !this._hasValuableAccessPermissionShowed) {
             const permissions = Object.values(PERMISSION_TYPES)
                 .map((value) => `"${value}"`)
                 .join(',')
             this._platformSdk.UI.showPermissions(`[${permissions}]`)
+        } else {
+            this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
         }
     }
 
-    #onSetStatusPermissionCompleted(result) {
-        this._hasValuableAccessPermission = !!result
+    #onSetStatusPermissionCompleted() {
+        this._hasValuableAccessPermissionShowed = true
+        this._platformSdk.Client.call(this.#fields.hasAppPermission(PERMISSION_TYPES.VALUABLE_ACCESS), this.#callbacks.hasValueAccessCallback)
     }
 
     // storage
-    #onGetValueCompleted(status, data, error) {
-        return new Promise((resolve, reject) => {
-            if (status === 'error' || !data.data) {
-                reject(error)
-            }
-            const [key, value] = Object.entries(data.data)[0]
-            const parsedValue = value ? JSON.parse(value) : value
-            this._platformStorageCachedData[key] = parsedValue
-            resolve(parsedValue)
-        })
+    #onGetValueCompleted(status, data) {
+        if (status === 'error' || !data?.data) {
+            this._rejectPromiseDecorator(this._keyStorage, ERROR.STORAGE_NOT_FOUND)
+            return
+        }
+        const [key, value] = Object.entries(data.data)[0]
+        const parsedValue = value ? JSON.parse(value) : value
+        this._platformStorageCachedData = { ...this._platformStorageCachedData, [key]: parsedValue }
+        this._resolvePromiseDecorator(key, parsedValue)
     }
 
     #onSetValueCompleted(status, error) {
