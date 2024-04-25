@@ -231,7 +231,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
     }
 
     hideBanner() {
-        this._platformSdkAPI.invokeUIMethod('hideBannerAds')
+        this._platformSdk.invokeUIMethod('hideBannerAds')
     }
 
     purchase() {
@@ -294,7 +294,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
     }
 
     createPost(options) {
-        if (!options || !options?.attachment) {
+        if (!options || !options?.media) {
             return Promise.reject()
         }
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CREATE_POST)
@@ -398,7 +398,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             hideBannerAds: (_, data) => this.#onHiddenBanner(data),
             setBannerFormat: (result) => this.#onSetBannerFormat(result),
             showPayment: (result) => this.#onPurchaseConsumeCompleted(result),
-            inviteFriends: (result) => this.#onInviteFriendsCompleted(result),
+            showInvite: (result) => this.#onInviteFriendsCompleted(result),
             showRatingDialog: (result, data) => this.#onGameRatingRecieved(result, data),
             createPost: (result) => this.#onPostCreated(result),
             joinGroup: (result, data) => this.#onJoinGroupRequested(result, data),
