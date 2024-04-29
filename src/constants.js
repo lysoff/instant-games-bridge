@@ -6,6 +6,7 @@ export const PLATFORM_ID = {
     CRAZY_GAMES: 'crazy_games',
     ABSOLUTE_GAMES: 'absolute_games',
     GAME_DISTRIBUTION: 'game_distribution',
+    PLAYGAMA: 'playgama',
     MOCK: 'mock',
 }
 
