@@ -477,7 +477,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
 
     #onRewardedShown(data) {
         switch (data) {
-            case 'ad_shown':
+            case 'complete':
                 this._setRewardedState(REWARDED_STATE.REWARDED)
                 this._setRewardedState(REWARDED_STATE.CLOSED)
                 break
@@ -496,11 +496,10 @@ class OkPlatformBridge extends PlatformBridgeBase {
     #onInterstitialShown(data) {
         switch (data) {
             case 'ready':
-                break
             case 'ad_prepared':
-                this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
                 break
             case 'ad_shown':
+                this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
                 this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
                 break
             case 'no_ads':
