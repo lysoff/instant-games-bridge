@@ -4,7 +4,8 @@
     "description": "One SDK for cross platform publishing HTML5 games",
     "main": "index.js",
     "scripts": {
-        "build": "webpack"
+        "build": "webpack",
+        "develop": "webpack --mode=development"
     },
     "repository": {
         "type": "git",
