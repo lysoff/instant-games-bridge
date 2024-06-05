@@ -23,7 +23,9 @@ import LeaderboardModule from './modules/LeaderboardModule'
 import PaymentsModule from './modules/PaymentsModule'
 import RemoteConfigModule from './modules/RemoteConfigModule'
 import ClipboardModule from './modules/ClipboardModule'
+
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
+
 import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
 import YandexPlatformBridge from './platform-bridges/YandexPlatformBridge'
 import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
@@ -31,6 +33,7 @@ import AbsoluteGamesPlatformBridge from './platform-bridges/AbsoluteGamesPlatfor
 import GameDistributionPlatformBridge from './platform-bridges/GameDistributionPlatformBridge'
 import VkPlayPlatformBridge from './platform-bridges/VkPlayPlatformBridge'
 import OkPlatformBridge from './platform-bridges/OkPlatformBridge'
+import PlaygamaPlatformBridge from './platform-bridges/PlaygamaPlatformBridge'
 
 class InstantGamesBridge {
     get version() {
@@ -216,6 +219,10 @@ class InstantGamesBridge {
                     platformId = PLATFORM_ID.OK
                     break
                 }
+                case PLATFORM_ID.PLAYGAMA: {
+                    platformId = PLATFORM_ID.PLAYGAMA
+                    break
+                }
 
                 default: {
                     platformId = PLATFORM_ID.MOCK
@@ -253,6 +260,10 @@ class InstantGamesBridge {
                     }
                     case PLATFORM_ID.OK: {
                         platformId = PLATFORM_ID.OK
+                        break
+                    }
+                    case PLATFORM_ID.PLAYGAMA: {
+                        platformId = PLATFORM_ID.PLAYGAMA
                         break
                     }
                     default: {
@@ -313,6 +324,12 @@ class InstantGamesBridge {
             case PLATFORM_ID.OK: {
                 this.#platformBridge = new OkPlatformBridge(
                     this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.OK],
+                )
+                break
+            }
+            case PLATFORM_ID.PLAYGAMA: {
+                this.#platformBridge = new PlaygamaPlatformBridge(
+                    this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.PLAYGAMA],
                 )
                 break
             }
