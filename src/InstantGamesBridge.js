@@ -136,8 +136,6 @@ class InstantGamesBridge {
 
     #modules = {}
 
-    #overriddenModules = {}
-
     initialize(options) {
         if (this.#isInitialized) {
             return Promise.resolve()
@@ -173,17 +171,6 @@ class InstantGamesBridge {
         }
 
         return this.#initializationPromiseDecorator.promise
-    }
-
-    overrideModule(id, value) {
-        if (typeof value !== 'object') {
-            return
-        }
-
-        this.#overriddenModules[id] = value
-        if (typeof value.initialize === 'function') {
-            value.initialize(module)
-        }
     }
 
     #createPlatformBridge() {
@@ -223,7 +210,6 @@ class InstantGamesBridge {
                     platformId = PLATFORM_ID.PLAYGAMA
                     break
                 }
-
                 default: {
                     platformId = PLATFORM_ID.MOCK
                     break
@@ -343,10 +329,6 @@ class InstantGamesBridge {
     #getModule(id) {
         if (!this.#isInitialized) {
             console.error(ERROR.SDK_NOT_INITIALIZED)
-        }
-
-        if (this.#overriddenModules[id]) {
-            return this.#overriddenModules[id]
         }
 
         return this.#modules[id]

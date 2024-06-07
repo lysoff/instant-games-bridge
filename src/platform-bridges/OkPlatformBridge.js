@@ -1,5 +1,8 @@
 import PlatformBridgeBase from './PlatformBridgeBase'
-import { addJavaScript } from '../common/utils'
+import {
+    addJavaScript,
+    waitFor,
+} from '../common/utils'
 import {
     PLATFORM_ID,
     ACTION_NAME, STORAGE_TYPE,
@@ -8,7 +11,6 @@ import {
 
 const SDK_URL = '//api.ok.ru/js/fapi5.js'
 const AUTH_STATE = 'AUTHORIZED'
-
 const PERMISSION_TYPES = {
     VALUABLE_ACCESS: 'VALUABLE_ACCESS',
     PHOTO_CONTENT: 'PHOTO_CONTENT',
@@ -25,13 +27,12 @@ class OkPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
-    // clipboard
-    get isClipboardSupported() {
-        return false
+    // advertisement
+    get isBannerSupported() {
+        return true
     }
 
     // social
-
     get isInviteFriendsSupported() {
         return true
     }
@@ -44,25 +45,16 @@ class OkPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
-    // payments
-    get isPaymentsSupported() {
-        return true
-    }
-
-    // advertisement
-    get isBannerSupported() {
-        return true
+    // clipboard
+    get isClipboardSupported() {
+        return false
     }
 
     _hasValuableAccessPermission = false
 
     _hasValuableAccessPermissionShowed = false
 
-    _platformStoragePromises = []
-
     _platformBannerOptions = {}
-
-    _keyStorage
 
     initialize() {
         if (this._isInitialized) {
@@ -75,27 +67,34 @@ class OkPlatformBridge extends PlatformBridgeBase {
 
             addJavaScript(SDK_URL)
                 .then(() => {
-                    this._platformSdk = window.FAPI
-                    window.API_callback = (method, result, data) => this.#apiCallbacks[method](result, data)
-                    const params = this._platformSdk.Util.getRequestParameters() || {}
-                    if (!params.api_server || !params.apiconnection) {
-                        this._rejectPromiseDecorator(ACTION_NAME.INITIALIZE, ERROR.OK_GAME_PARAMS_NOT_FOUND)
-                    } else {
-                        this._platformSdk.init(
-                            params.api_server,
-                            params.apiconnection,
-                            () => {
-                                const savedState = this._platformSdk?.saved_state
-                                this._isPlayerAuthorized = savedState ? savedState === AUTH_STATE : true
-                                if (this._isPlayerAuthorized) {
-                                    this._platformSdk.Client.call(this.#fields.userProfile, this.#callbacks.userProfileCallback)
-                                } else {
-                                    this._isInitialized = true
-                                    this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
-                                }
-                            },
-                        )
-                    }
+                    waitFor('FAPI')
+                        .then(() => {
+                            this._platformSdk = window.FAPI
+                            window.API_callback = (method, result, data) => this.#apiCallbacks[method](result, data)
+
+                            const params = this._platformSdk.Util.getRequestParameters() || {}
+                            if (!params.api_server || !params.apiconnection) {
+                                this._rejectPromiseDecorator(ACTION_NAME.INITIALIZE, ERROR.OK_GAME_PARAMS_NOT_FOUND)
+                            } else {
+                                this._platformSdk.init(
+                                    params.api_server,
+                                    params.apiconnection,
+                                    () => {
+                                        const savedState = this._platformSdk?.saved_state
+                                        this._isPlayerAuthorized = savedState ? savedState === AUTH_STATE : true
+                                        if (this._isPlayerAuthorized) {
+                                            this._platformSdk.Client.call(this.#fields.userProfile, this.#callbacks.userProfileCallback)
+                                        } else {
+                                            this._isInitialized = true
+                                            this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                                        }
+                                    },
+                                    () => {
+                                        this._rejectPromiseDecorator(ACTION_NAME.INITIALIZE)
+                                    },
+                                )
+                            }
+                        })
                 })
         }
 
@@ -118,7 +117,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
     }
 
     // storage
-
     isStorageSupported(storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return true
@@ -140,32 +138,55 @@ class OkPlatformBridge extends PlatformBridgeBase {
             if (!this._hasValuableAccessPermission) {
                 return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
             }
-            if (!Array.isArray(key)) {
-                if (!this._platformStorageCachedData || typeof this._platformStorageCachedData[key] === 'undefined') {
-                    let promiseDecorator = this._getPromiseDecorator(key)
-                    if (!promiseDecorator) {
-                        promiseDecorator = this._createPromiseDecorator(key)
-                        this._keyStorage = key
-                        this._platformSdk.Client.call(this.#fields.getStorageValue(key), this.#callbacks.getStrorageValueCallBack)
+
+            return new Promise((resolve, reject) => {
+                const keys = Array.isArray(key) ? key : [key]
+                const params = { method: 'storage.get', keys, scope: 'CUSTOM' }
+                this._platformSdk.Client.call(params, (status, data, error) => {
+                    if (data) {
+                        const response = data.data || { }
+
+                        if (Array.isArray(key)) {
+                            const values = []
+
+                            keys.forEach((item) => {
+                                if (response[item] === '' || response[item] === undefined) {
+                                    values.push(null)
+                                    return
+                                }
+
+                                let value
+                                try {
+                                    value = JSON.parse(response[item])
+                                } catch (e) {
+                                    value = response[item]
+                                }
+
+                                values.push(value)
+                            })
+
+                            resolve(values)
+                            return
+                        }
+
+                        if (response[key] === '' || response[key] === undefined) {
+                            resolve(null)
+                            return
+                        }
+
+                        let value
+                        try {
+                            value = JSON.parse(response[key])
+                        } catch (e) {
+                            value = response[key]
+                        }
+
+                        resolve(value)
+                    } else {
+                        reject(error)
                     }
-                    return promiseDecorator.promise
-                }
-                return Promise.resolve(this._platformStorageCachedData[key])
-            }
-            if (Array.isArray(key)) {
-                if (!this._platformStorageCachedData) {
-                    const promises = []
-                    for (let i = 0; i < key.length; i++) {
-                        promises.push(this.getDataFromStorage(key[i], STORAGE_TYPE.PLATFORM_INTERNAL))
-                    }
-                    return Promise.all(promises)
-                }
-                const values = []
-                for (let i = 0; i < key.length; i++) {
-                    values.push(typeof this._platformStorageCachedData[key[i]] === 'undefined' ? null : this._platformStorageCachedData[key[i]])
-                }
-                return Promise.resolve(values)
-            }
+                })
+            })
         }
 
         return super.getDataFromStorage(key, storageType)
@@ -176,7 +197,34 @@ class OkPlatformBridge extends PlatformBridgeBase {
             if (!this._hasValuableAccessPermission) {
                 return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
             }
-            return this.#aggregateStorageMethods(key, value)
+
+            const keys = Array.isArray(key) ? key : [key]
+            const values = Array.isArray(key) ? value : [value]
+            const promises = []
+
+            for (let i = 0; i < keys.length; i++) {
+                const k = keys[i]
+                let v = values[i]
+
+                if (typeof v !== 'string') {
+                    v = JSON.stringify(v)
+                }
+
+                const params = { method: 'storage.set', key: k, value: v }
+                const promise = new Promise((resolve, reject) => {
+                    this._platformSdk.Client.call(params, (status, data) => {
+                        if (data) {
+                            resolve()
+                        } else {
+                            reject()
+                        }
+                    })
+                })
+
+                promises.push(promise)
+            }
+
+            return Promise.all(promises)
         }
 
         return super.setDataToStorage(key, value, storageType)
@@ -188,7 +236,27 @@ class OkPlatformBridge extends PlatformBridgeBase {
                 return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
             }
 
-            return this.#aggregateStorageMethods(key)
+            const keys = Array.isArray(key) ? key : [key]
+            const promises = []
+
+            for (let i = 0; i < keys.length; i++) {
+                const k = keys[i]
+
+                const params = { method: 'storage.set', key: k }
+                const promise = new Promise((resolve, reject) => {
+                    this._platformSdk.Client.call(params, (status, data) => {
+                        if (data) {
+                            resolve()
+                        } else {
+                            reject()
+                        }
+                    })
+                })
+
+                promises.push(promise)
+            }
+
+            return Promise.all(promises)
         }
 
         return super.deleteDataFromStorage(key, storageType)
@@ -222,11 +290,13 @@ class OkPlatformBridge extends PlatformBridgeBase {
                 this._platformSdk.invokeUIMethod('setBannerFormat', options.layoutType)
                 return
             }
+
             if (typeof options.position === 'string') {
                 this._platformSdk.invokeUIMethod('requestBannerAds', options.position)
                 return
             }
         }
+
         this._platformSdk.invokeUIMethod('requestBannerAds', position)
     }
 
@@ -234,39 +304,9 @@ class OkPlatformBridge extends PlatformBridgeBase {
         this._platformSdk.invokeUIMethod('hideBannerAds')
     }
 
-    purchase() {
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.PURCHASE)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
-            this._platformSdk.UI.showPortalPayment()
-        }
-
-        return promiseDecorator.promise
-    }
-
-    consumePurchase(options) {
-        const {
-            name,
-            description,
-            code,
-            price,
-        } = options || {}
-        if (!options || [name, description, code, price].includes(undefined)) {
-            return Promise.reject()
-        }
-
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
-        if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
-            this._platformSdk.UI.showPayment(name, description, code, price, null, null, 'ok', true)
-        }
-        return promiseDecorator.promise
-    }
-
     inviteFriends(options) {
-        const {
-            text,
-        } = options || {}
+        const { text } = options || {}
+
         if (!options || typeof text !== 'string') {
             return Promise.reject()
         }
@@ -280,6 +320,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
                 this._platformSdk.UI.showInvite(text)
             }
         }
+
         return promiseDecorator.promise
     }
 
@@ -297,6 +338,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
         if (!options || !options?.media) {
             return Promise.reject()
         }
+
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CREATE_POST)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CREATE_POST)
@@ -310,6 +352,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
         if (!options || !options?.groupId) {
             return Promise.reject()
         }
+
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.JOIN_COMMUNITY)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.JOIN_COMMUNITY)
@@ -317,42 +360,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
         }
 
         return promiseDecorator.promise
-    }
-
-    #aggregateStorageMethods(key, value) {
-        const cachedData = {}
-        const keys = []
-        const values = []
-        if (!Array.isArray(key)) {
-            keys.push(key)
-            values.push(value ?? null)
-        }
-        if (Array.isArray(key)) {
-            const valueList = !value.length ? Array(key.length)
-                .fill(null) : value
-            keys.concat(key)
-            values.concat(valueList)
-        }
-        for (let i = 0; i < keys.length; i++) {
-            const data = {
-                key: keys[i],
-                value: values[i],
-            }
-
-            if (typeof values[i] !== 'string' && values[i] !== null && values[i] !== undefined) {
-                data.value = JSON.stringify(values[i])
-            }
-            cachedData[data.key] = data.value
-            this._platformSdk.Client.call(this.#fields.setStorageValue(data.key, data.value), this.#callbacks.setValueStorageCallBack)
-        }
-
-        return Promise.all(this._platformStoragePromises)
-            .then(() => {
-                this._platformStorageCachedData = { ...this._platformStorageCachedData, ...cachedData }
-            })
-            .finally(() => {
-                this._platformStoragePromises = []
-            })
     }
 
     get #fields() {
@@ -365,16 +372,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
                 method: 'users.hasAppPermission',
                 ext_perm: permission,
             }),
-            getStorageValue: (key) => ({
-                method: 'storage.get',
-                fields: key,
-                keys: [key],
-            }),
-            setStorageValue: (key, value) => ({
-                method: 'storage.set',
-                key,
-                value,
-            }),
         }
     }
 
@@ -382,8 +379,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
         return {
             userProfileCallback: (status, data, error) => this.#onGetUserProfileCompleted(status, data, error),
             hasValueAccessCallback: (_, result, data) => this.#onHasAccessValuePermissionCompleted(result, data),
-            getStrorageValueCallBack: (status, data) => this.#onGetValueCompleted(status, data),
-            setValueStorageCallBack: (status, _, error) => this.#onSetValueCompleted(status, error),
         }
     }
 
@@ -397,10 +392,8 @@ class OkPlatformBridge extends PlatformBridgeBase {
             showBannerAds: (_, data) => this.#onShownBanner(data),
             hideBannerAds: (_, data) => this.#onHiddenBanner(data),
             setBannerFormat: (result) => this.#onSetBannerFormat(result),
-            showPayment: (result) => this.#onPurchaseConsumeCompleted(result),
             showInvite: (result) => this.#onInviteFriendsCompleted(result),
-            showRatingDialog: (result, data) => this.#onGameRatingRecieved(result, data),
-            createPost: (result) => this.#onPostCreated(result),
+            showRatingDialog: (result, data) => this.#onGameRatingReceived(result, data),
             joinGroup: (result, data) => this.#onJoinGroupRequested(result, data),
             showLoginSuggestion: (result, data) => this.#onLoginCompleted(result, data),
             postMediatopic: (result, data) => this.#onPostCreatedCompleted(result, data),
@@ -413,6 +406,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             this._playerName = data.name
             this._playerPhotos = [data.pic50x50, data.pic128x128, data.pic_base]
         }
+
         this._isInitialized = true
         this._platformSdk.Client.call(this.#fields.hasAppPermission(PERMISSION_TYPES.VALUABLE_ACCESS), this.#callbacks.hasValueAccessCallback)
     }
@@ -423,12 +417,18 @@ class OkPlatformBridge extends PlatformBridgeBase {
             this._rejectPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER, data)
             return
         }
+
         this._isPlayerAuthorized = true
         this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
     }
 
     #onHasAccessValuePermissionCompleted(result) {
         this._hasValuableAccessPermission = !!result
+
+        this._defaultStorageType = this._hasValuableAccessPermission
+            ? STORAGE_TYPE.PLATFORM_INTERNAL
+            : STORAGE_TYPE.LOCAL_STORAGE
+
         if (!this._hasValuableAccessPermission && !this._hasValuableAccessPermissionShowed) {
             const permissions = Object.values(PERMISSION_TYPES)
                 .map((value) => `"${value}"`)
@@ -442,28 +442,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
     #onSetStatusPermissionCompleted() {
         this._hasValuableAccessPermissionShowed = true
         this._platformSdk.Client.call(this.#fields.hasAppPermission(PERMISSION_TYPES.VALUABLE_ACCESS), this.#callbacks.hasValueAccessCallback)
-    }
-
-    // storage
-    #onGetValueCompleted(status, data) {
-        if (status === 'error' || !data?.data) {
-            this._rejectPromiseDecorator(this._keyStorage, ERROR.STORAGE_NOT_FOUND)
-            return
-        }
-        const [key, value] = Object.entries(data.data)[0]
-        const parsedValue = value ? JSON.parse(value) : value
-        this._platformStorageCachedData = { ...this._platformStorageCachedData, [key]: parsedValue }
-        this._resolvePromiseDecorator(key, parsedValue)
-    }
-
-    #onSetValueCompleted(status, error) {
-        const promise = new Promise((resolve, reject) => {
-            if (status === 'error') {
-                reject(error)
-            }
-            resolve()
-        })
-        this._platformStoragePromises.push(promise)
     }
 
     #onLoadedRewarded(result) {
@@ -555,14 +533,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
         }
     }
 
-    #onPurchaseConsumeCompleted(result) {
-        if (result === 'error') {
-            this._rejectPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
-        } else {
-            this._resolvePromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
-        }
-    }
-
     #onInviteFriendsCompleted(result) {
         if (result === 'error') {
             this._rejectPromiseDecorator(ACTION_NAME.INVITE_FRIENDS)
@@ -571,19 +541,11 @@ class OkPlatformBridge extends PlatformBridgeBase {
         }
     }
 
-    #onGameRatingRecieved(result, data) {
+    #onGameRatingReceived(result, data) {
         if (result === 'error') {
             this._rejectPromiseDecorator(ACTION_NAME.RATE, data)
         } else {
             this._resolvePromiseDecorator(ACTION_NAME.RATE)
-        }
-    }
-
-    #onPostCreated(result) {
-        if (result === 'error') {
-            this._rejectPromiseDecorator(ACTION_NAME.CREATE_POST)
-        } else {
-            this._resolvePromiseDecorator(ACTION_NAME.CREATE_POST)
         }
     }
 

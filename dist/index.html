@@ -464,11 +464,11 @@
 
         getStorageDataButton.addEventListener('click', () => {
             bridge.storage
-                .get('player_progress', storageTypeInput.value)
-                .then((playerProgress) => {
-                    if (playerProgress) {
-                        storageDataCoinsInput.value = playerProgress.coins
-                        storageDataLevelInput.value = playerProgress.level
+                .get(['coins', 'level'], storageTypeInput.value)
+                .then((data) => {
+                    if (data) {
+                        storageDataCoinsInput.value = data[0]
+                        storageDataLevelInput.value = data[1]
                     }
                 })
                 .catch(error => console.log(error))
@@ -476,16 +476,13 @@
 
         setStorageDataButton.addEventListener('click', () => {
             bridge.storage
-                .set('player_progress', {
-                    coins: storageDataCoinsInput.value,
-                    level: storageDataLevelInput.value
-                }, storageTypeInput.value)
+                .set(['coins', 'level'], [storageDataCoinsInput.value, storageDataLevelInput.value], storageTypeInput.value)
                 .catch(error => console.log(error))
         })
 
         deleteStorageDataButton.addEventListener('click', () => {
             bridge.storage
-                .delete('player_progress', storageTypeInput.value)
+                .delete(['coins', 'level'], storageTypeInput.value)
                 .then(() => {
                     storageDataCoinsInput.value = ''
                     storageDataLevelInput.value = ''
