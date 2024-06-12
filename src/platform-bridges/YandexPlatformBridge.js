@@ -632,8 +632,8 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     // payments
-    purchase(id) {
-        if (!this.#payments || !id) {
+    purchase(options) {
+        if (!this.#payments || !options.id) {
             return Promise.reject()
         }
 
@@ -641,7 +641,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.PURCHASE)
 
-            this.#payments.purchase({ id })
+            this.#payments.purchase(options)
                 .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.PURCHASE, result)
                 })
@@ -695,8 +695,8 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return promiseDecorator.promise
     }
 
-    consumePurchase(token) {
-        if (!this.#payments || !token) {
+    consumePurchase(options) {
+        if (!this.#payments || !options.purchaseToken) {
             return Promise.reject()
         }
 
@@ -704,7 +704,7 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CONSUME_PURCHASE)
 
-            this.#payments.consumePurchase(token)
+            this.#payments.consumePurchase(options.purchaseToken)
                 .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.CONSUME_PURCHASE, result)
                 })
@@ -720,9 +720,11 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         if (!this._platformSdk) {
             return Promise.reject()
         }
+
         if (options && (!options?.defaultFlags && !options?.clientFeatures)) {
             return Promise.reject()
         }
+
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG)

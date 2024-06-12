@@ -33,6 +33,10 @@ class OkPlatformBridge extends PlatformBridgeBase {
     }
 
     // social
+    get isJoinCommunitySupported() {
+        return true
+    }
+
     get isInviteFriendsSupported() {
         return true
     }
