@@ -11,17 +11,44 @@ import {
     PLATFORM_MESSAGE,
 } from '../constants'
 
-const SDK_URL = 'https://sdk.crazygames.com/crazygames-sdk-v1.js'
+const SDK_URL = 'https://sdk.crazygames.com/crazygames-sdk-v3.js'
 
 class CrazyGamesPlatformBridge extends PlatformBridgeBase {
+    #adCallbacks = {
+        adStarted: () => {
+            if (this.#currentAdvertisementIsRewarded) {
+                this._setRewardedState(REWARDED_STATE.OPENED)
+            } else {
+                this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+            }
+        },
+        adFinished: () => {
+            if (this.#currentAdvertisementIsRewarded) {
+                this._setRewardedState(REWARDED_STATE.REWARDED)
+                this._setRewardedState(REWARDED_STATE.CLOSED)
+            } else {
+                this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+            }
+        },
+        adError: () => {
+            if (this.#currentAdvertisementIsRewarded) {
+                this._setRewardedState(REWARDED_STATE.FAILED)
+            } else {
+                this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+            }
+        },
+    }
+
+    #isUserAccountAvailable = false
+
     // platform
     get platformId() {
         return PLATFORM_ID.CRAZY_GAMES
     }
 
     get platformLanguage() {
-        if (this.#userInfo) {
-            return this.#userInfo.countryCode.toLowerCase()
+        if (this.#isUserAccountAvailable) {
+            return this._platformSdk.user.systemInfo.countryCode.toLowerCase()
         }
 
         return super.platformLanguage
@@ -29,8 +56,8 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
 
     // device
     get deviceType() {
-        if (this.#userInfo) {
-            const userDeviceType = this.#userInfo.device.type.toLowerCase()
+        if (this.#isUserAccountAvailable) {
+            const userDeviceType = this._platformSdk.user.systemInfo.device.type.toLowerCase()
             if ([
                 DEVICE_TYPE.DESKTOP,
                 DEVICE_TYPE.MOBILE,
@@ -49,8 +76,6 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
-    #userInfo = null
-
     #currentAdvertisementIsRewarded = false
 
     initialize() {
@@ -63,51 +88,16 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
             addJavaScript(SDK_URL).then(() => {
-                waitFor('CrazyGames', 'CrazySDK', 'getInstance').then(() => {
-                    this._platformSdk = window.CrazyGames.CrazySDK.getInstance()
-
-                    this._platformSdk.addEventListener('initialized', (data) => {
-                        this.#userInfo = data.userInfo
-                        this._isInitialized = true
-                        this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
-                    })
-
-                    this._platformSdk.addEventListener('adStarted', () => {
-                        if (this.#currentAdvertisementIsRewarded) {
-                            this._setRewardedState(REWARDED_STATE.OPENED)
-                        } else {
-                            this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-                        }
-                    })
-
-                    this._platformSdk.addEventListener('adFinished', () => {
-                        if (this.#currentAdvertisementIsRewarded) {
-                            this._setRewardedState(REWARDED_STATE.REWARDED)
-                            this._setRewardedState(REWARDED_STATE.CLOSED)
-                        } else {
-                            this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-                        }
-                    })
-
-                    this._platformSdk.addEventListener('adError', () => {
-                        if (this.#currentAdvertisementIsRewarded) {
-                            this._setRewardedState(REWARDED_STATE.FAILED)
-                        } else {
-                            this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-                        }
-                    })
-
-                    this._platformSdk.addEventListener('bannerRendered', () => {
-                        this._setBannerState(BANNER_STATE.SHOWN)
-                    })
-
-                    this._platformSdk.addEventListener('bannerError', () => {
-                        this._setBannerState(BANNER_STATE.FAILED)
-                    })
+                waitFor('CrazyGames', 'SDK', 'init').then(() => {
+                    this._platformSdk = window.CrazyGames.SDK
 
                     this._defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
                     this._isBannerSupported = true
-                    this._platformSdk.init()
+                    this._platformSdk.init().then(() => {
+                        this._isInitialized = true
+                        this.#isUserAccountAvailable = this._platformSdk.user.isUserAccountAvailable
+                        this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                    })
                 })
             })
         }
@@ -119,23 +109,23 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
     sendMessage(message) {
         switch (message) {
             case PLATFORM_MESSAGE.IN_GAME_LOADING_STARTED: {
-                this._platformSdk.sdkGameLoadingStart()
+                this._platformSdk.game.loadingStart()
                 return Promise.resolve()
             }
             case PLATFORM_MESSAGE.IN_GAME_LOADING_STOPPED: {
-                this._platformSdk.sdkGameLoadingStop()
+                this._platformSdk.game.loadingStop()
                 return Promise.resolve()
             }
             case PLATFORM_MESSAGE.GAMEPLAY_STARTED: {
-                this._platformSdk.gameplayStart()
+                this._platformSdk.game.gameplayStart()
                 return Promise.resolve()
             }
             case PLATFORM_MESSAGE.GAMEPLAY_STOPPED: {
-                this._platformSdk.gameplayStop()
+                this._platformSdk.game.gameplayStop()
                 return Promise.resolve()
             }
             case PLATFORM_MESSAGE.PLAYER_GOT_ACHIEVEMENT: {
-                this._platformSdk.happytime()
+                this._platformSdk.game.happytime()
                 return Promise.resolve()
             }
             default: {
@@ -147,25 +137,31 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
     // advertisement
     showBanner(options) {
         if (options && options.containerId && typeof options.containerId === 'string') {
-            this._platformSdk.requestResponsiveBanner([options.containerId])
+            this._platformSdk.banner.requestResponsiveBanner([options.containerId])
+                .then(() => {
+                    this._setBannerState(BANNER_STATE.SHOWN)
+                })
+                .catch(() => {
+                    this._setBannerState(BANNER_STATE.FAILED)
+                })
         } else {
             this._setBannerState(BANNER_STATE.FAILED)
         }
     }
 
     hideBanner() {
-        this._platformSdk.clearAllBanners()
+        this._platformSdk.banner.clearAllBanners()
         this._setBannerState(BANNER_STATE.HIDDEN)
     }
 
     showInterstitial() {
         this.#currentAdvertisementIsRewarded = false
-        this._platformSdk.requestAd('midgame')
+        this._platformSdk.ad.requestAd('midgame', this.#adCallbacks)
     }
 
     showRewarded() {
         this.#currentAdvertisementIsRewarded = true
-        this._platformSdk.requestAd('rewarded')
+        this._platformSdk.ad.requestAd('rewarded', this.#adCallbacks)
     }
 }
 
