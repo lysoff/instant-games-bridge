@@ -14,33 +14,6 @@ import {
 const SDK_URL = 'https://sdk.crazygames.com/crazygames-sdk-v3.js'
 
 class CrazyGamesPlatformBridge extends PlatformBridgeBase {
-    #adCallbacks = {
-        adStarted: () => {
-            if (this.#currentAdvertisementIsRewarded) {
-                this._setRewardedState(REWARDED_STATE.OPENED)
-            } else {
-                this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
-            }
-        },
-        adFinished: () => {
-            if (this.#currentAdvertisementIsRewarded) {
-                this._setRewardedState(REWARDED_STATE.REWARDED)
-                this._setRewardedState(REWARDED_STATE.CLOSED)
-            } else {
-                this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
-            }
-        },
-        adError: () => {
-            if (this.#currentAdvertisementIsRewarded) {
-                this._setRewardedState(REWARDED_STATE.FAILED)
-            } else {
-                this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
-            }
-        },
-    }
-
-    #isUserAccountAvailable = false
-
     // platform
     get platformId() {
         return PLATFORM_ID.CRAZY_GAMES
@@ -52,6 +25,11 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         }
 
         return super.platformLanguage
+    }
+
+    // player
+    get isPlayerAuthorizationSupported() {
+        return this.#isUserAccountAvailable
     }
 
     // device
@@ -78,6 +56,8 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
 
     #currentAdvertisementIsRewarded = false
 
+    #isUserAccountAvailable = false
+
     initialize() {
         if (this._isInitialized) {
             return Promise.resolve()
@@ -94,12 +74,46 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     this._defaultStorageType = STORAGE_TYPE.LOCAL_STORAGE
                     this._isBannerSupported = true
                     this._platformSdk.init().then(() => {
-                        this._isInitialized = true
                         this.#isUserAccountAvailable = this._platformSdk.user.isUserAccountAvailable
-                        this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                        const getPlayerInfoPromise = this.#getPlayer()
+
+                        Promise
+                            .all([getPlayerInfoPromise])
+                            .finally(() => {
+                                this._isInitialized = true
+                                this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
+                            })
                     })
                 })
             })
+        }
+
+        return promiseDecorator.promise
+    }
+
+    // player
+    authorizePlayer() {
+        if (!this.#isUserAccountAvailable) {
+            return Promise.reject()
+        }
+
+        if (this._isPlayerAuthorized) {
+            return Promise.resolve()
+        }
+
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
+            this._platformSdk.user.showAuthPrompt()
+                .then(() => {
+                    this.#getPlayer()
+                        .then(() => {
+                            this._resolvePromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)
+                        })
+                })
+                .catch((error) => {
+                    this._rejectPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER, error)
+                })
         }
 
         return promiseDecorator.promise
@@ -162,6 +176,59 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
     showRewarded() {
         this.#currentAdvertisementIsRewarded = true
         this._platformSdk.ad.requestAd('rewarded', this.#adCallbacks)
+    }
+
+    #adCallbacks = {
+        adStarted: () => {
+            if (this.#currentAdvertisementIsRewarded) {
+                this._setRewardedState(REWARDED_STATE.OPENED)
+            } else {
+                this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+            }
+        },
+        adFinished: () => {
+            if (this.#currentAdvertisementIsRewarded) {
+                this._setRewardedState(REWARDED_STATE.REWARDED)
+                this._setRewardedState(REWARDED_STATE.CLOSED)
+            } else {
+                this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+            }
+        },
+        adError: () => {
+            if (this.#currentAdvertisementIsRewarded) {
+                this._setRewardedState(REWARDED_STATE.FAILED)
+            } else {
+                this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+            }
+        },
+    }
+
+    #getPlayer() {
+        if (!this.#isUserAccountAvailable) {
+            return Promise.reject()
+        }
+
+        return new Promise((resolve) => {
+            this._platformSdk.user.getUser()
+                .then((player) => {
+                    this._isPlayerAuthorized = player !== null
+
+                    this._defaultStorageType = this._isPlayerAuthorized
+                        ? STORAGE_TYPE.PLATFORM_INTERNAL
+                        : STORAGE_TYPE.LOCAL_STORAGE
+
+                    if (this._isPlayerAuthorized && player.username) {
+                        this._playerName = player.username
+                    }
+
+                    if (this._isPlayerAuthorized && player.profilePictureUrl) {
+                        this._playerPhotos = [player.profilePictureUrl]
+                    }
+                })
+                .finally(() => {
+                    resolve()
+                })
+        })
     }
 }
 
