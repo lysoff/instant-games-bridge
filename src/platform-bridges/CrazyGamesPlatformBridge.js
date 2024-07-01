@@ -148,6 +148,121 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         }
     }
 
+    // storage
+    isStorageSupported(storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return true
+        }
+
+        return super.isStorageSupported(storageType)
+    }
+
+    isStorageAvailable(storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return true
+        }
+
+        return super.isStorageAvailable(storageType)
+    }
+
+    getDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            return new Promise((resolve, reject) => {
+                if (Array.isArray(key)) {
+                    const values = [];
+                    key.forEach((k) => {
+                        let value = this._platformSdk.data.getItem(k)
+                        if (!value) {
+                            reject()
+                        }
+                        try {
+                            value = JSON.parse(value)
+                        } catch (e) {
+                            // keep value string
+                        }
+                        values.push(value)
+                    })
+
+                    resolve(values)
+                }
+
+                let value = this._platformSdk.data.getItem(key)
+                if (!value) {
+                    reject()
+                }
+                try {
+                    value = JSON.parse(value)
+                } catch (e) {
+                    // keep value string
+                }
+                resolve(value)
+            })
+        }
+
+        return super.getDataFromStorage(key, storageType)
+    }
+
+    setDataToStorage(key, value, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            if (Array.isArray(key)) {
+                const promises = []
+
+                for (let i = 0; i < key.length; i++) {
+                    let valueData = value[i]
+
+                    if (typeof value[i] !== 'string') {
+                        valueData = JSON.stringify(value[i])
+                    }
+
+                    promises.push(this._platformSdk.data.setItem(key[i], valueData))
+                }
+
+                return Promise.all(promises)
+            }
+
+            let valueData = value;
+
+            if (typeof value !== 'string') {
+                valueData = JSON.stringify(value)
+            }
+
+            return new Promise((resolve, reject) => {
+                this._platformSdk.data
+                    .setItem(key, valueData)
+                    .then(() => {
+                        resolve()
+                    })
+                    .catch((error) => {
+                        if (error && error.error_data && error.error_data.error_reason) {
+                            reject(error.error_data.error_reason)
+                        } else {
+                            reject()
+                        }
+                    })
+            })
+        }
+
+        return super.setDataToStorage(key, value, storageType)
+    }
+
+    deleteDataFromStorage(key, storageType) {
+        if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
+            if (Array.isArray(key)) {
+                const promises = []
+
+                for (let i = 0; i < key.length; i++) {
+                    promises.push(this._platformSdk.data.removeItem(key[i]))
+                }
+
+                return Promise.all(promises)
+            }
+
+            this._platformSdk.data.removeItem(key)
+        }
+
+        return super.deleteDataFromStorage(key, storageType)
+    }
+
     // advertisement
     showBanner(options) {
         if (options && options.containerId && typeof options.containerId === 'string') {
