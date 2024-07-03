@@ -234,11 +234,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                         resolve()
                     })
                     .catch((error) => {
-                        if (error && error.error_data && error.error_data.error_reason) {
-                            reject(error.error_data.error_reason)
-                        } else {
-                            reject()
-                        }
+                        reject(error)
                     })
             })
         }
