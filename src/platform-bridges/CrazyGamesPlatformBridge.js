@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode'
 import PlatformBridgeBase from './PlatformBridgeBase'
 import { addJavaScript, waitFor } from '../common/utils'
 import {
@@ -169,7 +170,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (Array.isArray(key)) {
-                    const values = [];
+                    const values = []
                     key.forEach((k) => {
                         let value = this._platformSdk.data.getItem(k)
                         if (!value) {
@@ -220,7 +221,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                 return Promise.all(promises)
             }
 
-            let valueData = value;
+            let valueData = value
 
             if (typeof value !== 'string') {
                 valueData = JSON.stringify(value)
@@ -323,14 +324,19 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
             return Promise.reject()
         }
 
-        return new Promise((resolve) => {
-            this._platformSdk.user.getUser()
-                .then((player) => {
-                    this._isPlayerAuthorized = player !== null
+        return new Promise((resolve, reject) => {
+            this._platformSdk.user.getUserToken()
+                .then((token) => {
+                    const player = jwtDecode(token)
+                    this._isPlayerAuthorized = true
 
                     this._defaultStorageType = this._isPlayerAuthorized
                         ? STORAGE_TYPE.PLATFORM_INTERNAL
                         : STORAGE_TYPE.LOCAL_STORAGE
+
+                    if (this._isPlayerAuthorized && player.userId) {
+                        this._playerId = player.userId
+                    }
 
                     if (this._isPlayerAuthorized && player.username) {
                         this._playerName = player.username
@@ -339,9 +345,10 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     if (this._isPlayerAuthorized && player.profilePictureUrl) {
                         this._playerPhotos = [player.profilePictureUrl]
                     }
-                })
-                .finally(() => {
                     resolve()
+                })
+                .catch((error) => {
+                    reject(error)
                 })
         })
     }

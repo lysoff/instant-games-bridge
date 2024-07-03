@@ -18,7 +18,8 @@
     },
     "homepage": "https://github.com/instant-games-bridge/instant-games-bridge",
     "dependencies": {
-        "event-lite": "^0.1.2"
+        "event-lite": "^0.1.2",
+        "jwt-decode": "^4.0.0"
     },
     "devDependencies": {
         "@babel/core": "^7.17.8",
