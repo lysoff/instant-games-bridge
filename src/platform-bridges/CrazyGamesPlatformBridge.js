@@ -168,18 +168,16 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
 
     getDataFromStorage(key, storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 if (Array.isArray(key)) {
                     const values = []
                     key.forEach((k) => {
                         let value = this._platformSdk.data.getItem(k)
-                        if (!value) {
-                            reject()
-                        }
+
                         try {
                             value = JSON.parse(value)
                         } catch (e) {
-                            // keep value string
+                            // keep value string or null
                         }
                         values.push(value)
                     })
@@ -188,13 +186,11 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                 }
 
                 let value = this._platformSdk.data.getItem(key)
-                if (!value) {
-                    reject()
-                }
+
                 try {
                     value = JSON.parse(value)
                 } catch (e) {
-                    // keep value string
+                    // keep value string or null
                 }
                 resolve(value)
             })
@@ -245,16 +241,12 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
     deleteDataFromStorage(key, storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             if (Array.isArray(key)) {
-                const promises = []
-
-                for (let i = 0; i < key.length; i++) {
-                    promises.push(this._platformSdk.data.removeItem(key[i]))
-                }
-
-                return Promise.all(promises)
+                key.forEach((k) => this._platformSdk.data.removeItem(k))
+                return Promise.resolve()
             }
 
             this._platformSdk.data.removeItem(key)
+            return Promise.resolve()
         }
 
         return super.deleteDataFromStorage(key, storageType)
@@ -326,19 +318,17 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     const player = jwtDecode(token)
                     this._isPlayerAuthorized = true
 
-                    this._defaultStorageType = this._isPlayerAuthorized
-                        ? STORAGE_TYPE.PLATFORM_INTERNAL
-                        : STORAGE_TYPE.LOCAL_STORAGE
+                    this._defaultStorageType = STORAGE_TYPE.PLATFORM_INTERNAL
 
-                    if (this._isPlayerAuthorized && player.userId) {
+                    if (player.userId) {
                         this._playerId = player.userId
                     }
 
-                    if (this._isPlayerAuthorized && player.username) {
+                    if (player.username) {
                         this._playerName = player.username
                     }
 
-                    if (this._isPlayerAuthorized && player.profilePictureUrl) {
+                    if (player.profilePictureUrl) {
                         this._playerPhotos = [player.profilePictureUrl]
                     }
                     resolve()
