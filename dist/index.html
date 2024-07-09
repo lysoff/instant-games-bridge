@@ -60,6 +60,12 @@
             <p>Language: <span id="platform-language-text"></span></p>
             <p>Payload: <span id="platform-payload-text"></span></p>
             <p>TLD: <span id="platform-tld-text"></span></p>
+            <hr>
+            <p>Send Message Status: <span id="platform-send-message-status"></span></p>
+            <input type="text" id="platform-send-message-input" placeholder="Message" />
+            <button id="platform-send-message-button">
+                Send Message
+            </button>
         </div>
 
         <div class="section" id="device-section" style="display: none">
@@ -257,6 +263,9 @@
         const platformLanguageText = document.getElementById('platform-language-text')
         const platformPayloadText = document.getElementById('platform-payload-text')
         const platformTldText = document.getElementById('platform-tld-text')
+        const platformSendMessageStatus = document.getElementById('platform-send-message-status')
+        const platformMessageInput = document.getElementById('platform-send-message-input')
+        const platformMessageButton = document.getElementById('platform-send-message-button')
 
         const deviceTypeText = document.getElementById('device-type-text')
 
@@ -448,6 +457,18 @@
                 remoteConfigSection.style.display = 'block'
                 clipboardSection.style.display = 'block'
             })
+
+        platformMessageButton.addEventListener('click', () => {
+            bridge
+                .platform
+                .sendMessage(platformMessageInput.value)
+                .then(() => {
+                    platformSendMessageStatus.innerText = 'Success'
+                })
+                .catch((error) => {
+                    platformSendMessageStatus.innerText = 'Failed: ' + error;
+                })
+        })
 
         authorizePlayerButton.addEventListener('click', () => {
             bridge
