@@ -16,10 +16,11 @@ One SDK for cross-platform publishing HTML5 games.
 + Other [Work In Progress]
 
 ## Plugins for game engines
-+ [Construct 3](https://github.com/mewtongames/instant-games-bridge-construct)
-+ [Unity](https://github.com/mewtongames/instant-games-bridge-unity)
-+ [Godot](https://github.com/mewtongames/instant-games-bridge-godot)
-+ [Defold](https://github.com/mewtongames/instant-games-bridge-defold)
++ [JS](https://github.com/instant-games-bridge/instant-games-bridge)
++ [Construct 3](https://github.com/instant-games-bridge/instant-games-bridge-construct)
++ [Unity](https://github.com/instant-games-bridge/instant-games-bridge-unity)
++ [Godot](https://github.com/instant-games-bridge/instant-games-bridge-godot)
++ [Defold](https://github.com/instant-games-bridge/instant-games-bridge-defold)
 
 ## Useful links
 + [Documentation](https://developer.playgama.com/sdk) [ENG]
