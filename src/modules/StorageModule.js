@@ -1,8 +1,6 @@
 import ModuleBase from './ModuleBase'
 
 class StorageModule extends ModuleBase {
-    #cachedData = []
-
     get defaultType() {
         return this._platformBridge.defaultStorageType
     }
@@ -42,19 +40,11 @@ class StorageModule extends ModuleBase {
             storageType = this.defaultType
         }
 
-        const cachedData = this.#cachedData[storageType]
-        if (cachedData) {
-            if (typeof cachedData[key] !== 'undefined') {
-                return Promise.resolve(cachedData[key])
-            }
+        if (!this._platformBridge.isStorageAvailable(storageType)) {
+            return Promise.reject()
         }
 
-        return this._platformBridge
-            .getDataFromStorage(key, storageType)
-            .then((data) => {
-                this._addToCache(storageType, key, data)
-                return data
-            })
+        return this._platformBridge.getDataFromStorage(key, storageType)
     }
 
     set(key, value, options) {
@@ -70,9 +60,11 @@ class StorageModule extends ModuleBase {
             storageType = this.defaultType
         }
 
-        return this._platformBridge
-            .setDataToStorage(key, value, storageType)
-            .then(() => this._addToCache(storageType, key, value))
+        if (!this._platformBridge.isStorageAvailable(storageType)) {
+            return Promise.reject()
+        }
+
+        return this._platformBridge.setDataToStorage(key, value, storageType)
     }
 
     delete(key, options) {
@@ -88,37 +80,11 @@ class StorageModule extends ModuleBase {
             storageType = this.defaultType
         }
 
-        return this._platformBridge
-            .deleteDataFromStorage(key, storageType)
-            .then(() => this._deleteFromCache(storageType, key))
-    }
-
-    _addToCache(storageType, key, data) {
-        if (!this.#cachedData[storageType]) {
-            this.#cachedData[storageType] = []
+        if (!this._platformBridge.isStorageAvailable(storageType)) {
+            return Promise.reject()
         }
 
-        if (Array.isArray(key)) {
-            for (let i = 0; i < key.length; i++) {
-                this.#cachedData[storageType][key[i]] = data[key[i]]
-            }
-        } else {
-            this.#cachedData[storageType][key] = data
-        }
-    }
-
-    _deleteFromCache(storageType, key) {
-        if (!this.#cachedData[storageType]) {
-            return
-        }
-
-        if (Array.isArray(key)) {
-            for (let i = 0; i < key.length; i++) {
-                delete this.#cachedData[storageType][key[i]]
-            }
-        } else {
-            delete this.#cachedData[storageType][key]
-        }
+        return this._platformBridge.deleteDataFromStorage(key, storageType)
     }
 }
 

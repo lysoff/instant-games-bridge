@@ -25,7 +25,6 @@ import RemoteConfigModule from './modules/RemoteConfigModule'
 import ClipboardModule from './modules/ClipboardModule'
 
 import PlatformBridgeBase from './platform-bridges/PlatformBridgeBase'
-
 import VkPlatformBridge from './platform-bridges/VkPlatformBridge'
 import YandexPlatformBridge from './platform-bridges/YandexPlatformBridge'
 import CrazyGamesPlatformBridge from './platform-bridges/CrazyGamesPlatformBridge'
@@ -34,6 +33,7 @@ import GameDistributionPlatformBridge from './platform-bridges/GameDistributionP
 import VkPlayPlatformBridge from './platform-bridges/VkPlayPlatformBridge'
 import OkPlatformBridge from './platform-bridges/OkPlatformBridge'
 import PlaygamaPlatformBridge from './platform-bridges/PlaygamaPlatformBridge'
+import WortalPlatformBridge from './platform-bridges/WortalPlatformBridge'
 
 class InstantGamesBridge {
     get version() {
@@ -177,92 +177,20 @@ class InstantGamesBridge {
         let platformId = PLATFORM_ID.MOCK
 
         if (this._options && this._options.forciblySetPlatformId) {
-            switch (this._options.forciblySetPlatformId) {
-                case PLATFORM_ID.VK: {
-                    platformId = PLATFORM_ID.VK
-                    break
-                }
-                case PLATFORM_ID.VK_PLAY: {
-                    platformId = PLATFORM_ID.VK_PLAY
-                    break
-                }
-                case PLATFORM_ID.YANDEX: {
-                    platformId = PLATFORM_ID.YANDEX
-                    break
-                }
-                case PLATFORM_ID.CRAZY_GAMES: {
-                    platformId = PLATFORM_ID.CRAZY_GAMES
-                    break
-                }
-                case PLATFORM_ID.ABSOLUTE_GAMES: {
-                    platformId = PLATFORM_ID.ABSOLUTE_GAMES
-                    break
-                }
-                case PLATFORM_ID.GAME_DISTRIBUTION: {
-                    platformId = PLATFORM_ID.GAME_DISTRIBUTION
-                    break
-                }
-                case PLATFORM_ID.OK: {
-                    platformId = PLATFORM_ID.OK
-                    break
-                }
-                case PLATFORM_ID.PLAYGAMA: {
-                    platformId = PLATFORM_ID.PLAYGAMA
-                    break
-                }
-                default: {
-                    platformId = PLATFORM_ID.MOCK
-                    break
-                }
-            }
+            platformId = this.#getPlatformId(this._options.forciblySetPlatformId.toLowerCase())
         } else {
             const url = new URL(window.location.href)
             const yandexUrl = ['y', 'a', 'n', 'd', 'e', 'x', '.', 'n', 'e', 't'].join('')
             if (url.searchParams.has('platform_id')) {
-                switch (url.searchParams.get('platform_id')) {
-                    case PLATFORM_ID.VK: {
-                        platformId = PLATFORM_ID.VK
-                        break
-                    }
-                    case PLATFORM_ID.VK_PLAY: {
-                        platformId = PLATFORM_ID.VK_PLAY
-                        break
-                    }
-                    case PLATFORM_ID.YANDEX: {
-                        platformId = PLATFORM_ID.YANDEX
-                        break
-                    }
-                    case PLATFORM_ID.CRAZY_GAMES: {
-                        platformId = PLATFORM_ID.CRAZY_GAMES
-                        break
-                    }
-                    case PLATFORM_ID.ABSOLUTE_GAMES: {
-                        platformId = PLATFORM_ID.ABSOLUTE_GAMES
-                        break
-                    }
-                    case PLATFORM_ID.GAME_DISTRIBUTION: {
-                        platformId = PLATFORM_ID.GAME_DISTRIBUTION
-                        break
-                    }
-                    case PLATFORM_ID.OK: {
-                        platformId = PLATFORM_ID.OK
-                        break
-                    }
-                    case PLATFORM_ID.PLAYGAMA: {
-                        platformId = PLATFORM_ID.PLAYGAMA
-                        break
-                    }
-                    default: {
-                        platformId = PLATFORM_ID.MOCK
-                        break
-                    }
-                }
+                platformId = this.#getPlatformId(url.searchParams.get('platform_id').toLowerCase())
             } else if (url.hostname.includes(yandexUrl) || url.hash.includes('yandex')) {
                 platformId = PLATFORM_ID.YANDEX
             } else if (url.hostname.includes('crazygames.') || url.hostname.includes('1001juegos.com')) {
                 platformId = PLATFORM_ID.CRAZY_GAMES
             } else if (url.hostname.includes('gamedistribution.com')) {
                 platformId = PLATFORM_ID.GAME_DISTRIBUTION
+            } else if (url.hostname.includes('wortal.ai')) {
+                platformId = PLATFORM_ID.WORTAL
             } else if (url.searchParams.has('api_id') && url.searchParams.has('viewer_id') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('app_id') && url.searchParams.has('player_id') && url.searchParams.has('game_sid') && url.searchParams.has('auth_key')) {
@@ -319,11 +247,28 @@ class InstantGamesBridge {
                 )
                 break
             }
+            case PLATFORM_ID.WORTAL: {
+                this.#platformBridge = new WortalPlatformBridge(
+                    this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.WORTAL],
+                )
+                break
+            }
             default: {
                 this.#platformBridge = new PlatformBridgeBase()
                 break
             }
         }
+    }
+
+    #getPlatformId(value) {
+        const platformIds = Object.values(PLATFORM_ID)
+        for (let i = 0; i < platformIds.length; i++) {
+            if (value === platformIds[i]) {
+                return value
+            }
+        }
+
+        return PLATFORM_ID.MOCK
     }
 
     #getModule(id) {

@@ -1,6 +1,7 @@
 {
     "extends": [
-        "airbnb"
+        "airbnb",
+        "plugin:import/typescript"
     ],
     "globals": {
         "PLUGIN_VERSION": true,
