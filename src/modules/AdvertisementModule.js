@@ -26,6 +26,10 @@ class AdvertisementModule extends ModuleBase {
         return this.#minimumDelayBetweenInterstitial
     }
 
+    get isAdBlockDetected() {
+        return this._platformBridge.isAdBlockDetected
+    }
+
     #interstitialTimer
 
     #minimumDelayBetweenInterstitial = 60

@@ -60,6 +60,8 @@ class OkPlatformBridge extends PlatformBridgeBase {
 
     _platformBannerOptions = {}
 
+    _hasPlatformAdBlockDetect = true
+
     initialize() {
         if (this._isInitialized) {
             return Promise.resolve()
@@ -85,6 +87,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
                                     params.apiconnection,
                                     () => {
                                         const savedState = this._platformSdk?.saved_state
+                                        this._platformSdk.invokeUIMethod('isAdBlockEnabled')
                                         this._isPlayerAuthorized = savedState ? savedState === AUTH_STATE : true
                                         if (this._isPlayerAuthorized) {
                                             this._platformSdk.Client.call(this.#fields.userProfile, this.#callbacks.userProfileCallback)
@@ -401,6 +404,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             joinGroup: (result, data) => this.#onJoinGroupRequested(result, data),
             showLoginSuggestion: (result, data) => this.#onLoginCompleted(result, data),
             postMediatopic: (result, data) => this.#onPostCreatedCompleted(result, data),
+            isAdBlockEnabled: (result, data) => this.#onIsAdBlockEnabled(result, data),
         }
     }
 
@@ -566,6 +570,12 @@ class OkPlatformBridge extends PlatformBridgeBase {
             this._rejectPromiseDecorator(ACTION_NAME.CREATE_POST, data)
         } else {
             this._resolvePromiseDecorator(ACTION_NAME.CREATE_POST)
+        }
+    }
+
+    #onIsAdBlockEnabled(result, data) {
+        if (result === 'ok' && data === 'true') {
+            this._isAdBlockDetected = true
         }
     }
 }

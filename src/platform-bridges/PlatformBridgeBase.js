@@ -88,6 +88,10 @@ class PlatformBridgeBase {
         return this._rewardedState
     }
 
+    get isAdBlockDetected() {
+        return this._isAdBlockDetected
+    }
+
     // social
     get isInviteFriendsSupported() {
         return false
@@ -205,11 +209,19 @@ class PlatformBridgeBase {
 
     _bannerState = null
 
+    _isAdBlockDetected = false
+
+    _hasPlatformAdBlockDetect = false
+
     #promiseDecorators = { }
 
     constructor(options) {
         try { this._localStorage = window.localStorage } catch (e) {
             // Nothing we can do with it
+        }
+
+        if (!this._hasPlatformAdBlockDetect) {
+            this._getIsAdBlockDetected()
         }
 
         this._visibilityState = document.visibilityState === 'visible' ? VISIBILITY_STATE.VISIBLE : VISIBILITY_STATE.HIDDEN
@@ -485,6 +497,23 @@ class PlatformBridgeBase {
 
         this._bannerState = state
         this.emit(EVENT_NAME.BANNER_STATE_CHANGED, this._bannerState)
+    }
+
+    _getIsAdBlockDetected() {
+        const fakeAd = document.createElement('div')
+        fakeAd.className = 'textads banner-ads banner_ads ad-unit ad-zone ad-space adsbox'
+        fakeAd.style.position = 'absolute'
+        fakeAd.style.left = '-9999px'
+        fakeAd.style.width = '1px'
+        fakeAd.style.height = '1px'
+        document.body.appendChild(fakeAd)
+
+        window.setTimeout(() => {
+            if (fakeAd.offsetHeight === 0 || window.getComputedStyle(fakeAd)?.display === 'none') {
+                this._isAdBlockDetected = true
+            }
+            fakeAd.remove()
+        }, 100)
     }
 
     _createPromiseDecorator(actionName) {
