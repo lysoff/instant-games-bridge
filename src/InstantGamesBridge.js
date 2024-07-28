@@ -33,6 +33,7 @@ import GameDistributionPlatformBridge from './platform-bridges/GameDistributionP
 import VkPlayPlatformBridge from './platform-bridges/VkPlayPlatformBridge'
 import OkPlatformBridge from './platform-bridges/OkPlatformBridge'
 import PlaygamaPlatformBridge from './platform-bridges/PlaygamaPlatformBridge'
+import PlayDeckPlatformBridge from './platform-bridges/PlayDeckPlatformBridge'
 import WortalPlatformBridge from './platform-bridges/WortalPlatformBridge'
 
 class InstantGamesBridge {
@@ -195,6 +196,8 @@ class InstantGamesBridge {
                 platformId = PLATFORM_ID.VK
             } else if (url.searchParams.has('app_id') && url.searchParams.has('player_id') && url.searchParams.has('game_sid') && url.searchParams.has('auth_key')) {
                 platformId = PLATFORM_ID.ABSOLUTE_GAMES
+            } else if (url.searchParams.has('playdeck')) {
+                platformId = PLATFORM_ID.PLAYDECK
             }
         }
 
@@ -250,6 +253,12 @@ class InstantGamesBridge {
             case PLATFORM_ID.WORTAL: {
                 this.#platformBridge = new WortalPlatformBridge(
                     this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.WORTAL],
+                )
+                break
+            }
+            case PLATFORM_ID.PLAYDECK: {
+                this.#platformBridge = new PlayDeckPlatformBridge(
+                    this._options && this._options.platforms && this._options.platforms[PLATFORM_ID.PLAYDECK],
                 )
                 break
             }

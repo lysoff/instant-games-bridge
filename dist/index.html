@@ -209,6 +209,7 @@
             <input type="text" id="payments-id-input" placeholder="Yandex ID">
             <button id="payments-purchase-button">Purchase</button>
             <br>
+            <p>Purchase Status: <span id="payments-purchase-status"></span></p>
             <br>
             <input type="text" id="payments-token-input" placeholder="Yandex Token">
             <button id="payments-consume-button">Consume</button>
@@ -234,9 +235,24 @@
     <script src="./eruda.js"></script>
     <script>eruda.init()</script>
 
-    <script src="./instant-games-bridge.js"></script>
+    <!-- <script src="./instant-games-bridge.js"></script> -->
+     <!-- added dynamic script to avoid CDN caching-->
     <script>
-        const optionsSection = document.getElementById('options-section')
+        function addDynamicScript() {
+            const scriptElement = document.createElement('script');
+            const timestamp = Date.now();
+            scriptElement.src = `./instant-games-bridge.js?r=${timestamp}`;
+            document.body.appendChild(scriptElement);
+
+            scriptElement.onload = function() {
+                // Code to run after the script has loaded
+                console.log('Script loaded');
+                runAfterScriptLoad();
+            };
+        }
+
+        function runAfterScriptLoad() {
+            const optionsSection = document.getElementById('options-section')
         const platformSection = document.getElementById('platform-section')
         const deviceSection = document.getElementById('device-section')
         const playerSection = document.getElementById('player-section')
@@ -344,6 +360,7 @@
         const paymentCatalogContainer = document.getElementById('payments-catalog-container')
         const paymentsPurchaseButton = document.getElementById('payments-purchase-button')
         const paymentsConsumeButton = document.getElementById('payments-consume-button')
+        const purchaseStatusContainer = document.getElementById('payments-purchase-status')
 
         const remoteConfigIsSupportedText = document.getElementById('remote-config-is-supported-text')
         const remoteConfigButton = document.getElementById('get-remote-config-button')
@@ -683,9 +700,21 @@
                         'item_id': '776',                // идентификатор заказа товара
                         'additional_param': 1            // дополнительный параметр
                     }
+                },
+                'playdeck': {
+                    "amount": 1,
+                    "description": "your description",
+                    "externalId": "unique order",
+                    "photoUrl": "optional field"
                 }
             })
-                .catch((error) => console.log(error))
+            .then(result => {
+                    purchaseStatusContainer.innerText = result.status
+                })
+                .catch((error) => {
+                    purchaseStatusContainer.innerText = error.status
+                    console.log(error)
+                })
         })
 
         paymentsConsumeButton.addEventListener('click', () => {
@@ -714,6 +743,9 @@
                 .then(() => console.log('success'))
                 .catch((error) => console.log(error))
         })
+        }
+
+        addDynamicScript();
     </script>
 </body>
 
