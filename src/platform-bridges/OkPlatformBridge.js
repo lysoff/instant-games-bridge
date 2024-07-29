@@ -60,8 +60,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
 
     _platformBannerOptions = {}
 
-    _hasPlatformAdBlockDetect = true
-
     initialize() {
         if (this._isInitialized) {
             return Promise.resolve()
@@ -87,7 +85,6 @@ class OkPlatformBridge extends PlatformBridgeBase {
                                     params.apiconnection,
                                     () => {
                                         const savedState = this._platformSdk?.saved_state
-                                        this._platformSdk.invokeUIMethod('isAdBlockEnabled')
                                         this._isPlayerAuthorized = savedState ? savedState === AUTH_STATE : true
                                         if (this._isPlayerAuthorized) {
                                             this._platformSdk.Client.call(this.#fields.userProfile, this.#callbacks.userProfileCallback)
@@ -309,6 +306,16 @@ class OkPlatformBridge extends PlatformBridgeBase {
 
     hideBanner() {
         this._platformSdk.invokeUIMethod('hideBannerAds')
+    }
+
+    isAdBlockDetected() {
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)
+            this._platformSdk.invokeUIMethod('isAdBlockEnabled')
+        }
+
+        return promiseDecorator.promise
     }
 
     inviteFriends(options) {
@@ -574,8 +581,10 @@ class OkPlatformBridge extends PlatformBridgeBase {
     }
 
     #onIsAdBlockEnabled(result, data) {
-        if (result === 'ok' && data === 'true') {
-            this._isAdBlockDetected = true
+        if (result === 'ok') {
+            this._resolvePromiseDecorator(ACTION_NAME.ADBLOCK_DETECT, data === 'true')
+        } else {
+            this._rejectPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)
         }
     }
 }

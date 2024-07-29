@@ -55,8 +55,6 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
-    _hasPlatformAdBlockDetect = true
-
     #currentAdvertisementIsRewarded = false
 
     #isUserAccountAvailable = false
@@ -79,7 +77,6 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     this._platformSdk.init().then(() => {
                         this.#isUserAccountAvailable = this._platformSdk.user.isUserAccountAvailable
                         const getPlayerInfoPromise = this.#getPlayer()
-                        this.#getIsAdBlockDetected()
 
                         Promise
                             .all([getPlayerInfoPromise])
@@ -285,6 +282,14 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         this._platformSdk.ad.requestAd('rewarded', this.#adCallbacks)
     }
 
+    isAdBlockDetected() {
+        return new Promise((resolve) => {
+            this._platformSdk.ad.hasAdblock().then((res) => {
+                resolve(res)
+            })
+        })
+    }
+
     #adCallbacks = {
         adStarted: () => {
             if (this.#currentAdvertisementIsRewarded) {
@@ -339,12 +344,6 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                 .catch((error) => {
                     reject(error)
                 })
-        })
-    }
-
-    #getIsAdBlockDetected() {
-        this._platformSdk.ad.hasAdblock().then((res) => {
-            this._isAdBlockDetected = res
         })
     }
 }

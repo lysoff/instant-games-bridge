@@ -26,10 +26,6 @@ class AdvertisementModule extends ModuleBase {
         return this.#minimumDelayBetweenInterstitial
     }
 
-    get isAdBlockDetected() {
-        return this._platformBridge.isAdBlockDetected
-    }
-
     #interstitialTimer
 
     #minimumDelayBetweenInterstitial = 60
@@ -175,6 +171,10 @@ class AdvertisementModule extends ModuleBase {
 
         this._platformBridge._setRewardedState(REWARDED_STATE.LOADING)
         this._platformBridge.showRewarded(options)
+    }
+
+    isAdBlockDetected() {
+        return this._platformBridge.isAdBlockDetected()
     }
 
     #startInterstitialTimer() {
