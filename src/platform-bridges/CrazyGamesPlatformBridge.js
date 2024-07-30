@@ -282,6 +282,14 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         this._platformSdk.ad.requestAd('rewarded', this.#adCallbacks)
     }
 
+    isAdBlockDetected() {
+        return new Promise((resolve) => {
+            this._platformSdk.ad.hasAdblock().then((res) => {
+                resolve(res)
+            })
+        })
+    }
+
     #adCallbacks = {
         adStarted: () => {
             if (this.#currentAdvertisementIsRewarded) {
