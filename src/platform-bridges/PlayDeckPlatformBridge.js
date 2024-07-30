@@ -3,6 +3,7 @@ import {
     ACTION_NAME,
     PLATFORM_ID,
     PLATFORM_MESSAGE,
+    INTERSTITIAL_STATE,
     REWARDED_STATE,
     STORAGE_TYPE,
 } from '../constants'
@@ -54,7 +55,9 @@ class PlayDeckPlatformBridge extends PlatformBridgeBase {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.INITIALIZE)
 
             const getUserProfileHandler = ({ data }) => {
-                if (!data || !data.playdeck) return
+                if (!data || !data.playdeck) {
+                    return
+                }
 
                 const pdData = data.playdeck
 
@@ -100,35 +103,71 @@ class PlayDeckPlatformBridge extends PlatformBridgeBase {
     }
 
     // advertisement
-    showRewarded() {
+    showInterstitial() {
         const showAdHandler = ({ data }) => {
             const playdeck = data?.playdeck
-            if (!playdeck) return
+            if (!playdeck) {
+                return
+            }
 
             // ¯\_(ツ)_/¯ https://github.com/ton-play/playdeck-integration-guide/wiki/7.-Advertising-Monetization
             // Ad events can be changed anytime but we are guarantee that rewardedAd and errAd events will always exists.
-            if (playdeck.method === 'rewardedAd') {
-                this._setRewardedState(REWARDED_STATE.REWARDED)
-                window.removeEventListener('message', showAdHandler)
-            }
-            if (playdeck.method === 'errAd') {
-                this._setRewardedState(REWARDED_STATE.FAILED)
-                window.removeEventListener('message', showAdHandler)
-            }
-            if (playdeck.method === 'skipAd') {
-                this._setRewardedState(REWARDED_STATE.CLOSED)
-                window.removeEventListener('message', showAdHandler)
-            }
-            if (playdeck.method === 'notFoundAd') {
-                this._setRewardedState(REWARDED_STATE.FAILED)
-                window.removeEventListener('message', showAdHandler)
-            }
-            if (playdeck.method === 'startAd') {
-                this._setRewardedState(REWARDED_STATE.OPENED)
+            switch (playdeck.method) {
+                case 'startAd':
+                    this._setInterstitialState(INTERSTITIAL_STATE.OPENED)
+                    break
+                case 'rewardedAd':
+                case 'skipAd':
+                    this._setInterstitialState(INTERSTITIAL_STATE.CLOSED)
+                    window.removeEventListener('message', showAdHandler)
+                    break
+                case 'errAd':
+                case 'notFoundAd':
+                    this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+                    window.removeEventListener('message', showAdHandler)
+                    break
+                default:
+                    break
             }
         }
 
-        window.addEventListener('message', showAdHandler);
+        window.addEventListener('message', showAdHandler)
+        window.parent.postMessage({ playdeck: { method: 'showAd' } }, '*')
+    }
+
+    showRewarded() {
+        const showAdHandler = ({ data }) => {
+            const playdeck = data?.playdeck
+            if (!playdeck) {
+                return
+            }
+
+            // ¯\_(ツ)_/¯ https://github.com/ton-play/playdeck-integration-guide/wiki/7.-Advertising-Monetization
+            // Ad events can be changed anytime but we are guarantee that rewardedAd and errAd events will always exists.
+            switch (playdeck.method) {
+                case 'startAd':
+                    this._setRewardedState(REWARDED_STATE.OPENED)
+                    break
+                case 'rewardedAd':
+                    this._setRewardedState(REWARDED_STATE.REWARDED)
+                    this._setRewardedState(REWARDED_STATE.CLOSED)
+                    window.removeEventListener('message', showAdHandler)
+                    break
+                case 'skipAd':
+                    this._setRewardedState(REWARDED_STATE.CLOSED)
+                    window.removeEventListener('message', showAdHandler)
+                    break
+                case 'errAd':
+                case 'notFoundAd':
+                    this._setRewardedState(REWARDED_STATE.FAILED)
+                    window.removeEventListener('message', showAdHandler)
+                    break
+                default:
+                    break
+            }
+        }
+
+        window.addEventListener('message', showAdHandler)
         window.parent.postMessage({ playdeck: { method: 'showAd' } }, '*')
     }
 

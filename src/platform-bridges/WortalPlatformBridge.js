@@ -172,6 +172,12 @@ class WortalPlatformBridge extends PlatformBridgeBase {
         )
     }
 
+    isAdBlockDetected() {
+        return new Promise((resolve) => {
+            resolve(this._platformSdk.ads.isAdBlocked())
+        })
+    }
+
     // storage
     isStorageSupported(storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
