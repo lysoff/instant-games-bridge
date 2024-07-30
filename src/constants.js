@@ -101,6 +101,7 @@ export const ACTION_NAME = {
     GET_STORAGE_DATA: 'get_storage_data',
     SHOW_LEADERBOARD_NATIVE_POPUP: 'show_leaderboard_native_popup',
     CLIPBOARD_WRITE: 'clipboard_write',
+    ADBLOCK_DETECT: 'adblock_detect',
 }
 
 export const ERROR = {

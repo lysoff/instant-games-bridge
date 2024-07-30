@@ -308,6 +308,16 @@ class OkPlatformBridge extends PlatformBridgeBase {
         this._platformSdk.invokeUIMethod('hideBannerAds')
     }
 
+    isAdBlockDetected() {
+        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)
+        if (!promiseDecorator) {
+            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)
+            this._platformSdk.invokeUIMethod('isAdBlockEnabled')
+        }
+
+        return promiseDecorator.promise
+    }
+
     inviteFriends(options) {
         const { text } = options || {}
 
@@ -401,6 +411,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             joinGroup: (result, data) => this.#onJoinGroupRequested(result, data),
             showLoginSuggestion: (result, data) => this.#onLoginCompleted(result, data),
             postMediatopic: (result, data) => this.#onPostCreatedCompleted(result, data),
+            isAdBlockEnabled: (result, data) => this.#onIsAdBlockEnabled(result, data),
         }
     }
 
@@ -566,6 +577,14 @@ class OkPlatformBridge extends PlatformBridgeBase {
             this._rejectPromiseDecorator(ACTION_NAME.CREATE_POST, data)
         } else {
             this._resolvePromiseDecorator(ACTION_NAME.CREATE_POST)
+        }
+    }
+
+    #onIsAdBlockEnabled(result, data) {
+        if (result === 'ok') {
+            this._resolvePromiseDecorator(ACTION_NAME.ADBLOCK_DETECT, data === 'true')
+        } else {
+            this._rejectPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)
         }
     }
 }

@@ -353,6 +353,41 @@ class PlatformBridgeBase {
         this._setRewardedState(REWARDED_STATE.FAILED)
     }
 
+    isAdBlockDetected() {
+        const fakeAd = document.createElement('div')
+        fakeAd.className = 'textads banner-ads banner_ads ad-unit ad-zone ad-space adsbox'
+        fakeAd.style.position = 'absolute'
+        fakeAd.style.left = '-9999px'
+        fakeAd.style.width = '1px'
+        fakeAd.style.height = '1px'
+        document.body.appendChild(fakeAd)
+
+        const REQUEST_URL = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+
+        const REQUEST_CONFIG = {
+            method: 'HEAD',
+            mode: 'no-cors',
+        }
+
+        return new Promise((resolve) => {
+            fetch(REQUEST_URL, REQUEST_CONFIG)
+                .then((response) => {
+                    if (response.redirected) {
+                        resolve(response.redirected)
+                    } else {
+                        window.setTimeout(() => {
+                            const result = fakeAd.offsetHeight === 0 || window.getComputedStyle(fakeAd)?.display === 'none'
+                            resolve(result)
+                            fakeAd.remove()
+                        }, 100)
+                    }
+                })
+                .catch(() => {
+                    resolve(true)
+                })
+        })
+    }
+
     // social
     inviteFriends() {
         return Promise.reject()
