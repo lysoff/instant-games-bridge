@@ -8,6 +8,7 @@ export const PLATFORM_ID = {
     GAME_DISTRIBUTION: 'game_distribution',
     PLAYGAMA: 'playgama',
     WORTAL: 'wortal',
+    PLAYDECK: 'playdeck',
     MOCK: 'mock',
 }
 
@@ -78,6 +79,7 @@ export const PLATFORM_MESSAGE = {
     GAMEPLAY_STARTED: 'gameplay_started',
     GAMEPLAY_STOPPED: 'gameplay_stopped',
     PLAYER_GOT_ACHIEVEMENT: 'player_got_achievement',
+    GAME_OVER: 'game_over',
 }
 
 export const ACTION_NAME = {
