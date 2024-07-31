@@ -11,7 +11,7 @@ import {
     PLATFORM_MESSAGE,
 } from '../constants'
 
-const SDK_URL = 'https://yandex.ru/games/sdk/v2'
+const SDK_URL = '/sdk.js'
 
 class YandexPlatformBridge extends PlatformBridgeBase {
     // platform
@@ -191,6 +191,14 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         switch (message) {
             case PLATFORM_MESSAGE.GAME_READY: {
                 this._platformSdk.features.LoadingAPI?.ready()
+                return Promise.resolve()
+            }
+            case PLATFORM_MESSAGE.GAMEPLAY_STARTED: {
+                this._platformSdk.features.GameplayAPI?.start()
+                return Promise.resolve()
+            }
+            case PLATFORM_MESSAGE.GAMEPLAY_STOPPED: {
+                this._platformSdk.features.GameplayAPI?.stop()
                 return Promise.resolve()
             }
             default: {
