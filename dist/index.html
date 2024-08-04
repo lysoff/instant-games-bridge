@@ -59,6 +59,10 @@
                 <p>Language: <span id="platform-language-text"></span></p>
                 <p>Payload: <span id="platform-payload-text"></span></p>
                 <p>TLD: <span id="platform-tld-text"></span></p>
+                <p>Server Time: <span id="platform-server-time-text"></span></p>
+                <button id="platform-server-time-button">
+                    Get Server Time
+                </button>
                 <hr>
                 <p>Send Message Status: <span id="platform-send-message-status"></span></p>
                 <input type="text" id="platform-send-message-input" placeholder="Message" />
@@ -280,7 +284,9 @@
                 const platformLanguageText = document.getElementById('platform-language-text')
                 const platformPayloadText = document.getElementById('platform-payload-text')
                 const platformTldText = document.getElementById('platform-tld-text')
+                const platformServerTimeText = document.getElementById('platform-server-time-text')
                 const platformSendMessageStatus = document.getElementById('platform-send-message-status')
+                const platformServerTimeButton = document.getElementById('platform-server-time-button')
                 const platformMessageInput = document.getElementById('platform-send-message-input')
                 const platformMessageButton = document.getElementById('platform-send-message-button')
 
@@ -477,6 +483,11 @@
                         remoteConfigSection.style.display = 'block'
                         clipboardSection.style.display = 'block'
                     })
+
+                platformServerTimeButton.addEventListener('click', () => {
+                    const timestamp = bridge.platform.getServerTime();
+                    platformServerTimeText.innerText = timestamp;
+                })
 
                 platformMessageButton.addEventListener('click', () => {
                     bridge

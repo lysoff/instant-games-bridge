@@ -207,6 +207,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         }
     }
 
+    getServerTime() {
+        return this._platformSdk.serverTime()
+    }
+
     // player
     authorizePlayer(options) {
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.AUTHORIZE_PLAYER)

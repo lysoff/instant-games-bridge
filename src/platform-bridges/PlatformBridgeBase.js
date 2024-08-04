@@ -233,6 +233,10 @@ class PlatformBridgeBase {
         return Promise.resolve()
     }
 
+    getServerTime() {
+        return null
+    }
+
     // player
     authorizePlayer() {
         return Promise.reject()
