@@ -234,7 +234,21 @@ class PlatformBridgeBase {
     }
 
     getServerTime() {
-        return null
+        return new Promise((resolve, reject) => {
+            fetch('https://worldtimeapi.org/api/timezone/Etc/UTC')
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok')
+                    }
+                    return response.json()
+                })
+                .then((data) => {
+                    resolve(data.unixtime * 1000)
+                })
+                .catch(() => {
+                    reject()
+                })
+        });
     }
 
     // player
@@ -357,7 +371,7 @@ class PlatformBridgeBase {
         this._setRewardedState(REWARDED_STATE.FAILED)
     }
 
-    isAdBlockDetected() {
+    checkAdBlock() {
         const fakeAd = document.createElement('div')
         fakeAd.className = 'textads banner-ads banner_ads ad-unit ad-zone ad-space adsbox'
         fakeAd.style.position = 'absolute'

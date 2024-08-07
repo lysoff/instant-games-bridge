@@ -308,7 +308,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
         this._platformSdk.invokeUIMethod('hideBannerAds')
     }
 
-    isAdBlockDetected() {
+    checkAdBlock() {
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.ADBLOCK_DETECT)

@@ -172,7 +172,7 @@ class WortalPlatformBridge extends PlatformBridgeBase {
         )
     }
 
-    isAdBlockDetected() {
+    checkAdBlock() {
         return new Promise((resolve) => {
             resolve(this._platformSdk.ads.isAdBlocked())
         })

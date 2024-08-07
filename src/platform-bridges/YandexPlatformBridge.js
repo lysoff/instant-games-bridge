@@ -208,7 +208,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
     }
 
     getServerTime() {
-        return this._platformSdk.serverTime()
+        return new Promise((resolve) => {
+            const ts = this._platformSdk.serverTime()
+            resolve(ts)
+        })
     }
 
     // player
@@ -443,6 +446,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     this._setRewardedState(REWARDED_STATE.FAILED)
                 },
             },
+        })
+    }
+
+    checkAdBlock() {
+        return new Promise((resolve) => {
+            // yandex shows ads even when adblock is on
+            resolve(false)
         })
     }
 
