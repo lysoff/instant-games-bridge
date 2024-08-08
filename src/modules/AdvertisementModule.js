@@ -173,8 +173,8 @@ class AdvertisementModule extends ModuleBase {
         this._platformBridge.showRewarded(options)
     }
 
-    isAdBlockDetected() {
-        return this._platformBridge.isAdBlockDetected()
+    checkAdBlock() {
+        return this._platformBridge.checkAdBlock()
     }
 
     #startInterstitialTimer() {
