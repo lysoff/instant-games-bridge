@@ -248,7 +248,7 @@ class PlatformBridgeBase {
                 .catch(() => {
                     reject()
                 })
-        });
+        })
     }
 
     // player

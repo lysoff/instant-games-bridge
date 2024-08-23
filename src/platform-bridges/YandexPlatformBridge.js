@@ -615,32 +615,13 @@ class YandexPlatformBridge extends PlatformBridgeBase {
                     let entries = null
 
                     if (result && result.entries.length > 0) {
-                        entries = result.entries.map((e) => {
-                            const photos = []
-                            const photoSmall = e.player.getAvatarSrc('small')
-                            const photoMedium = e.player.getAvatarSrc('medium')
-                            const photoLarge = e.player.getAvatarSrc('large')
-
-                            if (photoSmall) {
-                                photos.push(photoSmall)
-                            }
-
-                            if (photoMedium) {
-                                photos.push(photoMedium)
-                            }
-
-                            if (photoLarge) {
-                                photos.push(photoLarge)
-                            }
-
-                            return {
-                                id: e.player.uniqueID,
-                                score: e.score,
-                                rank: e.rank,
-                                name: e.player.publicName,
-                                photos,
-                            }
-                        })
+                        entries = result.entries.map((e) => ({
+                            id: e.player.uniqueID,
+                            score: e.score,
+                            rank: e.rank,
+                            name: e.player.publicName,
+                            photo: e.player.getAvatarSrc('large'),
+                        }))
                     }
 
                     this._resolvePromiseDecorator(ACTION_NAME.GET_LEADERBOARD_ENTRIES, entries)
