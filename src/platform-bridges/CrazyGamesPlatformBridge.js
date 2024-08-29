@@ -166,7 +166,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType) {
+    getDataFromStorage(key, storageType, shouldParseValue) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve) => {
                 if (Array.isArray(key)) {
@@ -174,10 +174,12 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     key.forEach((k) => {
                         let value = this._platformSdk.data.getItem(k)
 
-                        try {
-                            value = JSON.parse(value)
-                        } catch (e) {
-                            // keep value string or null
+                        if (shouldParseValue) {
+                            try {
+                                value = JSON.parse(value)
+                            } catch (e) {
+                                // keep value string or null
+                            }
                         }
                         values.push(value)
                     })
@@ -187,51 +189,45 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
 
                 let value = this._platformSdk.data.getItem(key)
 
-                try {
-                    value = JSON.parse(value)
-                } catch (e) {
-                    // keep value string or null
+                if (shouldParseValue) {
+                    try {
+                        value = JSON.parse(value)
+                    } catch (e) {
+                        // keep value string or null
+                    }
                 }
                 resolve(value)
             })
         }
 
-        return super.getDataFromStorage(key, storageType)
+        return super.getDataFromStorage(key, storageType, shouldParseValue)
     }
 
     setDataToStorage(key, value, storageType) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
-            if (Array.isArray(key)) {
-                const promises = []
+            return new Promise((resolve) => {
+                if (Array.isArray(key)) {
+                    for (let i = 0; i < key.length; i++) {
+                        let valueData = value[i]
 
-                for (let i = 0; i < key.length; i++) {
-                    let valueData = value[i]
+                        if (typeof value[i] !== 'string') {
+                            valueData = JSON.stringify(value[i])
+                        }
 
-                    if (typeof value[i] !== 'string') {
-                        valueData = JSON.stringify(value[i])
+                        this._platformSdk.data.setItem(key[i], valueData)
                     }
 
-                    promises.push(this._platformSdk.data.setItem(key[i], valueData))
+                    resolve()
                 }
 
-                return Promise.all(promises)
-            }
+                let valueData = value
 
-            let valueData = value
+                if (typeof value !== 'string') {
+                    valueData = JSON.stringify(value)
+                }
 
-            if (typeof value !== 'string') {
-                valueData = JSON.stringify(value)
-            }
-
-            return new Promise((resolve, reject) => {
-                this._platformSdk.data
-                    .setItem(key, valueData)
-                    .then(() => {
-                        resolve()
-                    })
-                    .catch((error) => {
-                        reject(error)
-                    })
+                this._platformSdk.data.setItem(key, valueData)
+                resolve()
             })
         }
 

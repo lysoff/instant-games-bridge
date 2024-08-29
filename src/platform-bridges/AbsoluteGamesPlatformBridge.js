@@ -125,7 +125,7 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType) {
+    getDataFromStorage(key, storageType, shouldParseValue) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (this._platformStorageCachedData) {
@@ -179,7 +179,7 @@ class AbsoluteGamesPlatformBridge extends PlatformBridgeBase {
             })
         }
 
-        return super.getDataFromStorage(key, storageType)
+        return super.getDataFromStorage(key, storageType, shouldParseValue)
     }
 
     setDataToStorage(key, value, storageType) {
