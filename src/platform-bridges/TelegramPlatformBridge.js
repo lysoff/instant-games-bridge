@@ -134,7 +134,10 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
             return new Promise((resolve, reject) => {
                 if (Array.isArray(key)) {
                     this._platformSdk.CloudStorage.getItems(key, (error, values) => {
-                        if (error) reject(error)
+                        if (error) {
+                            reject(error)
+                            return
+                        }
 
                         const result = []
 
@@ -149,8 +152,11 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
                             }
                             result.push(value)
                         })
+
                         resolve(result)
                     })
+
+                    return
                 }
                 this._platformSdk.CloudStorage.getItem(key, (error, value) => {
                     if (error) reject(error)
@@ -210,6 +216,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
     showInterstitial() {
         if (!this.#adsController) {
             this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
+            return
         }
         this.#adsController.addEventListener('onStart', this.#interstitialListeners.onStart)
         this.#adsController.addEventListener('onSkip', this.#interstitialListeners.onSkip)
@@ -226,6 +233,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
     showRewarded() {
         if (!this.#adsController) {
             this._setRewardedState(REWARDED_STATE.FAILED)
+            return
         }
         this.#adsController.addEventListener('onStart', this.#rewardedListeners.onStart)
         this.#adsController.addEventListener('onSkip', this.#rewardedListeners.onSkip)
