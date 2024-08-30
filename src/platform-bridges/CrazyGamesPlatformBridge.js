@@ -218,6 +218,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     }
 
                     resolve()
+                    return
                 }
 
                 let valueData = value
