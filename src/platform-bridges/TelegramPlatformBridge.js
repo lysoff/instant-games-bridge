@@ -129,7 +129,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType) {
+    getDataFromStorage(key, storageType, shouldParseValue) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (Array.isArray(key)) {
@@ -143,7 +143,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
 
                         key.forEach((k) => {
                             let value = values[k]
-                            if (typeof value === 'string') {
+                            if (shouldParseValue && typeof value === 'string') {
                                 try {
                                     value = JSON.parse(value)
                                 } catch (e) {
@@ -162,7 +162,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
                     if (error) reject(error)
 
                     let result = value
-                    if (typeof result === 'string') {
+                    if (shouldParseValue && typeof result === 'string') {
                         try {
                             result = JSON.parse(result)
                         } catch (e) {
