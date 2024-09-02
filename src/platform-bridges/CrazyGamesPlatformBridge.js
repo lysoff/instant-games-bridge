@@ -200,7 +200,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
             })
         }
 
-        return super.getDataFromStorage(key, storageType, shouldParseValue)
+        return super.getDataFromStorage(key, storageType, tryParseJson)
     }
 
     setDataToStorage(key, value, storageType) {
