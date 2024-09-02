@@ -82,10 +82,10 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
 
                 this._isInitialized = true
 
-                if (!this.#adsController && this._options && this._options.ad_block_id) {
+                if (this._options && this._options.adsgramBlockId) {
                     addJavaScript(ADS_SDK_URL)
                         .then(() => {
-                            this.#adsController = window.Adsgram.init({ blockId: this._options.ad_block_id })
+                            this.#adsController = window.Adsgram.init({ blockId: this._options.adsgramBlockId })
                         })
                         .finally(() => {
                             this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
@@ -129,7 +129,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType, shouldParseValue) {
+    getDataFromStorage(key, storageType, tryParseJson) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 if (Array.isArray(key)) {
@@ -143,7 +143,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
 
                         key.forEach((k) => {
                             let value = values[k]
-                            if (shouldParseValue && typeof value === 'string') {
+                            if (tryParseJson && typeof value === 'string') {
                                 try {
                                     value = JSON.parse(value)
                                 } catch (e) {
@@ -162,7 +162,7 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
                     if (error) reject(error)
 
                     let result = value
-                    if (shouldParseValue && typeof result === 'string') {
+                    if (tryParseJson && typeof result === 'string') {
                         try {
                             result = JSON.parse(result)
                         } catch (e) {
@@ -249,19 +249,6 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
         })
     }
 
-    #rewardedListeners = {
-        onStart: () => this._setRewardedState(REWARDED_STATE.OPENED),
-        onSkip: () => this._setRewardedState(REWARDED_STATE.CLOSED),
-        onReward: () => this._setRewardedState(REWARDED_STATE.REWARDED),
-        onError: () => this._setRewardedState(REWARDED_STATE.FAILED),
-    }
-
-    #interstitialListeners = {
-        onStart: () => this._setInterstitialState(INTERSTITIAL_STATE.OPENED),
-        onSkip: () => this._setInterstitialState(INTERSTITIAL_STATE.CLOSED),
-        onError: () => this._setInterstitialState(INTERSTITIAL_STATE.FAILED),
-    }
-
     // clipboard
     clipboardRead() {
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CLIPBOARD_READ)
@@ -279,6 +266,19 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
         }
 
         return promiseDecorator.promise
+    }
+
+    #rewardedListeners = {
+        onStart: () => this._setRewardedState(REWARDED_STATE.OPENED),
+        onSkip: () => this._setRewardedState(REWARDED_STATE.CLOSED),
+        onReward: () => this._setRewardedState(REWARDED_STATE.REWARDED),
+        onError: () => this._setRewardedState(REWARDED_STATE.FAILED),
+    }
+
+    #interstitialListeners = {
+        onStart: () => this._setInterstitialState(INTERSTITIAL_STATE.OPENED),
+        onSkip: () => this._setInterstitialState(INTERSTITIAL_STATE.CLOSED),
+        onError: () => this._setInterstitialState(INTERSTITIAL_STATE.FAILED),
     }
 }
 

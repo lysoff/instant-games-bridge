@@ -199,7 +199,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType, shouldParseValue) {
+    getDataFromStorage(key, storageType, tryParseJson) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve, reject) => {
                 const keys = Array.isArray(key) ? key : [key]
@@ -223,7 +223,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
                                 }
 
                                 let { value } = data.keys[valueIndex]
-                                if (shouldParseValue) {
+                                if (tryParseJson) {
                                     try {
                                         value = JSON.parse(data.keys[valueIndex].value)
                                     } catch (e) {
@@ -244,7 +244,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
                         }
 
                         let { value } = data.keys[0]
-                        if (shouldParseValue) {
+                        if (tryParseJson) {
                             try {
                                 value = JSON.parse(data.keys[0].value)
                             } catch (e) {
@@ -264,7 +264,7 @@ class VkPlatformBridge extends PlatformBridgeBase {
             })
         }
 
-        return super.getDataFromStorage(key, storageType, shouldParseValue)
+        return super.getDataFromStorage(key, storageType, tryParseJson)
     }
 
     setDataToStorage(key, value, storageType) {

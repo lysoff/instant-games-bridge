@@ -137,7 +137,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType, shouldParseValue) {
+    getDataFromStorage(key, storageType, tryParseJson) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             if (!this._hasValuableAccessPermission) {
                 return Promise.reject(ERROR.STORAGE_NOT_AVAILABLE)
@@ -160,7 +160,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
                                 }
 
                                 let value = response[item]
-                                if (shouldParseValue) {
+                                if (tryParseJson) {
                                     try {
                                         value = JSON.parse(response[item])
                                     } catch (e) {
@@ -181,7 +181,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
                         }
 
                         let value = response[key]
-                        if (shouldParseValue) {
+                        if (tryParseJson) {
                             try {
                                 value = JSON.parse(response[key])
                             } catch (e) {
@@ -197,7 +197,7 @@ class OkPlatformBridge extends PlatformBridgeBase {
             })
         }
 
-        return super.getDataFromStorage(key, storageType, shouldParseValue)
+        return super.getDataFromStorage(key, storageType, tryParseJson)
     }
 
     setDataToStorage(key, value, storageType) {

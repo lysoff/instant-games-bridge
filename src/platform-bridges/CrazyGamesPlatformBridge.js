@@ -166,7 +166,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType, shouldParseValue) {
+    getDataFromStorage(key, storageType, tryParseJson) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve) => {
                 if (Array.isArray(key)) {
@@ -174,7 +174,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
                     key.forEach((k) => {
                         let value = this._platformSdk.data.getItem(k)
 
-                        if (shouldParseValue) {
+                        if (tryParseJson) {
                             try {
                                 value = JSON.parse(value)
                             } catch (e) {
@@ -189,7 +189,7 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
 
                 let value = this._platformSdk.data.getItem(key)
 
-                if (shouldParseValue) {
+                if (tryParseJson) {
                     try {
                         value = JSON.parse(value)
                     } catch (e) {

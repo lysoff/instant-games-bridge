@@ -193,14 +193,16 @@ class PlayDeckPlatformBridge extends PlatformBridgeBase {
         return super.isStorageAvailable(storageType)
     }
 
-    getDataFromStorage(key, storageType, shouldParseValue) {
+    getDataFromStorage(key, storageType, tryParseJson) {
         if (storageType === STORAGE_TYPE.PLATFORM_INTERNAL) {
             return new Promise((resolve) => {
                 const result = {}
                 const keys = Array.isArray(key) ? key : [key]
 
                 const getDataHandler = ({ data }) => {
-                    if (!data || !data.playdeck) return
+                    if (!data || !data.playdeck) {
+                        return
+                    }
 
                     const pdData = data.playdeck
 
@@ -221,7 +223,7 @@ class PlayDeckPlatformBridge extends PlatformBridgeBase {
             })
         }
 
-        return super.getDataFromStorage(key, storageType, shouldParseValue)
+        return super.getDataFromStorage(key, storageType, tryParseJson)
     }
 
     setDataToStorage(key, value, storageType) {
