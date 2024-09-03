@@ -50,11 +50,6 @@ class CrazyGamesPlatformBridge extends PlatformBridgeBase {
         return super.deviceType
     }
 
-    // social
-    get isExternalLinksAllowed() {
-        return true
-    }
-
     #currentAdvertisementIsRewarded = false
 
     #isUserAccountAvailable = false

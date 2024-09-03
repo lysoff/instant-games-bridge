@@ -49,6 +49,10 @@ class OkPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    get isExternalLinksAllowed() {
+        return false
+    }
+
     // clipboard
     get isClipboardSupported() {
         return false

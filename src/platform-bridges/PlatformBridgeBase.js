@@ -118,7 +118,7 @@ class PlatformBridgeBase {
     }
 
     get isExternalLinksAllowed() {
-        return false
+        return true
     }
 
     // device

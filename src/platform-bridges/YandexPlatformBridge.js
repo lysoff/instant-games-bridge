@@ -70,6 +70,10 @@ class YandexPlatformBridge extends PlatformBridgeBase {
         return true
     }
 
+    get isExternalLinksAllowed() {
+        return false
+    }
+
     // leaderboard
     get isLeaderboardSupported() {
         return true

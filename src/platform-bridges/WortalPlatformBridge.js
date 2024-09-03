@@ -39,6 +39,11 @@ class WortalPlatformBridge extends PlatformBridgeBase {
         return super.deviceType
     }
 
+    // social
+    get isExternalLinksAllowed() {
+        return false
+    }
+
     #supportedApis
 
     initialize() {
