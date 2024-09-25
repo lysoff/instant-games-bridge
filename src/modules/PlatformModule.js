@@ -1,6 +1,10 @@
 import ModuleBase from './ModuleBase'
+import { PLATFORM_MESSAGE } from '../constants'
 
 class PlatformModule extends ModuleBase {
+
+    #isGameReadyMessageSent = false
+
     get id() {
         return this._platformBridge.platformId
     }
@@ -22,6 +26,14 @@ class PlatformModule extends ModuleBase {
     }
 
     sendMessage(message) {
+        if (message === PLATFORM_MESSAGE.GAME_READY) {
+            if (this.#isGameReadyMessageSent) {
+                return Promise.reject()
+            }
+
+            this.#isGameReadyMessageSent = true
+        }
+
         return this._platformBridge.sendMessage(message)
     }
 
