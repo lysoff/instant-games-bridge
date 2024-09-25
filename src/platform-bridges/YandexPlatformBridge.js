@@ -744,17 +744,19 @@ class YandexPlatformBridge extends PlatformBridgeBase {
             return Promise.reject()
         }
 
-        if (options && (!options?.defaultFlags && !options?.clientFeatures)) {
-            return Promise.reject()
+        if (!options) {
+            options = {}
+        }
+
+        if (!options.clientFeatures) {
+            options.clientFeatures = []
         }
 
         let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG)
         if (!promiseDecorator) {
             promiseDecorator = this._createPromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG)
 
-            const getFlags = options ? this._platformSdk.getFlags(options) : this._platformSdk.getFlags()
-
-            getFlags
+            this._platformSdk.getFlags(options)
                 .then((result) => {
                     this._resolvePromiseDecorator(ACTION_NAME.GET_REMOTE_CONFIG, result)
                 })
