@@ -10,6 +10,7 @@ export const PLATFORM_ID = {
     WORTAL: 'wortal',
     PLAYDECK: 'playdeck',
     TELEGRAM: 'telegram',
+    Y8: 'y8',
     MOCK: 'mock',
 }
 
@@ -113,6 +114,7 @@ export const ERROR = {
     STORAGE_NOT_AVAILABLE: { message: 'Storage not available' },
     GAME_DISTRIBUTION_GAME_ID_IS_UNDEFINED: { message: 'GameDistribution Game ID is undefined' },
     VK_PLAY_GAME_ID_IS_UNDEFINED: { message: 'VK Play Game ID is undefined' },
+    Y8_GAME_ID_IS_UNDEFINED: { message: 'Y8 Game ID is undefined' },
     OK_GAME_PARAMS_NOT_FOUND: { message: 'OK Game params are not found' },
     INVITE_FRIENDS_MESSAGE_LENGTH_ERROR: { message: 'Message is too long' },
 }
