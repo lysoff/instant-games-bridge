@@ -30,6 +30,7 @@ class Y8PlatformBridge extends PlatformBridgeBase {
                         this._platformSdk = window.ID
 
                         this._platformSdk.Event.subscribe('id.init', () => {
+                            this._platformSdk.ads.init(this._options.gameId)
                             this._platformSdk.getLoginStatus((data) => {
                                 if (data.status === 'ok') {
                                     this.#setPlayerDetails(data)
@@ -69,6 +70,11 @@ class Y8PlatformBridge extends PlatformBridgeBase {
             })
         }
         return promiseDecorator.promise
+    }
+
+    // ads
+    showBanner() {
+        this._platformSdk.ads.display(() => {})
     }
 
     #setPlayerDetails(data) {
