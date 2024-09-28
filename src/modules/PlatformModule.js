@@ -2,7 +2,6 @@ import ModuleBase from './ModuleBase'
 import { PLATFORM_MESSAGE } from '../constants'
 
 class PlatformModule extends ModuleBase {
-
     #isGameReadyMessageSent = false
 
     get id() {

@@ -75,7 +75,9 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
                 const userData = initDataUnsafe.user
 
                 this._playerId = userData.id
-                this._playerName = [userData.first_name, userData.last_name].filter(Boolean).join(' ')
+                this._playerName = [userData.first_name, userData.last_name]
+                    .filter(Boolean)
+                    .join(' ')
                 this._playerPhotos = [userData.photo_url]
 
                 this.#platform = this._platformSdk.platform
@@ -85,7 +87,9 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
                 if (this._options && this._options.adsgramBlockId) {
                     addJavaScript(ADS_SDK_URL)
                         .then(() => {
-                            this.#adsController = window.Adsgram.init({ blockId: this._options.adsgramBlockId })
+                            this.#adsController = window.Adsgram.init({
+                                blockId: this._options.adsgramBlockId,
+                            })
                         })
                         .finally(() => {
                             this._resolvePromiseDecorator(ACTION_NAME.INITIALIZE)
@@ -218,15 +222,39 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
             this._setInterstitialState(INTERSTITIAL_STATE.FAILED)
             return
         }
-        this.#adsController.addEventListener('onStart', this.#interstitialListeners.onStart)
-        this.#adsController.addEventListener('onSkip', this.#interstitialListeners.onSkip)
-        this.#adsController.addEventListener('onError', this.#interstitialListeners.onError)
-        this.#adsController.addEventListener('onBannerNotFound', this.#interstitialListeners.onError)
+        this.#adsController.addEventListener(
+            'onStart',
+            this.#interstitialListeners.onStart,
+        )
+        this.#adsController.addEventListener(
+            'onSkip',
+            this.#interstitialListeners.onSkip,
+        )
+        this.#adsController.addEventListener(
+            'onError',
+            this.#interstitialListeners.onError,
+        )
+        this.#adsController.addEventListener(
+            'onBannerNotFound',
+            this.#interstitialListeners.onError,
+        )
         this.#adsController.show().finally(() => {
-            this.#adsController.removeEventListener('onStart', this.#interstitialListeners.onStart)
-            this.#adsController.removeEventListener('onSkip', this.#interstitialListeners.onSkip)
-            this.#adsController.removeEventListener('onError', this.#interstitialListeners.onError)
-            this.#adsController.removeEventListener('onBannerNotFound', this.#interstitialListeners.onError)
+            this.#adsController.removeEventListener(
+                'onStart',
+                this.#interstitialListeners.onStart,
+            )
+            this.#adsController.removeEventListener(
+                'onSkip',
+                this.#interstitialListeners.onSkip,
+            )
+            this.#adsController.removeEventListener(
+                'onError',
+                this.#interstitialListeners.onError,
+            )
+            this.#adsController.removeEventListener(
+                'onBannerNotFound',
+                this.#interstitialListeners.onError,
+            )
         })
     }
 
@@ -235,26 +263,60 @@ class TelegramPlatformBridge extends PlatformBridgeBase {
             this._setRewardedState(REWARDED_STATE.FAILED)
             return
         }
-        this.#adsController.addEventListener('onStart', this.#rewardedListeners.onStart)
-        this.#adsController.addEventListener('onSkip', this.#rewardedListeners.onSkip)
-        this.#adsController.addEventListener('onReward', this.#rewardedListeners.onReward)
-        this.#adsController.addEventListener('onError', this.#rewardedListeners.onError)
-        this.#adsController.addEventListener('onBannerNotFound', this.#rewardedListeners.onError)
+        this.#adsController.addEventListener(
+            'onStart',
+            this.#rewardedListeners.onStart,
+        )
+        this.#adsController.addEventListener(
+            'onSkip',
+            this.#rewardedListeners.onSkip,
+        )
+        this.#adsController.addEventListener(
+            'onReward',
+            this.#rewardedListeners.onReward,
+        )
+        this.#adsController.addEventListener(
+            'onError',
+            this.#rewardedListeners.onError,
+        )
+        this.#adsController.addEventListener(
+            'onBannerNotFound',
+            this.#rewardedListeners.onError,
+        )
         this.#adsController.show().finally(() => {
-            this.#adsController.addEventListener('onStart', this.#rewardedListeners.onStart)
-            this.#adsController.addEventListener('onSkip', this.#rewardedListeners.onSkip)
-            this.#adsController.addEventListener('onReward', this.#rewardedListeners.onReward)
-            this.#adsController.addEventListener('onError', this.#rewardedListeners.onError)
-            this.#adsController.addEventListener('onBannerNotFound', this.#rewardedListeners.onError)
+            this.#adsController.addEventListener(
+                'onStart',
+                this.#rewardedListeners.onStart,
+            )
+            this.#adsController.addEventListener(
+                'onSkip',
+                this.#rewardedListeners.onSkip,
+            )
+            this.#adsController.addEventListener(
+                'onReward',
+                this.#rewardedListeners.onReward,
+            )
+            this.#adsController.addEventListener(
+                'onError',
+                this.#rewardedListeners.onError,
+            )
+            this.#adsController.addEventListener(
+                'onBannerNotFound',
+                this.#rewardedListeners.onError,
+            )
         })
     }
 
     // clipboard
     clipboardRead() {
-        let promiseDecorator = this._getPromiseDecorator(ACTION_NAME.CLIPBOARD_READ)
+        let promiseDecorator = this._getPromiseDecorator(
+            ACTION_NAME.CLIPBOARD_READ,
+        )
 
         if (!promiseDecorator) {
-            promiseDecorator = this._createPromiseDecorator(ACTION_NAME.CLIPBOARD_READ)
+            promiseDecorator = this._createPromiseDecorator(
+                ACTION_NAME.CLIPBOARD_READ,
+            )
 
             this._platformSdk.readTextFromClipboard((text) => {
                 if (text) {
